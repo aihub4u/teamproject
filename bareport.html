@@ -255,3 +255,316 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <script>
+
+/* DATA */
+const DB = {"lastUpdated": "27 May 2026", "totalRows": 139, "all": {"North": {"total": 54, "inprogress": 14, "uat": 4, "golive": 20, "yts": 12, "scoping": 4, "twixor": 33, "inhouse": 15, "mandays": 82}, "South": {"total": 47, "inprogress": 13, "uat": 6, "golive": 14, "yts": 1, "scoping": 12, "twixor": 18, "inhouse": 19, "mandays": 45}, "West": {"total": 30, "inprogress": 3, "uat": 2, "golive": 14, "yts": 0, "scoping": 11, "twixor": 1, "inhouse": 15, "mandays": 0}, "UAE": {"total": 8, "inprogress": 0, "uat": 3, "golive": 4, "yts": 0, "scoping": 1, "twixor": 1, "inhouse": 2, "mandays": 4}, "Total": {"total": 139, "inprogress": 30, "uat": 15, "golive": 52, "yts": 13, "scoping": 28, "twixor": 53, "inhouse": 51, "mandays": 131}}, "months": {"2026-04": {"rowCount": 62, "data": {"North": {"total": 28, "inprogress": 6, "uat": 2, "golive": 11, "yts": 7, "scoping": 2, "twixor": 16, "inhouse": 9, "mandays": 73}, "South": {"total": 16, "inprogress": 3, "uat": 3, "golive": 4, "yts": 0, "scoping": 6, "twixor": 5, "inhouse": 5, "mandays": 0}, "West": {"total": 14, "inprogress": 0, "uat": 1, "golive": 9, "yts": 0, "scoping": 4, "twixor": 0, "inhouse": 8, "mandays": 0}, "UAE": {"total": 4, "inprogress": 0, "uat": 0, "golive": 4, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 1, "mandays": 4}, "Total": {"total": 62, "inprogress": 9, "uat": 6, "golive": 28, "yts": 7, "scoping": 12, "twixor": 21, "inhouse": 23, "mandays": 77}}}, "2026-05": {"rowCount": 83, "data": {"North": {"total": 27, "inprogress": 8, "uat": 2, "golive": 10, "yts": 5, "scoping": 2, "twixor": 17, "inhouse": 7, "mandays": 10}, "South": {"total": 35, "inprogress": 10, "uat": 5, "golive": 12, "yts": 1, "scoping": 6, "twixor": 17, "inhouse": 14, "mandays": 45}, "West": {"total": 17, "inprogress": 3, "uat": 1, "golive": 6, "yts": 0, "scoping": 7, "twixor": 1, "inhouse": 8, "mandays": 0}, "UAE": {"total": 4, "inprogress": 0, "uat": 3, "golive": 0, "yts": 0, "scoping": 1, "twixor": 1, "inhouse": 1, "mandays": 0}, "Total": {"total": 83, "inprogress": 21, "uat": 11, "golive": 28, "yts": 6, "scoping": 16, "twixor": 36, "inhouse": 30, "mandays": 55}}}, "2026-06": {"rowCount": 1, "data": {"North": {"total": 1, "inprogress": 1, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 1, "inhouse": 0, "mandays": 0}, "South": {"total": 0, "inprogress": 0, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 0, "mandays": 0}, "West": {"total": 0, "inprogress": 0, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 0, "mandays": 0}, "UAE": {"total": 0, "inprogress": 0, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 0, "mandays": 0}, "Total": {"total": 1, "inprogress": 1, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 1, "inhouse": 0, "mandays": 0}}}}};
+const RAW = {"cols": ["Project", "Region", "Usecase", "BA", "Start Date", "Due Date / ETA", "Status", "Progress %", "Development", "Mandays Saved", "Ongoing Activities", "Comments/Description"], "rows": [["Home R Us (Lals)", "UAE", "Button payload journey for delivery confirmation", "Aniruddha", "2025-12-25", "2026-04-28", "Live", "100.0", "", "", "", "Client slow"], ["Truemeds PDP", "West", "Abandoned cart on RCS", "Aniruddha", "2026-01-28", "2026-04-15", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Torrent Diagnostics", "West", "Live agent flow", "Aniruddha", "2026-01-21", "2026-04-10", "Live", "100.0", "", "", "", "WABA pending"], ["Salik", "UAE", "Gen AI FAQs POC", "Aniruddha", "2026-02-20", "2026-04-01", "Live", "100.0", "", "", "", ""], ["Prefr", "West", "POC for Voice", "Aniruddha", "2026-03-17", "2026-04-20", "Live", "100.0", "Inhouse Dev", "", "", ""], ["TVS", "South", "POC for commercial vehicle loan voice", "Aniruddha", "2026-03-23", "2026-04-17", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Hero Fincorp", "West", "Live agent", "Aniruddha", "2026-03-25", "2026-04-01", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Yes Bank", "West", "Lead Capture via WhatsApp /SFTP", "Aniruddha", "2026-04-06", "", "Scoping", "10.0", "", "", "", "Efforts going to change."], ["UAE Space Agency", "UAE", "AI chatbot RFP via SImplai", "Aniruddha", "2026-04-02", "", "End of life", "10.0", "", "", "", "This was just RFI."], ["Mondelez", "West", "Employee absenteeism journey", "Aniruddha", "2026-04-02", "2026-04-10", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Prefr", "West", "CR for API update", "Aniruddha", "2026-04-06", "", "Live", "10.0", "", "", "", "Done via Twixor support"], ["Webengage Melooha", "West", "Add WebENgage Optin/Optout API", "Aniruddha", "2026-04-07", "2026-04-09", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Webengage Firstclub", "West", "Add WebENgage Optin/Optout API", "Aniruddha", "2026-04-07", "2026-04-09", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Tata Cliq", "West", "Abandoned cart voice POC via smallest.ai", "Aniruddha", "2026-04-10", "2026-05-05", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Cholamandalam Finance", "South", "POC for collections", "Aniruddha", "2026-04-20", "2026-04-27", "Live", "100.0", "Inhouse Dev", "", "", ""], ["HDFC Life", "West", "Native payments via RZP", "Aniruddha", "2026-04-28", "", "Scoping", "5.0", "", "", "", ""], ["EFL", "West", "Agentic AI voice bot", "Aniruddha", "2026-04-27", "", "Scoping", "5.0", "", "", "", ""], ["HDFC Ergo", "West", "Payment config via RZP", "Aniruddha", "2026-04-28", "", "Scoping", "10.0", "", "", "", ""], ["HDFC ergo", "West", "Myra Payment integration", "Aniruddha", "2026-05-11", "", "Scoping", "", "", "", "", ""], ["Jiostar Disney", "West", "Daily quiz for 15 days", "Aniruddha", "2026-05-08", "", "End of life", "", "", "", "", ""], ["SBI", "West", "Green pin modification", "Aniruddha", "2026-05-07", "", "Development", "80.0", "Inhouse", "", "", ""], ["SBI", "West", "Manage DC modification", "Aniruddha", "2026-05-07", "", "Development", "20.0", "Inhouse", "", "", ""], ["Al Habtoor", "UAE", "VOC - Web bot - service advisor upload", "Aniruddha", "2026-05-07", "", "UAT", "80.0", "", "", "", ""], ["Paisawaala", "West", "Live agent", "Aniruddha", "2026-05-18", "", "Live", "100.0", "Inhouse", "", "", ""], ["SBI General", "West", "CTWA to collect lead details", "Aniruddha", "2026-05-19", "", "Scoping", "10.0", "", "", "", ""], ["Sultan Foods (Barakat)", "UAE", "Button payload survey and Webengage", "Aniruddha", "2026-05-22", "", "Scoping", "", "", "", "", ""], ["Tata motors", "West", "Multiple journey Migration from Gupshup", "Aniruddha", "2026-05-19", "", "Scoping", "", "", "", "", ""], ["Piramal", "West", "AI bot for HR use case", "Aniruddha", "2026-05-21", "", "Scoping", "", "", "", "", ""], ["HDFC life", "West", "Native Payments Integration", "Aniruddha", "2026-05-22", "", "Scoping", "", "Inhouse", "", "", ""], ["Motilal Oswal", "West", "WhatsApp Chatbot Configuration", "Aniruddha", "2026-05-25", "", "Scoping", "", "", "", "", ""], ["SBI Life", "West", "SBI Life Insurance Agentic AI", "Aniruddha", "2026-05-22", "2026-05-25", "Live", "", "", "", "", ""], ["SBI", "West", "SBI EPay integration", "Aniruddha", "2026-05-25", "", "Scoping", "", "", "", "", ""], ["SBI", "South", "Funnel dashboard + Manage Debit Card", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.8", "Twixor", "", "", ""], ["Bandhan Bank", "South", "Debit card phase 2 + Credit Card Journey UAT", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.65", "Twixor", "", "", ""], ["BOB", "South", "Urdu observations + CBDC + Link redirection", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.75", "Twixor", "", "", ""], ["BOI", "South", "UAT sign off + Re KYC + Migration", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.65", "Twixor", "", "", ""], ["CSB", "South", "Account statement + Debit card use case", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.45", "Twixor", "", "", ""], ["PSB", "North", "Multilingual implementation", "Daimi Syed", "2026-05-04", "", "Yet to Start(Assigned)", "0.4", "Twixor", "", "", ""], ["Housing", "North", "Moengage platform push", "Ankit/Himanshu", "2026-04-15", "", "Yet to Start(Assigned)", "0.2", "Twixor", "0", "", ""], ["Setu BBPS", "North", "Intent based upi link", "Ankit", "2026-04-15", "", "Live", "1", "Inhouse", "", "Go live done", ""], ["NICL CSAT and NPS", "North", "CSAT plus nps integration", "Ankit", "2026-04-12", "", "Live", "0.9", "Twixor", "5", "UAT done", ""], ["Spice jet", "North", "Complete aviation use case", "Ankit", "2026-04-16", "", "In Progress", "0.3", "Twixor", "-34", "Hold due to sales confirmation", ""], ["Isckon", "North", "Catalog journey", "Ankit", "2026-04-17", "", "Pipeline", "0.2", "Twixor", "", "", ""], ["Berger AI", "North", "Voice AI + Whatsapp calling", "", "2026-04-17", "", "Yet to Start(Assigned)", "0.2", "Inhouse", "", "", ""], ["Hindware Journey", "North", "Catalog plus brand film journey", "Ankit", "2026-04-20", "", "Live", "0.8", "Inhouse", "2", "", ""], ["DHBVN", "North", "UPI link webview", "Ankit", "2026-04-22", "", "Pipeline", "0.1", "Twixor", "", "", ""], ["Zillion Redemption", "North", "Product recommendation + Payment", "Ankit", "2026-04-24", "", "In Progress", "0.4", "Twixor", "21", "", ""], ["Berger Certificate", "North", "Berger Certificate", "Ankit", "2026-04-28", "", "Live", "1", "Inhouse", "7", "Bot went live 04/05/26", ""], ["Vouchagram", "North", "Vouchagram", "Ankit", "2026-04-30", "", "In progress", "0.3", "Twixor", "", "", ""], ["PB Partners", "North", "PB Partners", "", "2026-05-04", "", "In Progress", "0.85", "Inhouse", "7", "CTWA credentials awaiting", ""], ["BharatPe - Credit Nirvana", "North", "Settlement agreement + 48hr nudge", "Ankit", "2026-05-07", "", "Hypercare", "1", "Twixor", "", "", ""], ["Rainbow LSQ Integration", "North", "Send all bot events to LSQ CRM", "Ankit", "2026-05-19", "", "UAT", "0.8", "Twixor", "", "", ""], ["BMH Capital", "UAE", "BMH Capital", "Kiran", "2026-04-13", "2026-04-30", "Live", "1", "Inhouse", "4", "", ""], ["Multiplier", "North", "Employee help desk", "Kiran", "2026-03-20", "2026-05-01", "In Progress", "0.8", "Twixor", "", "", ""], ["TNeGA", "South", "Phase 2B development 4 services", "Kiran", "", "2026-05-02", "Yet to Start(Assigned)", "0.4", "Twixor", "", "", ""], ["Funcity", "South", "Birthday party CR", "Kiran", "2026-04-02", "2026-05-03", "Live", "0.5", "Twixor", "", "", ""], ["Malabar", "North", "Australia bot issues", "Kiran", "2026-03-31", "2026-05-04", "In Progress", "0.7", "Twixor", "", "", ""], ["Kapsons", "North", "Personal assistance / Egift card", "Kiran", "2026-03-31", "2026-05-05", "In Progress", "0.8", "Twixor", "", "", ""], ["SBI", "West", "Nominee add/update", "Kiran", "2026-02-12", "2026-05-06", "Live", "1", "Twixor", "", "", ""], ["Lifestyle", "South", "CR - UAT observations", "Kiran", "2026-03-15", "2026-05-07", "UAT", "0.5", "Inhouse", "", "", ""], ["CMRL", "South", "Add station - UAT bot not working", "Kiran", "2026-03-19", "2026-05-06", "Live", "1", "Twixor", "", "", ""], ["Funcity", "South", "Fun pass CR", "Kiran", "2026-04-10", "2026-05-02", "UAT", "0.9", "Twixor", "", "", ""], ["CAGL Primary Bot", "South", "Live Migration", "Kiran", "2026-02-23", "2026-05-10", "Live", "1", "Twixor", "", "", ""], ["CAGL Unnati flows", "South", "new Requirements", "Kiran", "2026-03-22", "2026-05-11", "Live", "1", "Inhouse", "", "", ""], ["Funcity", "South", "Dashboard issues", "Kiran", "2026-04-28", "2026-05-02", "LIVE", "1", "twixor", "", "", ""], ["Funcity", "South", "4 NEW Requests", "Kiran", "2026-05-07", "2026-05-12", "Development", "0.5", "twixor", "", "", ""], ["Multiplier", "North", "Feedback Form Implementation", "Kiran", "2026-05-07", "2026-05-25", "Scoping", "", "twixor", "", "", ""], ["TNeGA", "South", "Small Farmer, KCC CR", "Kiran", "2026-05-04", "2026-05-16", "Development", "0.5", "twixor", "", "", ""], ["Funcity", "South", "Funblock new Requirement", "", "2026-05-15", "2026-05-19", "", "", "", "", "", ""], ["Cagl", "South", "View Pass Book Implementation", "Kiran", "2026-05-04", "", "Scoping", "", "twixor", "", "", ""], ["Yes Bank", "North", "Credit limit increase bot", "Himanshu", "2026-04-13", "2026-04-30", "In Progress", "1", "Twixor", "--", "", ""], ["Bandhan Bank", "North", "Credit card services bot", "Himanshu", "2026-04-15", "2026-06-09", "In Progress", "0.4", "Twixor", "--", "", ""], ["TrueBalance", "North", "Pre-approved loan via WhatsApp", "Himanshu", "2026-04-24", "2026-04-30", "Live", "1", "Inhouse", "--", "", ""], ["Aditya Birla", "North", "IT support tickets chatbot", "Himanshu", "2026-04-24", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Sum NXT", "North", "WhatsApp subscription + UPI", "Himanshu", "2026-04-24", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Tagg Teleservices", "North", "Shipment tracking bot", "Himanshu", "2026-04-28", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Pradhan Mantri Aawas Yojna", "North", "PMAY-U 2.0 notification", "Himanshu", "2026-05-05", "2026-05-08", "Live", "1", "Twixor", "--", "", ""], ["Eresolution", "North", "CTWA loan assistance bot", "Himanshu", "2026-05-08", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Ayushman Bharat Digital Mission", "North", "ABDM WhatsApp Chatbot", "Himanshu", "2026-05-11", "", "UAT", "1", "Inhouse", "--", "", ""], ["Bhatia Cloth House", "North", "AI-powered WhatsApp FAQ bot", "Himanshu", "2026-05-25", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["FabIndia", "North", "WhatsApp profile verification bot", "Himanshu", "2026-05-11", "", "Yet to Start(Assigned)", "0", "Inhouse", "--", "", ""], ["Lenskart", "North", "Dashboard Creation", "Himanshu", "2026-05-11", "", "In Progress", "0.2", "Twixor", "--", "", ""], ["Housing", "North", "Housing project", "Himanshu", "2026-04-16", "", "Yet to Start(Assigned)", "0", "", "--", "", ""], ["OneMoney", "North", "OneMoney project", "Himanshu", "2026-04-08", "", "Yet to Start(Assigned)", "0", "", "--", "", ""], ["Pinelabs-2", "South", "Activate Bharat card", "Megha", "2026-03-03", "2026-05-12", "Live", "1", "Inhouse", "8 Days", "Go live done.", ""], ["Malabar UK", "South", "Form + live agent connection", "Megha", "2026-04-22", "2026-05-18", "UAT", "0.9", "Twixor", "0 Days", "Bot dropped for UAT", ""], ["Flipkart-RCS", "South", "Feedback WA journey of NPS", "Megha", "2026-05-05", "2026-05-18", "Live", "1", "Inhouse", "10 Days", "Go live", ""], ["Flipkart-WA", "South", "Feedback WA journey of NPS", "Megha", "2026-05-05", "2026-05-18", "Live", "1", "Inhouse", "10 Days", "Go Live", ""], ["Flipkart-CTWA", "South", "Flipkart wholesale journey", "Megha", "2026-05-11", "2026-05-21", "UAT", "0", "Inhouse", "8 Days", "English Language on UAT", ""], ["Myntra-WA", "South", "Mothers day carousel journey", "Megha", "2026-05-08", "2026-05-08", "Live", "1", "Inhouse", "2 Days", "Live Bot", ""], ["Unlimited", "North", "V-Mart RCS bot replication", "Megha", "2026-05-13", "2026-05-14", "Live", "1", "Inhouse", "0 Days", "", ""], ["Furlenco", "North", "QR reply auto message journey", "Megha", "2026-05-19", "2026-05-21", "Live", "1", "Inhouse", "1 Day", "Go live on 27th May", ""], ["Licious-Optin", "South", "Opt in and Opt out journey", "Megha", "2026-05-18", "2026-05-27", "In Progress", "0", "Inhouse", "1 Day", "Development in progress", ""], ["Licious-Know more", "South", "Know more QR button integration", "Megha", "2026-05-25", "2026-05-04", "In Progress", "0", "Inhouse", "3 Days", "Development to get started", ""], ["TATA Digital ZIPCARE", "West", "Insurance journey", "Raj", "", "2026-04-27", "UAT", "1", "Inhouse", "", "", ""], ["Paisawalla", "West", "Paisawalla", "Raj", "", "2026-05-20", "UAT", "1", "Inhouse", "", "", ""], ["AMS SSE", "UAE", "Brand info and service journey", "Raj", "2026-05-20", "2026-05-25", "UAT", "0.9", "Twixor", "", "", ""], ["Jio Star", "West", "static bot", "Raj", "2026-05-22", "2026-05-25", "Live", "1", "Inhouse", "", "", ""], ["Tarahum NEW CR", "UAE", "NEW CR for the bot", "Raj", "2026-05-18", "2026-05-27", "UAT", "0.9", "Inhouse", "", "", ""], ["TMIBASL", "West", "New Development", "Raj", "2026-05-18", "", "In Progress", "0.05", "Inhouse", "", "", ""], ["Vmart", "North", "Journeys Replication", "Somya", "2026-01-13", "2026-04-22", "Live", "1.0", "Twixor", "", "", ""], ["Hindware", "North", "City and State visibility fix", "Somya", "2026-02-23", "2026-04-22", "UAT", "0.9", "Twixor", "", "UAT Signoff pending", ""], ["MCA (PMIS)", "North", "VF Waba Chatbot", "Somya", "2026-03-02", "2026-04-01", "Live", "1.0", "Inhouse", "", "", ""], ["Umang", "North", "WhatsApp Service Go-Live", "Somya", "2026-03-02", "2026-04-30", "Live", "1.0", "Inhouse", "", "", ""], ["KSITM", "South", "Kerala State Electric Board", "Somya", "2026-04-21", "", "In Progress", "0.5", "Inhouse", "", "Under Development", ""], ["DGG (ANTF)", "North", "ANTF WA Bot and Ticket panel", "Somya", "2026-03-09", "2026-05-09", "Live", "1.0", "Twixor", "", "", ""], ["DGG (ACAL)", "North", "ACAL WA Bot and Ticket panel", "Somya", "2026-03-12", "2026-05-10", "Live", "1.0", "Twixor", "", "", ""], ["DGG (Egov)", "North", "Egov Bot", "Somya", "2026-03-19", "2026-05-06", "Live", "1.0", "Inhouse", "", "", ""], ["DGG (Invest Punjab)", "North", "Invest Punjab WA Bot", "Somya", "2026-04-16", "2026-05-06", "Live", "1.0", "Inhouse", "", "", ""], ["Myntra", "North", "Carousel RCS journey", "Somya", "2026-04-07", "2026-04-24", "Live", "1.0", "Inhouse", "", "", ""], ["Vmart/Unlimited", "North", "Changes in Hi Flow", "Somya", "2026-04-15", "2026-04-30", "UAT", "0.8", "Twixor", "", "Development in progress", ""], ["Flipkart", "South", "NPS Journey", "Somya", "2026-04-06", "", "UAT", "0.8", "", "", "", ""], ["Nastasia", "South", "Nestasia Bot Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0.0", "", "", "", ""], ["DEI", "South", "DEI Global Bot Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0.0", "", "", "", ""], ["Olam Agri", "South", "Olam Agri Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0.0", "", "", "", ""], ["Jewel", "South", "Jewel testimonial", "Somya", "2026-04-15", "", "In Progress", "0.4", "", "", "Script sent to client", ""], ["Funblock", "South", "Birthday Party Block", "Somya", "2026-04-21", "", "Pipeline", "0.0", "", "", "", ""], ["Libas", "North", "Store Locator", "Somya", "2026-04-24", "2026-04-24", "Live", "", "Twixor", "", "", ""], ["Aham Marketing", "South", "Form triggered over BIM", "Somya", "2026-04-27", "", "Pipeline", "0.1", "Inhouse", "", "", ""], ["Libas", "North", "Case Study approval", "Somya", "2026-04-28", "", "In Progress", "0.5", "", "", "", ""], ["Prefr", "South", "Optout functionality feasibility", "Somya", "2026-04-28", "", "In Progress", "0.1", "Twixor", "", "Development in progress", ""], ["Licious", "South", "Licious Offer Awareness Bot", "Somya", "2026-04-29", "", "Pipeline", "0.1", "Inhouse", "", "", ""], ["KSITM", "South", "Whatsapp Service Onboarding", "Somya", "2026-05-05", "", "Pipeline", "0.1", "Ihouse", "", "", ""], ["Flipkart", "South", "NPS CTWA", "Somya", "2026-05-05", "", "UAT", "0.8", "Inhouse", "", "", ""], ["Zepto", "South", "Auto response", "Somya", "2026-05-06", "", "Live", "1.0", "Twixor", "", "", ""], ["Myntra", "South", "Carousel journey", "Somya", "2026-05-07", "", "Live", "1.0", "Inhouse", "", "", ""], ["ANTF", "North", "Post Prod bugs rectification", "Somya", "2026-05-11", "", "In Progress", "0.6", "Twixor", "", "", ""], ["ACAL", "North", "Post Prod bugs rectification", "Somya", "2026-05-11", "", "In Progress", "0.8", "Twixor", "", "", ""], ["KSITM", "South", "Civil services", "Somya", "2026-05-05", "", "Pipeline", "0.1", "Twixor", "", "", ""], ["DGG Punjab Gov", "North", "Auto templates config", "Somya", "2026-05-13", "", "In Progress", "0.1", "", "", ""], ["KSITM", "North", "Higher Secondary Results WhatsApp", "Somya", "2026-05-19", "", "Live", "1.0", "Twixor", "", "Live", ""], ["Orange Health", "South", "CTWA Bot Effort", "Somya", "2026-05-25", "", "Pipeline", "0.1", "", "", "", ""], ["Myntra", "South", "WA AI for EORS", "Somya", "2026-05-25", "", "Live", "1.0", "Inhouse", "", "Live", ""], ["Umang", "North", "Webhook Configuration", "Somya", "2026-05-25", "", "Pipeline", "0.1", "", "", "", ""], ["Unlimited", "North", "RCS journey replication", "Megha", "2026-05-13", "", "Live", "1.0", "", "", "", ""], ["Licious", "South", "Optin/Opt out", "Megha", "2026-05-18", "", "In Progress", "0.1", "Inhouse", "", "", ""], ["Elo Elo", "South", "Bot Effort Estimation", "Megha", "2026-05-18", "", "Pipeline", "0.1", "", "", "", ""], ["Furlenco", "South", "Bot Request", "Megha", "2026-05-19", "", "Pipeline", "0.1", "", "", "", ""], ["EMI wave off journey", "North", "EMI wave off journey", "Himanshu", "2026-05-05", "", "Yet to Start(Assigned)", "0.2", "Twixor", "", "", ""]]};
+
+/* CONSTANTS */
+const REGIONS = ['North','South','West','UAE'];
+const REGION_COLORS = {'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
+const MON = {'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+const ALL_MONTHS = Object.keys(DB.months).sort();
+const CHART_OPTS = {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
+
+function mLabel(k) { if(k==='all') return 'All dates'; const [y,m]=k.split('-'); return (MON[m]||m)+' '+y; }
+function getData(k) { return k==='all' ? DB.all : DB.months[k].data; }
+function getCount(k) { return k==='all' ? DB.totalRows : DB.months[k].rowCount; }
+
+let currentMonthKey = 'all';
+let drawerRows = [];
+let C = {};
+function kill(...ids) { ids.forEach(id=>{ if(C[id]){ try{C[id].destroy();}catch(e){} delete C[id]; } }); }
+
+/* KPI */
+function renderKPI(data) {
+  const t = data['Total'];
+  const defs = [
+    ['Total projects', t.total, true,  'all',        'all'],
+    ['Go live',        t.golive,false, 'all',        'golive'],
+    ['In progress',    t.inprogress,false,'all',     'inprogress'],
+    ['UAT',            t.uat,   false, 'all',        'uat'],
+    ['Yet to start',   t.yts,   false, 'all',        'yts'],
+    ['Pipeline/scoping',t.scoping,false,'all',       'scoping'],
+    ['Twixor',         t.twixor,false, 'all',        'twixor'],
+    ['Inhouse',        t.inhouse,false,'all',        'inhouse'],
+    ['Mandays saved',  t.mandays,false,'all',        'mandays'],
+  ];
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = '';
+  defs.forEach(([lbl, val, acc, region, field]) => {
+    const clickable = val > 0 && field !== 'mandays';
+    const div = document.createElement('div');
+    div.className = 'kpi' + (acc?' accent':'') + (clickable?' clickable':'');
+    if (clickable) div.onclick = () => openDrawer(region, field, lbl, currentMonthKey);
+    const l = document.createElement('div'); l.className='kpi-label'; l.textContent=lbl;
+    const v = document.createElement('div'); v.className='kpi-value'; v.textContent=val;
+    div.appendChild(l); div.appendChild(v);
+    grid.appendChild(div);
+  });
+}
+
+/* REGION TABLE */
+function drillCell(region, field, label, val, monthKey) {
+  const td = document.createElement('td');
+  td.className = 'num';
+  if (val === 0 || field === 'mandays') {
+    td.textContent = val;
+  } else {
+    const span = document.createElement('span');
+    span.className = 'drill-num';
+    span.textContent = val;
+    span.onclick = () => openDrawer(region, field, label + (region!=='all' ? ' — ' + region : ''), monthKey);
+    td.appendChild(span);
+  }
+  return td;
+}
+
+function renderRegionTable(data) {
+  const wrap = document.getElementById('regionTableWrap');
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>Region</th><th class="num">Projects</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Go live</th><th class="num">Yet to start</th><th class="num">Scoping/pipeline</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays saved</th></tr>';
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  REGIONS.forEach(r => {
+    const tr = document.createElement('tr');
+    const td0 = document.createElement('td');
+    td0.innerHTML = '<span class="region-badge"><span class="rdot" style="background:'+REGION_COLORS[r]+'"></span>'+r+'</span>';
+    tr.appendChild(td0);
+    [['all','Projects',data[r].total],['inprogress','In Progress',data[r].inprogress],['uat','UAT',data[r].uat],['golive','Go Live',data[r].golive],['yts','Yet to Start',data[r].yts],['scoping','Scoping/Pipeline',data[r].scoping],['twixor','Twixor',data[r].twixor],['inhouse','Inhouse',data[r].inhouse],['mandays','Mandays',data[r].mandays]].forEach(([f,lbl,v]) => {
+      tr.appendChild(drillCell(r, f, lbl, v, currentMonthKey));
+    });
+    tbody.appendChild(tr);
+  });
+  const trTot = document.createElement('tr');
+  trTot.className = 'total-row';
+  const tdLbl = document.createElement('td'); tdLbl.innerHTML = '<strong>Total</strong>'; trTot.appendChild(tdLbl);
+  const T = data['Total'];
+  [['all','Projects',T.total],['inprogress','In Progress',T.inprogress],['uat','UAT',T.uat],['golive','Go Live',T.golive],['yts','Yet to Start',T.yts],['scoping','Scoping/Pipeline',T.scoping],['twixor','Twixor',T.twixor],['inhouse','Inhouse',T.inhouse],['mandays','Mandays',T.mandays]].forEach(([f,lbl,v]) => {
+    trTot.appendChild(drillCell('all', f, lbl, v, currentMonthKey));
+  });
+  tbody.appendChild(trTot);
+  table.appendChild(tbody);
+  wrap.innerHTML = '';
+  wrap.appendChild(table);
+}
+
+/* REGION CHARTS */
+function renderRegionCharts(data) {
+  kill('c1','c2','c3','c4');
+  C.c1=new Chart(document.getElementById('chart1'),{type:'bar',data:{labels:REGIONS,datasets:[
+    {label:'Total',data:REGIONS.map(r=>data[r].total),backgroundColor:'#0057FF'},
+    {label:'Go live',data:REGIONS.map(r=>data[r].golive),backgroundColor:'#10B981'},
+    {label:'In progress',data:REGIONS.map(r=>data[r].inprogress),backgroundColor:'#F59E0B'},
+    {label:'UAT',data:REGIONS.map(r=>data[r].uat),backgroundColor:'#EF4444'},
+  ]},options:CHART_OPTS});
+  C.c2=new Chart(document.getElementById('chart2'),{type:'bar',data:{labels:REGIONS,datasets:[
+    {label:'Twixor',data:REGIONS.map(r=>data[r].twixor),backgroundColor:'#6366F1'},
+    {label:'Inhouse',data:REGIONS.map(r=>data[r].inhouse),backgroundColor:'#8B9AB8'},
+  ]},options:CHART_OPTS});
+  const t=data['Total'];
+  C.c3=new Chart(document.getElementById('chart3'),{type:'doughnut',data:{
+    labels:['Go live','In progress','UAT','Yet to start','Scoping/pipeline'],
+    datasets:[{data:[t.golive,t.inprogress,t.uat,t.yts,t.scoping],backgroundColor:['#10B981','#F59E0B','#0057FF','#8B9AB8','#EC4899'],borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+  C.c4=new Chart(document.getElementById('chart4'),{type:'bar',data:{labels:REGIONS,datasets:[
+    {label:'Mandays saved',data:REGIONS.map(r=>data[r].mandays),backgroundColor:REGIONS.map(r=>REGION_COLORS[r])}
+  ]},options:CHART_OPTS});
+}
+
+/* MONTH TABLE */
+function renderMonthTable() {
+  const fields =    ['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
+  const fieldKeys = ['all',  'inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
+  const labels =    ['Projects','In progress','UAT','Go live','Yet to start','Scoping/pipeline','Twixor','Inhouse','Mandays saved'];
+  const gt = DB.all['Total'];
+  const wrap = document.getElementById('monthTableWrap');
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  const th0 = document.createElement('th'); th0.style.minWidth='165px'; th0.textContent='Metric'; hrow.appendChild(th0);
+  ALL_MONTHS.forEach(k => { const th=document.createElement('th'); th.className='mhdr'; th.textContent=mLabel(k); hrow.appendChild(th); });
+  const thTot = document.createElement('th'); thTot.className='mhdr'; thTot.style.cssText='background:#07112A;color:#fff;'; thTot.textContent='Total'; hrow.appendChild(thTot);
+  thead.appendChild(hrow); table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  fields.forEach((f,fi) => {
+    const fk = fieldKeys[fi];
+    const tr = document.createElement('tr');
+    const tdl = document.createElement('td'); tdl.innerHTML = '<strong>'+labels[fi]+'</strong>'; tr.appendChild(tdl);
+    ALL_MONTHS.forEach(k => {
+      const v = DB.months[k].data['Total'][f];
+      const td = document.createElement('td');
+      td.className = 'mcell' + (v>0?' hi':' zero');
+      if (v>0 && fk!=='mandays') {
+        const sp=document.createElement('span'); sp.className='drill-num'; sp.textContent=v;
+        sp.onclick = () => openDrawer('all', fk, labels[fi]+' — '+mLabel(k), k);
+        td.appendChild(sp);
+      } else { td.textContent=v; }
+      tr.appendChild(td);
+    });
+    const tv = gt[f];
+    const tdT = document.createElement('td'); tdT.className='mcell hi'; tdT.style.fontWeight='700';
+    if (tv>0 && fk!=='mandays') {
+      const sp=document.createElement('span'); sp.className='drill-num'; sp.textContent=tv;
+      sp.onclick = () => openDrawer('all', fk, labels[fi]+' — All', 'all');
+      tdT.appendChild(sp);
+    } else { tdT.textContent=tv; }
+    tr.appendChild(tdT);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody); wrap.innerHTML=''; wrap.appendChild(table);
+}
+
+/* TREND CHARTS */
+function renderTrendCharts() {
+  kill('t1','t2','t3');
+  const ml=ALL_MONTHS.map(mLabel);
+  const md=k=>DB.months[k].data['Total'];
+  const tO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,maxRotation:30}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
+  C.t1=new Chart(document.getElementById('trend1'),{type:'bar',data:{labels:ml,datasets:[
+    {label:'Total',data:ALL_MONTHS.map(k=>md(k).total),backgroundColor:'rgba(0,87,255,0.85)'},
+    {label:'Go live',data:ALL_MONTHS.map(k=>md(k).golive),backgroundColor:'#10B981'},
+    {label:'In progress',data:ALL_MONTHS.map(k=>md(k).inprogress),backgroundColor:'#F59E0B'},
+    {label:'UAT',data:ALL_MONTHS.map(k=>md(k).uat),backgroundColor:'#EF4444'},
+  ]},options:tO});
+  C.t2=new Chart(document.getElementById('trend2'),{type:'line',data:{labels:ml,datasets:[
+    {label:'Twixor',data:ALL_MONTHS.map(k=>md(k).twixor),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#6366F1'},
+    {label:'Inhouse',data:ALL_MONTHS.map(k=>md(k).inhouse),borderColor:'#8B9AB8',backgroundColor:'rgba(139,154,184,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#8B9AB8'},
+  ]},options:tO});
+  C.t3=new Chart(document.getElementById('trend3'),{type:'line',data:{labels:ml,datasets:[
+    {label:'Mandays',data:ALL_MONTHS.map(k=>md(k).mandays),borderColor:'#10B981',backgroundColor:'rgba(16,185,129,0.12)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#10B981'},
+  ]},options:tO});
+}
+
+/* MONTH SELECT */
+function selectMonth(key) {
+  currentMonthKey = key;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
+  document.getElementById('infoPill').textContent = getCount(key)+' of '+DB.totalRows+' rows — '+mLabel(key);
+  const data=getData(key);
+  renderKPI(data);
+  renderRegionTable(data);
+  renderRegionCharts(data);
+}
+
+/* TAB SWITCH */
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
+}
+
+/* STATUS PILL */
+function statusPill(s) {
+  if (!s) return '<span class="sp sp-other">—</span>';
+  const sl = s.toLowerCase().trim();
+  let cls = 'sp-other';
+  if (['live','hypercare','livebot'].includes(sl)) cls='sp-live';
+  else if (sl==='uat') cls='sp-uat';
+  else if (['in progress','development','in-progress'].includes(sl)) cls='sp-ip';
+  else if (sl.includes('yet to start')) cls='sp-yts';
+  else if (['pipeline','scoping','feasibility'].some(k=>sl.includes(k))) cls='sp-scoping';
+  return '<span class="sp '+cls+'">'+s+'</span>';
+}
+
+/* FILTER RAW */
+function filterRaw(region, field, monthKey) {
+  const C2={project:0,region:1,usecase:2,ba:3,start:4,due:5,status:6,progress:7,dev:8,mandays:9,ongoing:10};
+  const sl=s=>String(s||'').toLowerCase().trim();
+  return RAW.rows.filter(row => {
+    const r = sl(row[C2.region]);
+    if (region !== 'all' && r !== region.toLowerCase()) return false;
+    if (monthKey !== 'all') {
+      const [y,m] = monthKey.split('-');
+      const inD = d => { if(!d) return false; const dt=new Date(d); return !isNaN(dt)&&dt.getFullYear()===+y&&(dt.getMonth()+1)===+m; };
+      if (!inD(row[C2.start]) && !inD(row[C2.due])) return false;
+    }
+    if (field === 'all') return true;
+    const st = sl(row[C2.status]);
+    const dev = sl(row[C2.dev]);
+    if (field==='golive') return ['live','hypercare','end of life','livebot'].includes(st);
+    if (field==='inprogress') return ['in progress','development','in-progress'].includes(st);
+    if (field==='uat') return st==='uat';
+    if (field==='yts') return st.includes('yet to start');
+    if (field==='scoping') return ['pipeline','scoping','feasibility'].some(k=>st.includes(k));
+    if (field==='twixor') return dev.includes('twixor');
+    if (field==='inhouse') return dev.includes('inhouse')||dev.includes('ihouse');
+    return true;
+  });
+}
+
+/* OPEN DRAWER */
+function openDrawer(region, field, label, monthKey) {
+  drawerRows = filterRaw(region, field, monthKey || currentMonthKey);
+  document.getElementById('dTitle').textContent = label;
+  const mStr = monthKey && monthKey!=='all' ? ' · '+mLabel(monthKey) : '';
+  document.getElementById('dSub').textContent = drawerRows.length+' project'+(drawerRows.length!==1?'s':'')+mStr;
+  document.getElementById('dCount').textContent = 'Showing '+drawerRows.length+' project'+(drawerRows.length!==1?'s':'');
+  const CI={project:0,region:1,ba:3,start:4,due:5,status:6,progress:7,dev:8,mandays:9,ongoing:10,usecase:2};
+  const tbody = document.getElementById('dBody');
+  tbody.innerHTML = '';
+  drawerRows.forEach((row,i) => {
+    const tr = document.createElement('tr');
+    const pct = row[CI.progress] ? Math.round(parseFloat(row[CI.progress])*100)+'%' : '—';
+    const usecase = (row[CI.usecase]||'').substring(0,70) + ((row[CI.usecase]||'').length>70?'…':'');
+    tr.innerHTML =
+      '<td class="nw" style="color:var(--text-muted);font-size:11px">'+(i+1)+'</td>'+
+      '<td><strong>'+(row[CI.project]||'—')+'</strong>'+(usecase?'<div style="font-size:11px;color:var(--text-sec);margin-top:1px">'+usecase+'</div>':'')+'</td>'+
+      '<td class="nw"><span class="region-badge"><span class="rdot" style="background:'+(REGION_COLORS[row[CI.region]]||'#8B9AB8')+'"></span>'+row[CI.region]+'</span></td>'+
+      '<td class="nw">'+(row[CI.ba]||'—')+'</td>'+
+      '<td class="nw">'+statusPill(row[CI.status])+'</td>'+
+      '<td class="nw" style="font-size:12px">'+(row[CI.dev]||'—')+'</td>'+
+      '<td class="nw" style="font-size:12px;color:var(--text-sec)">'+(row[CI.start]||'—')+'</td>'+
+      '<td class="nw" style="font-size:12px;color:var(--text-sec)">'+(row[CI.due]||'—')+'</td>'+
+      '<td class="nw" style="font-size:12px">'+pct+'</td>'+
+      '<td class="nw" style="font-size:12px">'+(row[CI.mandays]||'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--text-sec);min-width:160px;white-space:normal">'+(row[CI.ongoing]||'—')+'</td>';
+    tbody.appendChild(tr);
+  });
+  document.getElementById('dOverlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+  document.getElementById('dOverlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
+
+/* DRAWER EXCEL EXPORT */
+function downloadDrawerExcel() {
+  if (!drawerRows.length) return;
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([RAW.cols, ...drawerRows]);
+  ws['!cols'] = [{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:14},{wch:30},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Filtered Projects');
+  XLSX.writeFile(wb, 'BA_Projects_'+document.getElementById('dTitle').textContent.replace(/[^a-z0-9]/gi,'_').slice(0,30)+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+/* FULL EXCEL DOWNLOAD */
+function downloadExcel() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([RAW.cols, ...RAW.rows]);
+  ws['!cols'] = [{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:14},{wch:30},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Project Report');
+  const sumRows = [
+    ['Region','Projects','In Progress','UAT','Go Live','Yet to Start','Scoping/Pipeline','Twixor','Inhouse','Mandays Saved'],
+    ...REGIONS.map(r=>[r,DB.all[r].total,DB.all[r].inprogress,DB.all[r].uat,DB.all[r].golive,DB.all[r].yts,DB.all[r].scoping,DB.all[r].twixor,DB.all[r].inhouse,DB.all[r].mandays]),
+    ['Total',DB.all.Total.total,DB.all.Total.inprogress,DB.all.Total.uat,DB.all.Total.golive,DB.all.Total.yts,DB.all.Total.scoping,DB.all.Total.twixor,DB.all.Total.inhouse,DB.all.Total.mandays]
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(sumRows);
+  XLSX.utils.book_append_sheet(wb, ws2, 'Analytics Summary');
+  XLSX.writeFile(wb, 'BA_Project_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+/* INIT */
+renderMonthTable();
+renderTrendCharts();
+selectMonth('all');
+
+</script>
+</body>
+</html>
