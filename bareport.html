@@ -1,87 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BA Team — Project Analytics</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg:#ffffff; --bg-sec:#f5f5f3; --bg-ter:#efede8;
-      --text:#1a1a18; --text-sec:#6b6b67;
-      --border:rgba(0,0,0,0.10); --border-md:rgba(0,0,0,0.18);
-      --radius-md:8px; --radius-lg:12px;
-      --green-bg:#eaf3de; --green-txt:#3b6d11; --green-bdr:#c0dd97;
-      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    }
-    @media (prefers-color-scheme:dark) {
-      :root {
-        --bg:#1c1c1a; --bg-sec:#252523; --bg-ter:#2e2e2b;
-        --text:#f0ede8; --text-sec:#9a9a94;
-        --border:rgba(255,255,255,0.10); --border-md:rgba(255,255,255,0.18);
-        --green-bg:#173404; --green-txt:#c0dd97; --green-bdr:#3b6d11;
-      }
-    }
-    body { background:var(--bg-ter); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; min-height:100vh; }
-    .page { max-width:960px; margin:0 auto; padding:2rem 1.25rem 4rem; }
-    .header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1.75rem; flex-wrap:wrap; gap:12px; }
-    .header h1 { font-size:20px; font-weight:600; color:var(--text); letter-spacing:-0.02em; }
-    .header p { font-size:13px; color:var(--text-sec); margin-top:3px; }
-    .badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:500; padding:4px 11px; border-radius:20px; background:var(--green-bg); color:var(--green-txt); border:0.5px solid var(--green-bdr); white-space:nowrap; }
-    .filter-bar { display:flex; align-items:center; gap:6px; margin-bottom:1.25rem; flex-wrap:wrap; }
-    .filter-label { font-size:12px; color:var(--text-sec); }
-    .chip { padding:5px 13px; border-radius:20px; font-size:12px; font-weight:500; cursor:pointer; border:0.5px solid var(--border-md); background:transparent; color:var(--text-sec); transition:all 0.15s; white-space:nowrap; }
-    .chip.active { background:var(--text); color:var(--bg); border-color:var(--text); }
-    .chip:hover:not(.active) { background:var(--bg-sec); }
-    .info-pill { font-size:11px; color:var(--text-sec); background:var(--bg-sec); border-radius:20px; padding:3px 10px; }
-    .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:10px; margin-bottom:1.5rem; }
-    .metric { background:var(--bg-sec); border-radius:var(--radius-md); padding:12px 14px; }
-    .metric-label { font-size:11px; color:var(--text-sec); margin-bottom:4px; }
-    .metric-value { font-size:24px; font-weight:600; color:var(--text); letter-spacing:-0.02em; }
-    .tabs { display:flex; border-bottom:0.5px solid var(--border); margin-bottom:1.25rem; }
-    .tab { padding:8px 18px; font-size:13px; cursor:pointer; border:none; background:transparent; color:var(--text-sec); border-bottom:2px solid transparent; margin-bottom:-0.5px; transition:all 0.15s; font-family:var(--font); }
-    .tab.active { color:var(--text); font-weight:500; border-bottom-color:var(--text); }
-    .tab:hover:not(.active) { color:var(--text); }
-    .tab-panel { display:none; }
-    .tab-panel.active { display:block; }
-    .section-title { font-size:12px; font-weight:500; color:var(--text-sec); margin-bottom:10px; letter-spacing:0.04em; text-transform:uppercase; }
-    .table-wrap { overflow-x:auto; margin-bottom:1.5rem; border-radius:var(--radius-lg); border:0.5px solid var(--border); }
-    table { width:100%; border-collapse:collapse; font-size:13px; background:var(--bg); }
-    th { text-align:left; padding:9px 12px; font-size:11px; font-weight:500; color:var(--text-sec); border-bottom:0.5px solid var(--border); white-space:nowrap; background:var(--bg-sec); }
-    th.month-hdr { background:var(--bg-sec); color:var(--text); font-size:11px; border-left:1.5px solid var(--border-md); text-align:center; padding:9px 10px; }
-    td { padding:9px 12px; border-bottom:0.5px solid var(--border); color:var(--text); white-space:nowrap; }
-    td.mcell { border-left:1.5px solid var(--border); text-align:center; font-size:12px; color:var(--text-sec); }
-    td.mcell.hi { color:var(--text); font-weight:500; }
-    tr.total-row td { font-weight:600; background:var(--bg-sec); }
-    tr:last-child td { border-bottom:none; }
-    tbody tr:hover td { background:var(--bg-sec); }
-    .chart-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:1.5rem; }
-    .chart-card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1rem 1.25rem; }
-    .legend { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; font-size:11px; color:var(--text-sec); }
-    .legend span { display:flex; align-items:center; }
-    .ldot { width:10px; height:10px; border-radius:2px; display:inline-block; margin-right:5px; flex-shrink:0; }
-    .footer { text-align:center; font-size:12px; color:var(--text-sec); margin-top:2.5rem; padding-top:1.5rem; border-top:0.5px solid var(--border); }
-    @media (max-width:600px) { .chart-row { grid-template-columns:1fr; } .page { padding:1.25rem 1rem 3rem; } }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BA Team Analytics — Karix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#07112A;
+  --navy-2:#0D1E3F;
+  --navy-3:#142754;
+  --blue:#0057FF;
+  --blue-hover:#0047D4;
+  --blue-light:rgba(0,87,255,0.12);
+  --blue-border:rgba(0,87,255,0.3);
+  --white:#FFFFFF;
+  --off-white:#F4F6FB;
+  --card:#FFFFFF;
+  --text:#0D1E3F;
+  --text-sec:#5B6B8A;
+  --text-muted:#8A9AB8;
+  --border:rgba(13,30,63,0.10);
+  --border-strong:rgba(13,30,63,0.18);
+  --radius:10px;
+  --radius-lg:14px;
+  --shadow:0 1px 4px rgba(7,17,42,0.08),0 4px 16px rgba(7,17,42,0.06);
+  --shadow-sm:0 1px 3px rgba(7,17,42,0.07);
+}
+body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text);font-size:14px;line-height:1.55;min-height:100vh;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--navy);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.25);}
+.topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-mark{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;letter-spacing:-0.5px;}
+.logo-text{font-weight:700;font-size:16px;color:#fff;letter-spacing:-0.02em;}
+.logo-sub{font-size:11px;color:rgba(255,255,255,0.45);font-weight:400;margin-left:2px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-pill{font-size:11px;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.08);border:0.5px solid rgba(255,255,255,0.15);border-radius:20px;padding:4px 11px;display:flex;align-items:center;gap:5px;}
+.topbar-pill i{font-size:13px;color:#4ADE80;}
+.dl-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s,transform 0.1s;font-family:'Inter',sans-serif;}
+.dl-btn:hover{background:var(--blue-hover);}
+.dl-btn:active{transform:scale(0.97);}
+.dl-btn i{font-size:15px;}
+
+/* ── PAGE ── */
+.page{max-width:1040px;margin:0 auto;padding:1.75rem 1.5rem 4rem;}
+
+/* ── PAGE HEADER ── */
+.page-header{margin-bottom:1.5rem;}
+.page-header h1{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.03em;}
+.page-header p{font-size:13px;color:var(--text-sec);margin-top:4px;}
+.header-row{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;align-items:center;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.filter-label{font-size:12px;font-weight:500;color:var(--text-sec);margin-right:2px;}
+.chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-strong);background:var(--white);color:var(--text-sec);transition:all 0.15s;white-space:nowrap;font-family:'Inter',sans-serif;box-shadow:var(--shadow-sm);}
+.chip:hover:not(.active){background:var(--blue-light);border-color:var(--blue-border);color:var(--blue);}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(0,87,255,0.3);}
+.info-pill{font-size:11px;color:var(--text-muted);background:var(--off-white);border:1px solid var(--border);border-radius:20px;padding:4px 11px;}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin-bottom:1.5rem;}
+.kpi{background:var(--card);border-radius:var(--radius);padding:14px 16px;border:1px solid var(--border);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--blue);border-radius:3px 0 0 3px;}
+.kpi-label{font-size:11px;font-weight:500;color:var(--text-sec);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em;}
+.kpi-value{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-0.03em;line-height:1.1;}
+.kpi.accent .kpi-value{color:var(--blue);}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:2px;margin-bottom:1.25rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;box-shadow:var(--shadow-sm);}
+.tab{padding:7px 18px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-sec);border-radius:7px;transition:all 0.15s;font-family:'Inter',sans-serif;}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,87,255,0.25);}
+.tab:hover:not(.active){background:var(--off-white);color:var(--text);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:11px;font-weight:600;color:var(--text-sec);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:6px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin-bottom:1.5rem;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);}
+thead{position:sticky;top:0;z-index:2;}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-sec);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--off-white);text-transform:uppercase;letter-spacing:0.04em;}
+th.num{text-align:center;}
+th.mhdr{background:var(--navy);color:rgba(255,255,255,0.7);font-size:11px;border-left:2px solid rgba(255,255,255,0.1);text-align:center;padding:10px 12px;}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap;}
+td.num{text-align:center;}
+td.mcell{border-left:2px solid var(--border);text-align:center;font-size:12px;color:var(--text-muted);}
+td.mcell.hi{color:var(--text);font-weight:600;}
+td.mcell.zero{color:var(--border-strong);}
+tr.total-row td{font-weight:700;background:linear-gradient(90deg,rgba(0,87,255,0.05),rgba(0,87,255,0.02));}
+tr.total-row td.mcell{background:transparent;}
+tbody tr:hover td{background:rgba(0,87,255,0.03);}
+tr:last-child td{border-bottom:none;}
+.region-badge{display:inline-flex;align-items:center;gap:5px;font-weight:600;}
+.rdot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+
+/* ── CHART GRID ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;box-shadow:var(--shadow-sm);}
+.chart-card .section-title{margin-bottom:10px;}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:var(--text-sec);}
+.legend span{display:flex;align-items:center;gap:5px;font-weight:500;}
+.ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* ── FOOTER ── */
+.footer{text-align:center;font-size:12px;color:var(--text-muted);margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;}
+.footer img{height:18px;opacity:0.5;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .chart-grid{grid-template-columns:1fr;}
+  .topbar{padding:0 1rem;}
+  .page{padding:1.25rem 1rem 3rem;}
+  .kpi-value{font-size:22px;}
+}
+</style>
 </head>
 <body>
-<div class="page">
-  <div class="header">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="topbar-logo" href="https://www.karix.com" target="_blank">
+    <div class="logo-mark">K</div>
     <div>
-      <h1>BA team — project analytics</h1>
-      <p>135 projects &nbsp;·&nbsp; Apr 2026 onwards &nbsp;·&nbsp; Last updated: 26 May 2026</p>
+      <span class="logo-text">Karix</span>
+      <span class="logo-sub">a Tanla company</span>
     </div>
-    <span class="badge"><i class="ti ti-circle-check"></i> Live data</span>
+  </a>
+  <div class="topbar-right">
+    <span class="topbar-pill"><i class="ti ti-circle-check"></i> Live · 26 May 2026</span>
+    <button class="dl-btn" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="header-row">
+    <div class="page-header">
+      <h1>BA Team — Project Analytics</h1>
+      <p>135 projects &nbsp;·&nbsp; Apr 2026 onwards (start or due date) &nbsp;·&nbsp; Last updated 26 May 2026</p>
+    </div>
   </div>
 
+  <!-- MONTH FILTER -->
   <div class="filter-bar">
     <span class="filter-label">Month:</span>
     <button class="chip active" data-key="all"     onclick="selectMonth('all')">All</button>
-    <button class="chip" data-key="2026-01" onclick="selectMonth('2026-01')">Jan 2026</button>
-    <button class="chip" data-key="2026-02" onclick="selectMonth('2026-02')">Feb 2026</button>
-    <button class="chip" data-key="2026-03" onclick="selectMonth('2026-03')">Mar 2026</button>
     <button class="chip" data-key="2026-04" onclick="selectMonth('2026-04')">Apr 2026</button>
     <button class="chip" data-key="2026-05" onclick="selectMonth('2026-05')">May 2026</button>
     <button class="chip" data-key="2026-06" onclick="selectMonth('2026-06')">Jun 2026</button>
@@ -89,180 +163,263 @@
     <span class="info-pill" id="info-pill"></span>
   </div>
 
-  <div class="summary-grid" id="summary-grid"></div>
+  <!-- KPI GRID -->
+  <div class="kpi-grid" id="kpi-grid"></div>
 
-  <div class="tabs">
+  <!-- TABS -->
+  <div class="tab-bar">
     <button class="tab active" data-tab="region"  onclick="switchTab('region')">Region breakdown</button>
     <button class="tab"        data-tab="monthly" onclick="switchTab('monthly')">Month-wise analytics</button>
   </div>
 
+  <!-- TAB 1: REGION -->
   <div class="tab-panel active" id="panel-region">
     <p class="section-title">Region breakdown</p>
     <div class="table-wrap" id="region-table-wrap"></div>
-    <div class="chart-row">
+    <div class="chart-grid">
       <div class="chart-card">
         <p class="section-title">Projects by region</p>
         <div class="legend">
-          <span><span class="ldot" style="background:#378ADD"></span>Total</span>
-          <span><span class="ldot" style="background:#1D9E75"></span>Go live</span>
-          <span><span class="ldot" style="background:#EF9F27"></span>In progress</span>
-          <span><span class="ldot" style="background:#E24B4A"></span>UAT</span>
+          <span><span class="ldot" style="background:#0057FF"></span>Total</span>
+          <span><span class="ldot" style="background:#10B981"></span>Go live</span>
+          <span><span class="ldot" style="background:#F59E0B"></span>In progress</span>
+          <span><span class="ldot" style="background:#EF4444"></span>UAT</span>
         </div>
         <div style="position:relative;width:100%;height:220px;"><canvas id="chart1"></canvas></div>
       </div>
       <div class="chart-card">
         <p class="section-title">Development type by region</p>
         <div class="legend">
-          <span><span class="ldot" style="background:#534AB7"></span>Twixor</span>
-          <span><span class="ldot" style="background:#888780"></span>Inhouse</span>
+          <span><span class="ldot" style="background:#6366F1"></span>Twixor</span>
+          <span><span class="ldot" style="background:#8B9AB8"></span>Inhouse</span>
         </div>
         <div style="position:relative;width:100%;height:220px;"><canvas id="chart2"></canvas></div>
       </div>
     </div>
-    <div class="chart-row">
+    <div class="chart-grid">
       <div class="chart-card">
         <p class="section-title">Overall status mix</p>
-        <div style="position:relative;width:100%;height:220px;"><canvas id="chart3"></canvas></div>
+        <div style="position:relative;width:100%;height:240px;"><canvas id="chart3"></canvas></div>
       </div>
       <div class="chart-card">
         <p class="section-title">Mandays saved by region</p>
-        <div style="position:relative;width:100%;height:220px;"><canvas id="chart4"></canvas></div>
+        <div style="position:relative;width:100%;height:240px;"><canvas id="chart4"></canvas></div>
       </div>
     </div>
   </div>
 
+  <!-- TAB 2: MONTHLY -->
   <div class="tab-panel" id="panel-monthly">
     <p class="section-title">Month-wise summary</p>
     <div class="table-wrap" id="month-table-wrap"></div>
-    <div class="chart-row" style="margin-top:1rem">
+    <div class="chart-grid" style="margin-top:0.5rem">
       <div class="chart-card">
         <p class="section-title">Project counts by month</p>
         <div class="legend">
-          <span><span class="ldot" style="background:#378ADD"></span>Total</span>
-          <span><span class="ldot" style="background:#1D9E75"></span>Go live</span>
-          <span><span class="ldot" style="background:#EF9F27"></span>In progress</span>
-          <span><span class="ldot" style="background:#E24B4A"></span>UAT</span>
+          <span><span class="ldot" style="background:#0057FF"></span>Total</span>
+          <span><span class="ldot" style="background:#10B981"></span>Go live</span>
+          <span><span class="ldot" style="background:#F59E0B"></span>In progress</span>
+          <span><span class="ldot" style="background:#EF4444"></span>UAT</span>
         </div>
-        <div style="position:relative;width:100%;height:240px;"><canvas id="trend1"></canvas></div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="trend1"></canvas></div>
       </div>
       <div class="chart-card">
         <p class="section-title">Twixor vs Inhouse trend</p>
         <div class="legend">
-          <span><span class="ldot" style="background:#534AB7"></span>Twixor</span>
-          <span><span class="ldot" style="background:#888780"></span>Inhouse</span>
+          <span><span class="ldot" style="background:#6366F1"></span>Twixor</span>
+          <span><span class="ldot" style="background:#8B9AB8"></span>Inhouse</span>
         </div>
-        <div style="position:relative;width:100%;height:240px;"><canvas id="trend2"></canvas></div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="trend2"></canvas></div>
       </div>
     </div>
     <div class="chart-card" style="margin-bottom:1.5rem">
       <p class="section-title">Mandays saved trend</p>
-      <div class="legend"><span><span class="ldot" style="background:#1D9E75"></span>Mandays saved</span></div>
+      <div class="legend"><span><span class="ldot" style="background:#10B981"></span>Mandays saved</span></div>
       <div style="position:relative;width:100%;height:200px;"><canvas id="trend3"></canvas></div>
     </div>
   </div>
 
-  <div class="footer">BA Team Project Analytics &nbsp;·&nbsp; Apr 2026 onwards &nbsp;·&nbsp; Data as of 26 May 2026</div>
+  <div class="footer">
+    <span>© 2026 Karix — a Tanla Platforms company</span>
+    <span>·</span>
+    <span>BA Team Project Analytics</span>
+    <span>·</span>
+    <span>Data filtered: Apr 2026 onwards</span>
+  </div>
 </div>
 
 <script>
-const DB = {"lastUpdated":"26 May 2026","totalRows":135,"filterNote":"Projects with start or due date on or after 1 Apr 2026","all":{"North":{"total":52,"inprogress":15,"uat":5,"golive":17,"yts":11,"scoping":4,"twixor":32,"inhouse":15,"mandays":146},"South":{"total":44,"inprogress":12,"uat":6,"golive":13,"yts":1,"scoping":11,"twixor":18,"inhouse":17,"mandays":64},"West":{"total":31,"inprogress":2,"uat":3,"golive":14,"yts":0,"scoping":12,"twixor":1,"inhouse":15,"mandays":0},"UAE":{"total":8,"inprogress":0,"uat":3,"golive":4,"yts":0,"scoping":1,"twixor":5,"inhouse":2,"mandays":0},"Total":{"total":135,"inprogress":29,"uat":17,"golive":48,"yts":12,"scoping":28,"twixor":56,"inhouse":49,"mandays":210}},"months":{"2026-01":{"rowCount":3,"data":{"North":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":2,"inprogress":0,"uat":0,"golive":2,"yts":0,"scoping":0,"twixor":0,"inhouse":1,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":3,"inprogress":0,"uat":0,"golive":3,"yts":0,"scoping":0,"twixor":1,"inhouse":1,"mandays":0}}},"2026-02":{"rowCount":4,"data":{"North":{"total":1,"inprogress":0,"uat":1,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"West":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"UAE":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"Total":{"total":4,"inprogress":0,"uat":1,"golive":3,"yts":0,"scoping":0,"twixor":4,"inhouse":0,"mandays":0}}},"2026-03":{"rowCount":15,"data":{"North":{"total":8,"inprogress":3,"uat":0,"golive":5,"yts":0,"scoping":0,"twixor":5,"inhouse":3,"mandays":58},"South":{"total":5,"inprogress":0,"uat":1,"golive":4,"yts":0,"scoping":0,"twixor":1,"inhouse":4,"mandays":15},"West":{"total":2,"inprogress":0,"uat":0,"golive":2,"yts":0,"scoping":0,"twixor":0,"inhouse":2,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":15,"inprogress":3,"uat":1,"golive":11,"yts":0,"scoping":0,"twixor":6,"inhouse":9,"mandays":73}}},"2026-04":{"rowCount":62,"data":{"North":{"total":28,"inprogress":6,"uat":2,"golive":11,"yts":7,"scoping":2,"twixor":16,"inhouse":9,"mandays":108},"South":{"total":16,"inprogress":3,"uat":3,"golive":4,"yts":0,"scoping":6,"twixor":5,"inhouse":5,"mandays":7},"West":{"total":14,"inprogress":0,"uat":1,"golive":9,"yts":0,"scoping":4,"twixor":0,"inhouse":8,"mandays":0},"UAE":{"total":4,"inprogress":0,"uat":0,"golive":4,"yts":0,"scoping":0,"twixor":3,"inhouse":1,"mandays":0},"Total":{"total":62,"inprogress":9,"uat":6,"golive":28,"yts":7,"scoping":12,"twixor":24,"inhouse":23,"mandays":115}}},"2026-05":{"rowCount":78,"data":{"North":{"total":25,"inprogress":9,"uat":3,"golive":7,"yts":4,"scoping":2,"twixor":16,"inhouse":7,"mandays":43},"South":{"total":32,"inprogress":9,"uat":5,"golive":11,"yts":1,"scoping":5,"twixor":17,"inhouse":12,"mandays":57},"West":{"total":17,"inprogress":2,"uat":2,"golive":5,"yts":0,"scoping":8,"twixor":1,"inhouse":8,"mandays":0},"UAE":{"total":4,"inprogress":0,"uat":3,"golive":0,"yts":0,"scoping":1,"twixor":2,"inhouse":1,"mandays":0},"Total":{"total":78,"inprogress":20,"uat":13,"golive":23,"yts":5,"scoping":16,"twixor":36,"inhouse":28,"mandays":100}}},"2026-06":{"rowCount":1,"data":{"North":{"total":1,"inprogress":1,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":1,"inprogress":1,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}},"2026-12":{"rowCount":2,"data":{"North":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"Total":{"total":2,"inprogress":0,"uat":0,"golive":2,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}}}};
+/* ═══════════════════════════════════════════════
+   HARDCODED ANALYTICS DATA  (replace on refresh)
+═══════════════════════════════════════════════ */
+const DB = {"lastUpdated":"26 May 2026","totalRows":135,"all":{"North":{"total":52,"inprogress":15,"uat":5,"golive":17,"yts":11,"scoping":4,"twixor":32,"inhouse":15,"mandays":146},"South":{"total":44,"inprogress":12,"uat":6,"golive":13,"yts":1,"scoping":11,"twixor":18,"inhouse":17,"mandays":64},"West":{"total":31,"inprogress":2,"uat":3,"golive":14,"yts":0,"scoping":12,"twixor":1,"inhouse":15,"mandays":0},"UAE":{"total":8,"inprogress":0,"uat":3,"golive":4,"yts":0,"scoping":1,"twixor":5,"inhouse":2,"mandays":0},"Total":{"total":135,"inprogress":29,"uat":17,"golive":48,"yts":12,"scoping":28,"twixor":56,"inhouse":49,"mandays":210}},"months":{"2026-04":{"rowCount":62,"data":{"North":{"total":28,"inprogress":6,"uat":2,"golive":11,"yts":7,"scoping":2,"twixor":16,"inhouse":9,"mandays":108},"South":{"total":16,"inprogress":3,"uat":3,"golive":4,"yts":0,"scoping":6,"twixor":5,"inhouse":5,"mandays":7},"West":{"total":14,"inprogress":0,"uat":1,"golive":9,"yts":0,"scoping":4,"twixor":0,"inhouse":8,"mandays":0},"UAE":{"total":4,"inprogress":0,"uat":0,"golive":4,"yts":0,"scoping":0,"twixor":3,"inhouse":1,"mandays":0},"Total":{"total":62,"inprogress":9,"uat":6,"golive":28,"yts":7,"scoping":12,"twixor":24,"inhouse":23,"mandays":115}}},"2026-05":{"rowCount":78,"data":{"North":{"total":25,"inprogress":9,"uat":3,"golive":7,"yts":4,"scoping":2,"twixor":16,"inhouse":7,"mandays":43},"South":{"total":32,"inprogress":9,"uat":5,"golive":11,"yts":1,"scoping":5,"twixor":17,"inhouse":12,"mandays":57},"West":{"total":17,"inprogress":2,"uat":2,"golive":5,"yts":0,"scoping":8,"twixor":1,"inhouse":8,"mandays":0},"UAE":{"total":4,"inprogress":0,"uat":3,"golive":0,"yts":0,"scoping":1,"twixor":2,"inhouse":1,"mandays":0},"Total":{"total":78,"inprogress":20,"uat":13,"golive":23,"yts":5,"scoping":16,"twixor":36,"inhouse":28,"mandays":100}}},"2026-06":{"rowCount":1,"data":{"North":{"total":1,"inprogress":1,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":1,"inprogress":1,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}},"2026-12":{"rowCount":2,"data":{"North":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"Total":{"total":2,"inprogress":0,"uat":0,"golive":2,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}}}};
 
+/* ═══════════════════════════════════════════════
+   RAW DATA  (replace on refresh)
+═══════════════════════════════════════════════ */
+const RAW = {"cols":["Project","Region","Usecase","BA","Start Date","Due Date / ETA","Status","Progress %","Development","Mandays Saved","Ongoing Activities","Comments/Description"],"rows":[["Vmart","North","Journeys Replication","Somya","2026-01-13","2026-04-22","Live","1.0","Twixor","","",""],["Hindware","North","Re: City & State Not Visible in Dealer Response Output","Somya","2026-02-23","2026-04-22","UAT","0.9","Twixor","","UAT Signoff pending",""],["MCA (PMIS)","North","Ministry of Corporate Affairs (MCA) || VF Waba Chatbot || PM handover","Somya","2026-03-02","2026-04-01","Live","1.0","Inhouse","24 Days","",""],["Umang","North","Re: WhatsApp Service Go-Live","Somya","2026-03-02","2026-04-30","Live","1.0","Inhouse","4 days","",""],["KSITM","South","Kerala State Electric Board Department, Kfone","Somya","2026-04-21","","In Progress","0.5","Inhouse","","Under Development",""],["DGG (ANTF)","North","ANTF (WA Bot and Ticket panel)","Somya","2026-03-09","2026-05-09","Live","1.0","Twixor","","",""],["DGG (ACAL)","North","ACAL (WA Bot and Ticket panel)","Somya","2026-03-12","2026-05-10","Live","1.0","Twixor","","",""],["DGG (Egov)","North","Egov Bot","Somya","2026-03-19","2026-05-06","Live","1.0","Inhouse","30 day","",""],["DGG (Invest Punjab)","North","Invest Pujab WA Bot","Somya","2026-04-16","2026-05-06","Live","1.0","Inhouse","5 day","",""],["Myntra","North","Carousal based RCS journey for a campaign","Somya","2026-04-07","2026-04-24","Live","1.0","Inhouse","6 day","",""],["Vmart/Unlimited","North","Changes in Hi Flow","Somya","2026-04-15","2026-04-30","UAT","0.8","Twixor","","Development is in progress",""],["Flipkart","South","NPS Journey","Somya","2026-04-06","","UAT","0.8","","","Commercial Approval pending",""],["Nastasia","South","Effort Estimation: Nestasia Bot","Somya","2026-04-13","","Pipeline","0.0","","","Commercial Approval pending",""],["DEI","South","DEI Global Bot Effort Estimation","Somya","2026-04-13","","Pipeline","0.0","","","Commercial Approval pending",""],["Olam Agri","South","BA Allocation Request : Effort Estimation - Olam agri","Somya","2026-04-13","","Pipeline","0.0","","","Commercial Approval pending",""],["Jewel","South","Jewel testimonial","Somya","2026-04-15","","In Progress","0.4","","","Have sent the script to client for recording",""],["Funblock","South","Birthday Party Block","Somya","2026-04-21","","Pipeline","0.0","","","Commercial Approval pending",""],["Libas","North","Store Locator","Somya","2026-04-24","2026-04-24","Live","","Twixor","","Got script changes done from twixor",""],["Aham Marketing","South","Form to be triggered over BIM and responses to be captured over webhook","Somya","2026-04-27","","Pipeline","0.1","Inhouse","","Client call scheduled with megha and ranjitha to help understanding the requirement",""],["Libas","North","Case Study approval","Somya","2026-04-28","","In Progress","0.5","","","Need to share it with client post review",""],["Prefr","South","Optout functionality feasibility","Somya","2026-04-28","","In Progress","0.1","Twixor","","Development is in progress",""],["Licious","South","Effort Estimation: Licious Offer Awareness Bot","Somya","2026-04-29","","Pipeline","0.1","Inhouse","3 day","Commercial Approval pending",""],["KSITM","South","KSITM - Whatsapp Service Onboarding","Somya","2026-05-05","","Pipeline","0.1","Ihouse","","Forms to be created for new service",""],["Flipkart","South","NPS CTWA ","Somya","2026-05-05","","UAT","0.8","Inhouse","8 day","Dev will be started this week",""],["Zepto","South","Auto response to be configured","Somya","2026-05-06","","Live","1.0","Twixor","","",""],["Myntra","South","Carousal journey","Somya","2026-05-07","","Live","1.0","Inhouse","2 day","",""],["ANTF","North","Post Prod bugs rectification","Somya","2026-05-11","","In Progress","0.5","Twixor","","",""],["ACAL","North","Post Prod bugs rectification","Somya","2026-05-11","","In Progress","0.4","Twixor","","",""],["KSITM","South","Civil services","Somya","2026-05-05","","Pipeline","0.1","Twixor","","Dependency over Thendral to give kickoff call to twixor post which we will receive API endpoints for forms",""],["DGG Punjab Gov","North","Auto templates config over Egov WABA","Somya","2026-05-13","","In Progress","0.1","","","RCM API shared with client",""],["KSITM","North","KSITM - Higher Secondary Results WhatsApp Service","Somya","2026-05-19","","In Progress","0.4","Twixor","","Form shared",""],["Orange Health","South","Orange Health Labs: CTWA Bot Effort","Somya","2026-05-25","","Pipeline","0.1","","","",""],["Myntra","South","WA AI for EORS","Somya","2026-05-25","","Pipeline","0.1","","","",""],["Umang","North","Umang- Webhook Configuration","Somya","2026-05-25","","Pipeline","0.1","","","",""],["Pinelabs-2 (Bharat Card Activation)","South","Activate Bharat crad and show a pre-loaded amout","Megha","2026-03-03","2026-05-12","Live","1.0","Inhouse","8 Days ","Go live done.",""],["Malabar UK","South","Share a form to collect basic user details and then connect it to a live agent","Megha","2026-04-22","2026-05-18","UAT","0.9","Twixor","0 Days ","Bot dropped for UAT on 25-05-2026",""],["Flipkart-RCS","South","Feedback WA journey of NPS","Megha","2026-05-05","2026-05-18","Live","1.0","Inhouse","10 Days","Go live ",""],["Flipkart-WA","South","Feedback WA journey of NPS","Megha","2026-05-05","2026-05-18","Live","1.0","Inhouse","10 Days","Go Live",""],["Flipkart- CTWA","South","Flipkart wholesale journey","Megha","2026-05-11","2026-05-21","UAT","0.0","Inhouse","8 Days","English Language on UAT",""],["Myntra- WA","South","Mothers day crousel cards journey","Megha","2026-05-08","2026-05-08","Live","1.0","Inhouse","2 Days ","Live Bot",""],["Unlimited","North","V-Mart RCS bot replication","Megha","2026-05-13","2026-05-14","Live","1.0","Inhouse","0 Days ","Project was already built on RCS so nothing from developemnt side is required.",""],["Furlenco","North","QR reply auto message journey","Megha","2026-05-19","2026-05-21","UAT","0.9","Inhouse","1 Day","Got UAT sign off. Go live planned for 27th May. Awaiting for cURL and dashboard (Production )",""],["Licious-Optin & Optout","South","Opt in and Opt out journey","Megha","2026-05-18","2026-05-27","In Progress","0.0","Inhouse","1 Day","Development in progress",""],["Licious-Know more journey","South","Know more QR button integration with crousels","Megha","2026-05-25","2026-05-04","In Progress","0.0","Inhouse","3 Days","Development to get started by 27th May",""],["Housing","North","Intrested + property details via Moengage platform push","Ankit/Himanshu","2026-04-15","","Yet to Start(Assigned)","0.2","Twixor","0","Mo engage needs to create the campaign connector then karix can start the chatbot","Housing wants to send the Campaign via ME to capture user intrset and create lead and show next property but , ME is unable to pass the QR in BIM as a work around they are configuring Campiagn connector to pass the add on data"],["Setu BBPS","North","Intent based upi link","Ankit","2026-04-15","","Live","1.0","Inhouse","","Go live done",""],["NICL CSAT and NPS","North","CSAT plus nps integraton with cyfuture CRM","Ankit","2026-04-12","","Live","0.9","Twixor","5","UAT done\n","Waiting for Go live approval this will be done post demo bewteen cyfuture crm and nic;\n25-05: waiting for Prod credentials."],["Spice jet","North","Complete aviation use case like modifying seat + booking meals etc","Ankit","2026-04-16","","In Progress","0.3","Twixor","-34","Hold due to sales confirmation\n25-05:- BOM specification shared with spice jet","Waiting for Spicejet to share the aws services"],["Isckon","North","Catalog journey","Ankit","2026-04-17","","Pipeline","0.2","Twixor","","",""],["Berger AI","North","Voice AI + Whatsapp calling","","2026-04-17","","Yet to Start(Assigned)","0.2","Inhouse","","",""],["Hindware Journey","North","Catalog plus brand film journey","Ankit","2026-04-20","","Live","0.8","Inhouse","2","","Went live on 01/05/2026"],["DHBVN","North","UPI link webview","Ankit","2026-04-22","","Pipeline","0.1","Twixor","","",""],["Zillion Redemption","North","Product recommendation + Payment inetgration","Ankit","2026-04-24","","In Progress","0.4","Twixor","21","",""],["Berger Certificate ","North","","Ankit","2026-04-28","","Live","1.0","Inhouse","7","Bot went live on 04/05/26","Bot development waived off"],["Vouchagram ","North","","Ankit","2026-04-30","","In progress","0.3","Twixor","","",""],["PB Partners","North","","","2026-05-04","","In Progress","0.85","Inhouse","7","CTWA credentials awaiting",""],["BharatPe - Credit Nirvana","North","Settelment agreement + 48 hour nudge+ webhook handover","Ankit","2026-05-07","","Hypercare","1.0","Twixor","","",""],["Rainbow LSQ Integration","North","Send all bot events to LSQ CRM","Ankit","2026-05-19","","UAT","0.8","Twixor","","",""],["Yes Bank","North","It represents how a customer increases their credit limit via a guided WhatsApp interaction using APIs and OTP verification. ","Himanshu","2026-04-13","2026-04-30","In Progress","1.0","Twixor","--","Progress is paused","Awaiting customer reference ID and template from client side.\nIncorrect WABA number was shared with us, correct WABA number is pending from client side."],["Bandhan Bank","North","The user can access and manage credit card services directly through WhatsApp, including viewing card summary and recent transactions, generating PIN via Cards 360, managing usage and limits, blocking and reissuing cards, accessing statements, converting transactions into EMI, and activating the card seamlessly within the platform.","Himanshu ","2026-04-15","2026-06-09","In Progress","0.4","Twixor","--","Credit Card Jouney - Development In Progress\n\nGenerate Pin - Completed\nCredit Card Summary - Completed(Some fields need to be Cross checked from Client side)\nLast 5 transaction - Completed","Credit Card Jouney - Development In Progress\n\nGenerate Pin - Completed\nCredit Card Summary - Completed(Some fields need to be Cross checked from Client side)\nLast 5 transaction - Completed"],["TrueBalance","North","User can access a pre-approved loan via WhatsApp by confirming intent, selecting loan purpose and amount, and getting redirected to a personalized loan application flow for quick processing.","Himanshu","2026-04-24","2026-04-30","Live","1.0","Inhouse","--","--","--"],["Aditya Birla ","North","Users can use WhatsApp to create, track, and escalate IT support tickets through a guided chatbot, with real-time updates and seamless backend integration. ","Himanshu","2026-04-24","","Yet to Start(Assigned)","0.0","Twixor","--","Efforts shared with Pre-Sales, Pre-Sales to shared effort with client","Development Yet to be begin"],["Sum NXT","North","Users can subscribe via WhatsApp by selecting a plan and completing payment through UPI, with real-time confirmation of transaction status. ","Himanshu","2026-04-24","","Yet to Start(Assigned)","0.0","Twixor","--","Efforts shared with Pre-Sales, Pre-Sales to shared effort with client","Development Yet to be begin"],["Tagg Teleservices","North","The user can use the WhatsApp chatbot to track shipments, raise enquiries, get support, and upload POD, with validated inputs, real-time status updates and notifications, and seamless escalation to a human agent if required. ","Himanshu","2026-04-28","","Yet to Start(Assigned)","0.0","Twixor","--","Efforts shared with Pre-Sales, Pre-Sales to shared effort with client","Development Yet to be begin"],["Pradhan Mantri Aawas Yojna","North","Enables the Ministry of Housing and Urban Affairs to notify PMAY-U 2.0 beneficiaries via WhatsApp about installment disbursement and capture confirmation of fund receipt through interactive responses, with automated follow-ups for non-responses. ","Himanshu","2026-05-05","2026-05-08","Live","1.0","Twixor","--","UAT Sign Off received and Prod notice issues to Twixor","Twixor to begin the production movement"],["Eresolution","North","To design and deploy a WhatsApp-based chatbot solution for Eresolution that captures and qualifies users seeking loan assistance, EMI support, debt resolution, loan settlement, or new loan eligibility through a structured conversational flow initiated via Click-to-WhatsApp Ads (CTWA). ","Himanshu","2026-05-08","","Yet to Start(Assigned)","0.0","Twixor","--","Pre-Sales need to share the efforts with the client","Pre-Sales need to share the efforts with the client"],["Ayushman Bharat Digital Mission","North","The ABDM WhatsApp Chatbot is a conversational platform that enables citizens and healthcare providers to access ABDM services such as ABHA creation/download, HPR/HFR registration guidance, ORS appointment booking, PHR access, doctor discovery, and support assistance through WhatsApp.","Himanshu","2026-05-11","","UAT","1.0","Inhouse","--","UAT Enhancements in progress","UAT Enhancements in progress"],["Bhatia Cloth House_Optculture","North","An AI-powered WhatsApp FAQ and Live Agent Support solution for Bhatia Cloth House that uses NLP-based intent recognition to understand customer queries in Hindi, English, and Hinglish, provide automated FAQ responses from a predefined knowledge base, and seamlessly transfer conversations to live agents for complex or unresolved queries.","Himanshu","2026-05-25","","Yet to Start(Assigned)","0.0","Twixor","--","Shared with twixor - Updated FAQs Document awaited from clients end","Awaiting updated FAQ Doc from Client"],["FabIndia","North","The Fabindia WhatsApp chatbot enables customers to verify and update their profile details through a business-initiated conversational flow on WhatsApp, including real-time data validation, OTP-based verification, and backend synchronization with Xeno systems. ","Himanshu","2026-05-11","","Yet to Start(Assigned)","0.0","Inhouse","--","Development to be begin","Development to be begin"],["Lenskart ","North","Dashboard Creation","Himanshu","2026-05-11","","In Progress","0.2","Twixor","--","S3 Credentials and Configuration in progress","S3 Credentials and Configuration in progress"],["Housing","North","--","Himanshu","2026-04-16","","Yet to Start(Assigned)","0.0","","--","--","The project is yet to begin."],["OneMoney","North","--","Himanshu","2026-04-08","","Yet to Start(Assigned)","0.0","","--","--","The project is yet to begin."],["Home R Us (Lals)","UAE","Button payload journey for delivery confirmation","Aniruddha","2026-12-25","2026-04-28","Live","100.0","Twixor","","","Client slow"],["Creditvidya","West","Reporting dashbord 2FA","Aniruddha","2026-12-25","","End of life","0.0","","","","OTP WIP. On hold for too long"],["Truemeds PDP","West","Abandoned cart on RCS","Aniruddha","2026-01-28","2026-04-15","Live","100.0","Inhouse Dev","","",""],["Torrent Diagnostics","West","Live agent flow","Aniruddha","2026-01-21","2026-04-10","Live","100.0","","","","WABA pending"],["Salik","UAE","Gen AI FAQs POC","Aniruddha","2026-02-20","2026-04-01","Live","100.0","Twixor","","",""],["Prefr","West","POC for Voice","Aniruddha","2026-03-17","2026-04-20","Live","100.0","Inhouse Dev","","",""],["TVS","South","POC for commercial vehicle loan voice","Aniruddha","2026-03-23","2026-04-17","Live","100.0","Inhouse Dev","2 Days ","",""],["Hero Fincorp","West","Live agent","Aniruddha","2026-03-25","2026-04-01","Live","100.0","Inhouse Dev","","",""],["Yes Bank","West","Lead Capture via WhatsApp /SFTP","Aniruddha","2026-04-06","","Scoping","10.0","","","","Efforts going to change. Client requesting API instead of SFTP as well as OTP validation"],["UAE Space Agency","UAE","AI chatbot RFP via SImplai","Aniruddha","2026-04-02","","End of life","10.0","Twixor","","","This was just RFI. Next step could be RFP in few months"],["Mondelez","West","Employee absenteeism journey","Aniruddha","2026-04-02","2026-04-10","Live","100.0","Inhouse Dev","","",""],["Prefr","West","CR for API update","Aniruddha","2026-04-06","","Live","10.0","","","","Done via Twixor support"],["Webengage Melooha","West","Add WebENgage Optin/Optout API","Aniruddha","2026-04-07","2026-04-09","Live","100.0","Inhouse Dev","","",""],["Webengage Firstclub","West","Add WebENgage Optin/Optout API","Aniruddha","2026-04-07","2026-04-09","Live","100.0","Inhouse Dev","","",""],["Tata Cliq","West","Abandoned cart voice POC via smallest.ai","Aniruddha","2026-04-10","2026-05-05","Live","100.0","Inhouse Dev","","",""],["Cholamandalam Finance","South","POC for collections","Aniruddha","2026-04-20","2026-04-27","Live","100.0","Inhouse Dev","2 Days ","",""],["HDFC Life","West","Native payments via RZP","Aniruddha","2026-04-28","","Scoping","5.0","","","",""],["EFL","West","Agentic AI voice bot","Aniruddha","2026-04-27","","Scoping","5.0","","","",""],["HDFC Ergo","West","Payment config via RZP","Aniruddha","2026-04-28","","Scoping","10.0","","","",""],["HDFC ergo","West","Myra Payment integration","Aniruddha","2026-05-11","","Scoping","","","","",""],["Jiostar Disney","West","Daily quiz for 15 days","Aniruddha","2026-05-08","","End of life","","","","","Dependencies on waba number and keywords. "],["SBI","West","Green pin modification (DOB Add)","Aniruddha","2026-05-07","","Development","80.0","Inhouse","","",""],["SBI","West","Manage DC modification (PIN add)","Aniruddha","2026-05-07","","Scoping","20.0","Inhouse","","",""],["Al Habtoor","UAE","VOC - Web bot - service advisor upload","Aniruddha","2026-05-07","","UAT","80.0","Twixor","","",""],["Paisawaala","West","Live agent","Aniruddha","2026-05-18","","Live","100.0","Inhouse","","",""],["SBI General","West","CTWA to collect lead details","Aniruddha","2026-05-19","","Scoping","10.0","","","","Rohit"],["Sultan Foods (Barakat)","UAE","Button payload survey and Webengage","Aniruddha","2026-05-22","","Scoping","","","","",""],["Tata motors","West","Multiple journey Migration from Gupshup","Aniruddha","2026-05-19","","Scoping","","","","",""],["Piramal","West","RE: Seeking quotation on the AI bot for HR use case","Aniruddha","2026-05-21","","Scoping","","","","",""],["HDFC life","West","Re: [External] Re: Karix<>HDFC Life | Native Payments Integration","Aniruddha","2026-05-22","","Scoping","","Inhouse","","",""],["Motilal Oswal","West","Re: Next Steps: WhatsApp Chatbot Configuration and Use Case Finalization","Aniruddha","2026-05-25","","Scoping","","","","",""],["SBI Life","West","RE: Fwd: SBI Life Insurance | Agentic AI","Aniruddha","2026-05-22","2026-05-25","Live","","","","",""],["SBI","West","RE: SBI EPay integration with Meta for Bill Payments under SBI Unipay","Aniruddha","2026-05-25","","Scoping","","","","",""],["TATA Digital ZIPCARE (API Testing )","West","Insurance journey","Raj bhatt","","2026-04-27","UAT","1.0","Inhouse","","","Provided to client for testing with latest chnages required ."],["Paisawalla ","West","","Raj bhatt","","2026-05-20","UAT","1.0","Inhouse","","","All the requested changes are done now "],["AMS SSE","UAE","Brand info and service realted journey","Raj bhatt","2026-05-20","2026-05-25","UAT","0.9","Twixor","","","Deliver to client for testing"],["Jio Star ","West","static bot ","Raj bhatt","2026-05-22","2026-05-25","UAT","0.9","Inhouse","","","bot dev done , backend pending "],["Tarahum NEW CR","UAE","NEW CR for the bot ","Raj bhatt","2026-05-18","","UAT","0.9","Inhouse","","","Whatsapp form done , new flow need to discuss with development team "],["TMIBASL ","West","New Development","Raj bhatt","2026-05-18","0001-07-09","In Progress","0.05","Inhouse","","","API'S Testing is done , need to connect with client on few queries ."],["BMH Capital","UAE","","Kiran","2026-04-13","2026-04-30","Live","1.0","Inhouse","","",""],["Multiplier","North","Employee help desk","Kiran","2026-03-20","2026-05-01","In Progress","0.8","Twixor","","",""],["TNeGA","South","Phase 2B devlopment 4 services","Kiran","","2026-05-02","Yet to Start(Assigned)","0.4","Twixor","","",""],["Funcity","South","Birthday party CR","Kiran","2026-04-02","2026-05-03","Live","0.5","Twixor","","",""],["Malabar","North","Australia bot issues","Kiran","2026-03-31","2026-05-04","In Progress","0.7","Twixor","","",""],["Kapsons","North","Personal assistance\nEgift card","Kiran","2026-03-31","2026-05-05","In Progress","0.8","Twixor","","",""],["SBI","West","Nominee add/update","Kiran","2026-02-12","2026-05-06","Live","1.0","Twixor","","",""],["Lifestyle","South","CR - UAT observations","Kiran","2026-03-15","2026-05-07","UAT","0.5","Inhouse","3 Days","",""],["CMRL","South","Add station - UAT bot not working","Kiran","2026-03-19","2026-05-06","Live","1.0","Twixor","","",""],["Funcity","South","Fun pass CR","Kiran","2026-04-10","2026-05-02","UAT","0.9","Twixor","","",""],["CAGL Primary Bot","South","Live Migration","Kiran","2026-02-23","2026-05-10","Live","1.0","Twixor","","",""],["CAGL Unnati flows","South","new Requirements","Kiran","2026-03-22","2026-05-11","Live","1.0","Inhouse","2 Days ","",""],["Funcity","South","fDashboard issues","Kiran","2026-04-28","2026-05-02","LIVE","1.0","twixor","","",""],["Funcity","South","4 NEW Request - Follow-up Messages (Nudges) for FunPass / Pro Bot, Google Sheet Integration,New Requirement for FunBlock,FunPass / Pro \u2013 \u201cNo\u201d Option Content Update","Kiran","2026-05-07","2026-05-12","Development","0.5","twixor","","",""],["Multiplier","North","Feedback Form Implementation","Kiran","2026-05-07","2026-05-25","Scoping","","twixor","","",""],["TNeGA","South","Small Farmer, KCC CR","Kiran","2026-05-04","2026-05-16","Development","0.5","twixor","","",""],["Funcity","South","Funblock new Requirement, Dashboard (Funpass,birthday party)","","2026-05-15","2026-05-19","","","","","",""],["Cagl","South","View Pass Book Implemeation","Kiran","2026-05-04","","Scoping","","twixor","","",""],["SBI","South","Funnel dashboard development in progress, Manage Debit Card development in progress + New development for dynamic URL on campaign in discussion + Campaings deployments","Daimi Syed","2026-05-04","2026-05-29","In Progress","0.8","Twixor","","",""],["Bandhan Bank","South","Manage Debit card implementation phase 2 sprint 2 changes suggested by client on whatsapp form and will share the revised FSD for sign off + Credit Card Journey development completed and release for UAT+ working on production observations for phase 2 sprint 2","Daimi Syed","2026-05-04","2026-05-29","In Progress","0.65","Twixor","","",""],["BOB","South","Urdu observations fix and waiting for sign off\n1. Api key production movement - In progress\n2. CBDC requirement planning - UAT deployed today - in progress\n3. Link redirection - in progress","Daimi Syed","2026-05-04","2026-05-29","In Progress","0.7","Twixor","","",""],["BOI","South","Received UAT sign off, waiting for go ahead of production movement  + Queries raised by client to be discussed in meeting today + Re KYC to move on prodcution waiting for client approval + Migration discussion from on prem to clould ","Daimi Syed","2026-05-04","2026-05-29","In Progress","0.6","Twixor","","",""],["CSB","South","account statement use case changes in progress + discussion of Debit card mapping in UAT Cust ID for Testing + Debit card use case shared by client for development","Daimi Syed","2026-05-04","2026-05-29","In Progress","0.45","Twixor","","",""],["PSB","North","Multilingual implementation in discussion + production bot is not working, following up with client (check with their internal IT team as it seems to be a proxy level issue) and Twixor for logs ","Daimi Syed","2026-05-04","","Yet to Start(Assigned)","0.4","Twixor","","",""]]};
+
+/* ═══════════════════════════════════════════════  CONSTANTS  */
 const REGIONS=['North','South','West','UAE'];
-const MON={'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+const REGION_COLORS={'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
+const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 const ALL_MONTHS=Object.keys(DB.months).sort();
-function mLabel(k){if(k==='all')return'All dates';const[y,m]=k.split('-');return`${MON[m]} ${y}`;}
+
+function mLabel(k){if(k==='all')return'All dates';const[y,m]=k.split('-');return`${MON[m]||m} ${y}`;}
 function getData(k){return k==='all'?DB.all:DB.months[k].data;}
 function getCount(k){return k==='all'?DB.totalRows:DB.months[k].rowCount;}
+
+/* ═══════════════════════════════════════════════  CHARTS  */
 let C={};
 function kill(...ids){ids.forEach(id=>{if(C[id]){try{C[id].destroy();}catch(e){}delete C[id];}});}
 
-function renderSummary(data){
+const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false},grid:{color:'rgba(0,0,0,0.04)'}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
+
+/* ═══════════════════════════════════════════════  KPI  */
+function renderKPI(data){
   const t=data['Total'];
-  document.getElementById('summary-grid').innerHTML=[
-    ['Total projects',t.total],['Go live',t.golive],['In progress',t.inprogress],
-    ['UAT',t.uat],['Yet to start',t.yts],['Pipeline / scoping',t.scoping],
-    ['Twixor',t.twixor],['Inhouse',t.inhouse],['Mandays saved',t.mandays]
-  ].map(([l,v])=>`<div class="metric"><div class="metric-label">${l}</div><div class="metric-value">${v}</div></div>`).join('');
+  document.getElementById('kpi-grid').innerHTML=[
+    ['Total projects',t.total,true],['Go live',t.golive,false],['In progress',t.inprogress,false],
+    ['UAT',t.uat,false],['Yet to start',t.yts,false],['Pipeline / scoping',t.scoping,false],
+    ['Twixor',t.twixor,false],['Inhouse',t.inhouse,false],['Mandays saved',t.mandays,false]
+  ].map(([l,v,acc])=>`<div class="kpi${acc?' accent':''}"><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div></div>`).join('');
 }
 
+/* ═══════════════════════════════════════════════  REGION TABLE  */
 function renderRegionTable(data){
-  const T=data['Total'];
   document.getElementById('region-table-wrap').innerHTML=`<table>
-    <thead><tr><th>Region</th><th>Projects</th><th>In progress</th><th>UAT</th><th>Go live</th><th>Yet to start</th><th>Scoping / pipeline</th><th>Twixor</th><th>Inhouse</th><th>Mandays saved</th></tr></thead>
+    <thead><tr>
+      <th>Region</th><th class="num">Projects</th><th class="num">In progress</th><th class="num">UAT</th>
+      <th class="num">Go live</th><th class="num">Yet to start</th><th class="num">Scoping / pipeline</th>
+      <th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays saved</th>
+    </tr></thead>
     <tbody>
-      ${REGIONS.map(r=>`<tr><td><strong>${r}</strong></td><td>${data[r].total}</td><td>${data[r].inprogress}</td><td>${data[r].uat}</td><td>${data[r].golive}</td><td>${data[r].yts}</td><td>${data[r].scoping}</td><td>${data[r].twixor}</td><td>${data[r].inhouse}</td><td>${data[r].mandays}</td></tr>`).join('')}
-      <tr class="total-row"><td>Total</td><td>${T.total}</td><td>${T.inprogress}</td><td>${T.uat}</td><td>${T.golive}</td><td>${T.yts}</td><td>${T.scoping}</td><td>${T.twixor}</td><td>${T.inhouse}</td><td>${T.mandays}</td></tr>
+      ${REGIONS.map(r=>`<tr>
+        <td><span class="region-badge"><span class="rdot" style="background:${REGION_COLORS[r]}"></span>${r}</span></td>
+        <td class="num">${data[r].total}</td><td class="num">${data[r].inprogress}</td><td class="num">${data[r].uat}</td>
+        <td class="num">${data[r].golive}</td><td class="num">${data[r].yts}</td><td class="num">${data[r].scoping}</td>
+        <td class="num">${data[r].twixor}</td><td class="num">${data[r].inhouse}</td><td class="num">${data[r].mandays}</td>
+      </tr>`).join('')}
+      <tr class="total-row">
+        <td><strong>Total</strong></td>
+        <td class="num">${data['Total'].total}</td><td class="num">${data['Total'].inprogress}</td><td class="num">${data['Total'].uat}</td>
+        <td class="num">${data['Total'].golive}</td><td class="num">${data['Total'].yts}</td><td class="num">${data['Total'].scoping}</td>
+        <td class="num">${data['Total'].twixor}</td><td class="num">${data['Total'].inhouse}</td><td class="num">${data['Total'].mandays}</td>
+      </tr>
     </tbody></table>`;
 }
 
+/* ═══════════════════════════════════════════════  REGION CHARTS  */
 function renderRegionCharts(data){
   kill('c1','c2','c3','c4');
-  const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}}}};
   C.c1=new Chart(document.getElementById('chart1'),{type:'bar',data:{labels:REGIONS,datasets:[
-    {label:'Total',data:REGIONS.map(r=>data[r].total),backgroundColor:'#378ADD'},
-    {label:'Go live',data:REGIONS.map(r=>data[r].golive),backgroundColor:'#1D9E75'},
-    {label:'In progress',data:REGIONS.map(r=>data[r].inprogress),backgroundColor:'#EF9F27'},
-    {label:'UAT',data:REGIONS.map(r=>data[r].uat),backgroundColor:'#E24B4A'},
-  ]},options:o});
+    {label:'Total',data:REGIONS.map(r=>data[r].total),backgroundColor:'#0057FF'},
+    {label:'Go live',data:REGIONS.map(r=>data[r].golive),backgroundColor:'#10B981'},
+    {label:'In progress',data:REGIONS.map(r=>data[r].inprogress),backgroundColor:'#F59E0B'},
+    {label:'UAT',data:REGIONS.map(r=>data[r].uat),backgroundColor:'#EF4444'},
+  ]},options:CHART_OPTS});
   C.c2=new Chart(document.getElementById('chart2'),{type:'bar',data:{labels:REGIONS,datasets:[
-    {label:'Twixor',data:REGIONS.map(r=>data[r].twixor),backgroundColor:'#534AB7'},
-    {label:'Inhouse',data:REGIONS.map(r=>data[r].inhouse),backgroundColor:'#888780'},
-  ]},options:o});
+    {label:'Twixor',data:REGIONS.map(r=>data[r].twixor),backgroundColor:'#6366F1'},
+    {label:'Inhouse',data:REGIONS.map(r=>data[r].inhouse),backgroundColor:'#8B9AB8'},
+  ]},options:CHART_OPTS});
   const t=data['Total'];
   C.c3=new Chart(document.getElementById('chart3'),{type:'doughnut',data:{
     labels:['Go live','In progress','UAT','Yet to start','Scoping/pipeline'],
-    datasets:[{data:[t.golive,t.inprogress,t.uat,t.yts,t.scoping],backgroundColor:['#1D9E75','#EF9F27','#378ADD','#888780','#D4537E'],borderWidth:1}]
-  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}}});
+    datasets:[{data:[t.golive,t.inprogress,t.uat,t.yts,t.scoping],
+      backgroundColor:['#10B981','#F59E0B','#0057FF','#8B9AB8','#EC4899'],borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
   C.c4=new Chart(document.getElementById('chart4'),{type:'bar',data:{labels:REGIONS,datasets:[
-    {label:'Mandays saved',data:REGIONS.map(r=>data[r].mandays),backgroundColor:'#1D9E75'}
-  ]},options:o});
+    {label:'Mandays saved',data:REGIONS.map(r=>data[r].mandays),backgroundColor:REGIONS.map(r=>REGION_COLORS[r])}
+  ]},options:CHART_OPTS});
 }
 
+/* ═══════════════════════════════════════════════  MONTH TABLE  */
 function renderMonthTable(){
   const fields=['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
   const labels=['Projects','In progress','UAT','Go live','Yet to start','Scoping / pipeline','Twixor','Inhouse','Mandays saved'];
   const gt=DB.all['Total'];
-  const hdrs=ALL_MONTHS.map(k=>`<th class="month-hdr">${mLabel(k)}</th>`).join('')+`<th class="month-hdr">Total</th>`;
+  const hdrs=ALL_MONTHS.map(k=>`<th class="mhdr">${mLabel(k)}</th>`).join('')+`<th class="mhdr" style="background:#07112A;color:#fff;">Total</th>`;
   const rows=fields.map((f,fi)=>{
-    const cells=ALL_MONTHS.map(k=>{const v=DB.months[k].data['Total'][f];return`<td class="mcell${v>0?' hi':''}">${v}</td>`;}).join('');
-    return`<tr><td><strong>${labels[fi]}</strong></td>${cells}<td class="mcell hi">${gt[f]}</td></tr>`;
+    const cells=ALL_MONTHS.map(k=>{const v=DB.months[k].data['Total'][f];return`<td class="mcell${v>0?' hi':' zero'}">${v}</td>`;}).join('');
+    return`<tr><td><strong>${labels[fi]}</strong></td>${cells}<td class="mcell hi" style="font-weight:700">${gt[f]}</td></tr>`;
   }).join('');
-  document.getElementById('month-table-wrap').innerHTML=`<table><thead><tr><th style="min-width:160px">Metric</th>${hdrs}</tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('month-table-wrap').innerHTML=`<table>
+    <thead><tr><th style="min-width:165px">Metric</th>${hdrs}</tr></thead>
+    <tbody>${rows}</tbody></table>`;
 }
 
+/* ═══════════════════════════════════════════════  TREND CHARTS  */
 function renderTrendCharts(){
   kill('t1','t2','t3');
   const ml=ALL_MONTHS.map(mLabel);
   const md=k=>DB.months[k].data['Total'];
-  const to={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,maxRotation:45}}}};
+  const tO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,maxRotation:30}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
   C.t1=new Chart(document.getElementById('trend1'),{type:'bar',data:{labels:ml,datasets:[
-    {label:'Total',data:ALL_MONTHS.map(k=>md(k).total),backgroundColor:'#378ADD'},
-    {label:'Go live',data:ALL_MONTHS.map(k=>md(k).golive),backgroundColor:'#1D9E75'},
-    {label:'In progress',data:ALL_MONTHS.map(k=>md(k).inprogress),backgroundColor:'#EF9F27'},
-    {label:'UAT',data:ALL_MONTHS.map(k=>md(k).uat),backgroundColor:'#E24B4A'},
-  ]},options:to});
+    {label:'Total',data:ALL_MONTHS.map(k=>md(k).total),backgroundColor:'rgba(0,87,255,0.85)'},
+    {label:'Go live',data:ALL_MONTHS.map(k=>md(k).golive),backgroundColor:'#10B981'},
+    {label:'In progress',data:ALL_MONTHS.map(k=>md(k).inprogress),backgroundColor:'#F59E0B'},
+    {label:'UAT',data:ALL_MONTHS.map(k=>md(k).uat),backgroundColor:'#EF4444'},
+  ]},options:tO});
   C.t2=new Chart(document.getElementById('trend2'),{type:'line',data:{labels:ml,datasets:[
-    {label:'Twixor',data:ALL_MONTHS.map(k=>md(k).twixor),borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.1)',tension:0.3,fill:true,pointRadius:4},
-    {label:'Inhouse',data:ALL_MONTHS.map(k=>md(k).inhouse),borderColor:'#888780',backgroundColor:'rgba(136,135,128,0.1)',tension:0.3,fill:true,pointRadius:4},
-  ]},options:to});
+    {label:'Twixor',data:ALL_MONTHS.map(k=>md(k).twixor),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#6366F1'},
+    {label:'Inhouse',data:ALL_MONTHS.map(k=>md(k).inhouse),borderColor:'#8B9AB8',backgroundColor:'rgba(139,154,184,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#8B9AB8'},
+  ]},options:tO});
   C.t3=new Chart(document.getElementById('trend3'),{type:'line',data:{labels:ml,datasets:[
-    {label:'Mandays saved',data:ALL_MONTHS.map(k=>md(k).mandays),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.1)',tension:0.3,fill:true,pointRadius:4},
-  ]},options:to});
+    {label:'Mandays saved',data:ALL_MONTHS.map(k=>md(k).mandays),borderColor:'#10B981',backgroundColor:'rgba(16,185,129,0.12)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#10B981'},
+  ]},options:tO});
 }
 
+/* ═══════════════════════════════════════════════  MONTH SELECT  */
 function selectMonth(key){
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
   document.getElementById('info-pill').textContent=`${getCount(key)} of ${DB.totalRows} rows — ${mLabel(key)}`;
   const data=getData(key);
-  renderSummary(data);renderRegionTable(data);renderRegionCharts(data);
+  renderKPI(data);
+  renderRegionTable(data);
+  renderRegionCharts(data);
 }
 
+/* ═══════════════════════════════════════════════  TAB SWITCH  */
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id===`panel-${tab}`));
 }
 
-renderMonthTable();renderTrendCharts();selectMonth('all');
+/* ═══════════════════════════════════════════════  EXCEL DOWNLOAD  */
+function downloadExcel(){
+  const wb=XLSX.utils.book_new();
+  const wsData=[RAW.cols,...RAW.rows];
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+
+  /* Column widths */
+  ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:14},{wch:30},{wch:40}];
+
+  /* Header style (bold, navy bg) */
+  const hStyle={font:{bold:true,color:{rgb:"FFFFFF"}},fill:{fgColor:{rgb:"07112A"}},alignment:{horizontal:'center'}};
+  RAW.cols.forEach((_,i)=>{
+    const cell=XLSX.utils.encode_cell({r:0,c:i});
+    if(ws[cell]) ws[cell].s=hStyle;
+  });
+
+  XLSX.utils.book_append_sheet(wb,ws,'Project Report');
+
+  /* Analytics summary sheet */
+  const sumRows=[
+    ['Region','Projects','In Progress','UAT','Go Live','Yet to Start','Scoping/Pipeline','Twixor','Inhouse','Mandays Saved'],
+    ...REGIONS.map(r=>[r,DB.all[r].total,DB.all[r].inprogress,DB.all[r].uat,DB.all[r].golive,DB.all[r].yts,DB.all[r].scoping,DB.all[r].twixor,DB.all[r].inhouse,DB.all[r].mandays]),
+    ['Total',DB.all.Total.total,DB.all.Total.inprogress,DB.all.Total.uat,DB.all.Total.golive,DB.all.Total.yts,DB.all.Total.scoping,DB.all.Total.twixor,DB.all.Total.inhouse,DB.all.Total.mandays]
+  ];
+  const wsSummary=XLSX.utils.aoa_to_sheet(sumRows);
+  wsSummary['!cols']=[{wch:12},{wch:10},{wch:12},{wch:8},{wch:10},{wch:12},{wch:18},{wch:10},{wch:10},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,wsSummary,'Analytics Summary');
+
+  XLSX.writeFile(wb,`BA_Project_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ═══════════════════════════════════════════════  INIT  */
+renderMonthTable();
+renderTrendCharts();
+selectMonth('all');
 </script>
 </body>
 </html>
