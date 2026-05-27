@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BA Team — Project Analytics</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #ffffff;
+      --bg-sec:    #f5f5f3;
+      --bg-ter:    #efede8;
+      --text:      #1a1a18;
+      --text-sec:  #6b6b67;
+      --border:    rgba(0,0,0,0.10);
+      --border-md: rgba(0,0,0,0.18);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --green-bg:  #eaf3de;
+      --green-txt: #3b6d11;
+      --green-bdr: #c0dd97;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #1c1c1a;
+        --bg-sec:    #252523;
+        --bg-ter:    #2e2e2b;
+        --text:      #f0ede8;
+        --text-sec:  #9a9a94;
+        --border:    rgba(255,255,255,0.10);
+        --border-md: rgba(255,255,255,0.18);
+        --green-bg:  #173404;
+        --green-txt: #c0dd97;
+        --green-bdr: #3b6d11;
+      }
+    }
+
+    body {
+      background: var(--bg-ter);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    /* Header */
+    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 12px; }
+    .header h1 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+    .header p { font-size: 13px; color: var(--text-sec); margin-top: 3px; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 20px; background: var(--green-bg); color: var(--green-txt); border: 0.5px solid var(--green-bdr); white-space: nowrap; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .filter-label { font-size: 12px; color: var(--text-sec); }
+    .chip { padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border-md); background: transparent; color: var(--text-sec); transition: all 0.15s; white-space: nowrap; }
+    .chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .chip:hover:not(.active) { background: var(--bg-sec); }
+    .info-pill { font-size: 11px; color: var(--text-sec); background: var(--bg-sec); border-radius: 20px; padding: 3px 10px; }
+
+    /* Summary grid */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+    .metric { background: var(--bg-sec); border-radius: var(--radius-md); padding: 12px 14px; }
+    .metric-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; }
+    .metric-value { font-size: 24px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 1.25rem; }
+    .tab { padding: 8px 18px; font-size: 13px; cursor: pointer; border: none; background: transparent; color: var(--text-sec); border-bottom: 2px solid transparent; margin-bottom: -0.5px; transition: all 0.15s; font-family: var(--font); }
+    .tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--text); }
+    .tab:hover:not(.active) { color: var(--text); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Section title */
+    .section-title { font-size: 12px; font-weight: 500; color: var(--text-sec); margin-bottom: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin-bottom: 1.5rem; border-radius: var(--radius-lg); border: 0.5px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--bg); }
+    th { text-align: left; padding: 9px 12px; font-size: 11px; font-weight: 500; color: var(--text-sec); border-bottom: 0.5px solid var(--border); white-space: nowrap; background: var(--bg-sec); }
+    th.month-hdr { background: var(--bg-sec); color: var(--text); font-size: 11px; border-left: 1.5px solid var(--border-md); text-align: center; padding: 9px 10px; }
+    td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); color: var(--text); white-space: nowrap; }
+    td.mcell { border-left: 1.5px solid var(--border); text-align: center; font-size: 12px; color: var(--text-sec); }
+    td.mcell.hi { color: var(--text); font-weight: 500; }
+    tr.total-row td { font-weight: 600; background: var(--bg-sec); }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--bg-sec); }
+    tbody tr:hover td.mcell { background: var(--bg-sec); }
+
+    /* Chart grid */
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+    .chart-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+    .chart-card .section-title { margin-bottom: 8px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 11px; color: var(--text-sec); }
+    .legend span { display: flex; align-items: center; }
+    .ldot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 5px; flex-shrink: 0; }
+
+    /* Footer */
+    .footer { text-align: center; font-size: 12px; color: var(--text-sec); margin-top: 2.5rem; padding-top: 1.5rem; border-top: 0.5px solid var(--border); }
+
+    @media (max-width: 600px) {
+      .chart-row { grid-template-columns: 1fr; }
+      .header h1 { font-size: 17px; }
+      .page { padding: 1.25rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h1>BA team — project analytics</h1>
+      <p id="header-meta">179 projects &nbsp;·&nbsp; Last updated: 26 May 2026</p>
+    </div>
+    <span class="badge"><i class="ti ti-circle-check"></i> Live data</span>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Month:</span>
+    <button class="chip active" data-key="all"     onclick="selectMonth('all')">All</button>
+    <button class="chip" data-key="2025-10" onclick="selectMonth('2025-10')">Oct 2025</button>
+    <button class="chip" data-key="2025-12" onclick="selectMonth('2025-12')">Dec 2025</button>
+    <button class="chip" data-key="2026-01" onclick="selectMonth('2026-01')">Jan 2026</button>
+    <button class="chip" data-key="2026-02" onclick="selectMonth('2026-02')">Feb 2026</button>
+    <button class="chip" data-key="2026-03" onclick="selectMonth('2026-03')">Mar 2026</button>
+    <button class="chip" data-key="2026-04" onclick="selectMonth('2026-04')">Apr 2026</button>
+    <button class="chip" data-key="2026-05" onclick="selectMonth('2026-05')">May 2026</button>
+    <button class="chip" data-key="2026-06" onclick="selectMonth('2026-06')">Jun 2026</button>
+    <button class="chip" data-key="2026-12" onclick="selectMonth('2026-12')">Dec 2026</button>
+    <span class="info-pill" id="info-pill"></span>
+  </div>
+
+  <div class="summary-grid" id="summary-grid"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="region"  onclick="switchTab('region')">Region breakdown</button>
+    <button class="tab"        data-tab="monthly" onclick="switchTab('monthly')">Month-wise analytics</button>
+  </div>
+
+  <!-- TAB: Region breakdown -->
+  <div class="tab-panel active" id="panel-region">
+    <p class="section-title">Region breakdown</p>
+    <div class="table-wrap" id="region-table-wrap"></div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <p class="section-title">Projects by region</p>
+        <div class="legend">
+          <span><span class="ldot" style="background:#378ADD"></span>Total</span>
+          <span><span class="ldot" style="background:#1D9E75"></span>Go live</span>
+          <span><span class="ldot" style="background:#EF9F27"></span>In progress</span>
+          <span><span class="ldot" style="background:#E24B4A"></span>UAT</span>
+        </div>
+        <div style="position:relative;width:100%;height:220px;"><canvas id="chart1"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="section-title">Development type by region</p>
+        <div class="legend">
+          <span><span class="ldot" style="background:#534AB7"></span>Twixor</span>
+          <span><span class="ldot" style="background:#888780"></span>Inhouse</span>
+        </div>
+        <div style="position:relative;width:100%;height:220px;"><canvas id="chart2"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <p class="section-title">Overall status mix</p>
+        <div style="position:relative;width:100%;height:220px;"><canvas id="chart3"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="section-title">Mandays saved by region</p>
+        <div style="position:relative;width:100%;height:220px;"><canvas id="chart4"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Month-wise analytics -->
+  <div class="tab-panel" id="panel-monthly">
+    <p class="section-title">Month-wise summary</p>
+    <div class="table-wrap" id="month-table-wrap"></div>
+    <div class="chart-row" style="margin-top:1rem">
+      <div class="chart-card">
+        <p class="section-title">Project counts by month</p>
+        <div class="legend">
+          <span><span class="ldot" style="background:#378ADD"></span>Total</span>
+          <span><span class="ldot" style="background:#1D9E75"></span>Go live</span>
+          <span><span class="ldot" style="background:#EF9F27"></span>In progress</span>
+          <span><span class="ldot" style="background:#E24B4A"></span>UAT</span>
+        </div>
+        <div style="position:relative;width:100%;height:240px;"><canvas id="trend1"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="section-title">Twixor vs Inhouse trend</p>
+        <div class="legend">
+          <span><span class="ldot" style="background:#534AB7"></span>Twixor</span>
+          <span><span class="ldot" style="background:#888780"></span>Inhouse</span>
+        </div>
+        <div style="position:relative;width:100%;height:240px;"><canvas id="trend2"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <p class="section-title">Mandays saved trend</p>
+      <div class="legend"><span><span class="ldot" style="background:#1D9E75"></span>Mandays saved</span></div>
+      <div style="position:relative;width:100%;height:200px;"><canvas id="trend3"></canvas></div>
+    </div>
+  </div>
+
+  <div class="footer">BA Team Project Analytics &nbsp;·&nbsp; Data as of 26 May 2026</div>
+</div>
+
+<script>
+/* ── HARDCODED DATA — paste updated JSON here when refreshing ── */
+const DB = {"lastUpdated":"26 May 2026","totalRows":179,"all":{"North":{"total":68,"inprogress":19,"uat":8,"golive":22,"yts":12,"scoping":7,"twixor":39,"inhouse":23,"mandays":181},"South":{"total":49,"inprogress":13,"uat":8,"golive":13,"yts":2,"scoping":12,"twixor":20,"inhouse":19,"mandays":76},"West":{"total":48,"inprogress":3,"uat":3,"golive":27,"yts":0,"scoping":15,"twixor":2,"inhouse":19,"mandays":9},"UAE":{"total":14,"inprogress":0,"uat":5,"golive":6,"yts":1,"scoping":2,"twixor":11,"inhouse":2,"mandays":0},"Total":{"total":179,"inprogress":35,"uat":24,"golive":68,"yts":15,"scoping":36,"twixor":72,"inhouse":63,"mandays":266}},"months":{"2025-10":{"rowCount":1,"data":{"North":{"total":1,"inprogress":0,"uat":1,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":1,"inprogress":0,"uat":1,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}},"2025-12":{"rowCount":1,"data":{"North":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}},"2026-01":{"rowCount":16,"data":{"North":{"total":8,"inprogress":4,"uat":1,"golive":3,"yts":0,"scoping":0,"twixor":3,"inhouse":5,"mandays":7},"South":{"total":1,"inprogress":0,"uat":1,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"West":{"total":6,"inprogress":0,"uat":0,"golive":6,"yts":0,"scoping":0,"twixor":0,"inhouse":2,"mandays":0},"UAE":{"total":1,"inprogress":0,"uat":1,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"Total":{"total":16,"inprogress":4,"uat":3,"golive":9,"yts":0,"scoping":0,"twixor":5,"inhouse":7,"mandays":7}}},"2026-02":{"rowCount":13,"data":{"North":{"total":3,"inprogress":0,"uat":1,"golive":1,"yts":1,"scoping":0,"twixor":3,"inhouse":0,"mandays":0},"South":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"West":{"total":6,"inprogress":0,"uat":0,"golive":6,"yts":0,"scoping":0,"twixor":1,"inhouse":2,"mandays":0},"UAE":{"total":3,"inprogress":0,"uat":0,"golive":3,"yts":0,"scoping":0,"twixor":3,"inhouse":0,"mandays":0},"Total":{"total":13,"inprogress":0,"uat":1,"golive":11,"yts":1,"scoping":0,"twixor":8,"inhouse":2,"mandays":0}}},"2026-03":{"rowCount":30,"data":{"North":{"total":9,"inprogress":3,"uat":0,"golive":6,"yts":0,"scoping":0,"twixor":5,"inhouse":4,"mandays":60},"South":{"total":7,"inprogress":0,"uat":2,"golive":4,"yts":0,"scoping":1,"twixor":1,"inhouse":5,"mandays":25},"West":{"total":12,"inprogress":1,"uat":0,"golive":9,"yts":0,"scoping":2,"twixor":0,"inhouse":5,"mandays":9},"UAE":{"total":2,"inprogress":0,"uat":1,"golive":0,"yts":0,"scoping":1,"twixor":2,"inhouse":0,"mandays":0},"Total":{"total":30,"inprogress":4,"uat":3,"golive":19,"yts":0,"scoping":4,"twixor":8,"inhouse":14,"mandays":94}}},"2026-04":{"rowCount":62,"data":{"North":{"total":28,"inprogress":6,"uat":2,"golive":11,"yts":7,"scoping":2,"twixor":16,"inhouse":9,"mandays":108},"South":{"total":16,"inprogress":3,"uat":3,"golive":4,"yts":0,"scoping":6,"twixor":5,"inhouse":5,"mandays":7},"West":{"total":14,"inprogress":0,"uat":1,"golive":9,"yts":0,"scoping":4,"twixor":0,"inhouse":8,"mandays":0},"UAE":{"total":4,"inprogress":0,"uat":0,"golive":4,"yts":0,"scoping":0,"twixor":3,"inhouse":1,"mandays":0},"Total":{"total":62,"inprogress":9,"uat":6,"golive":28,"yts":7,"scoping":12,"twixor":24,"inhouse":23,"mandays":115}}},"2026-05":{"rowCount":78,"data":{"North":{"total":25,"inprogress":9,"uat":3,"golive":7,"yts":4,"scoping":2,"twixor":16,"inhouse":7,"mandays":43},"South":{"total":32,"inprogress":9,"uat":5,"golive":11,"yts":1,"scoping":5,"twixor":17,"inhouse":12,"mandays":57},"West":{"total":17,"inprogress":2,"uat":2,"golive":5,"yts":0,"scoping":8,"twixor":1,"inhouse":8,"mandays":0},"UAE":{"total":4,"inprogress":0,"uat":3,"golive":0,"yts":0,"scoping":1,"twixor":2,"inhouse":1,"mandays":0},"Total":{"total":78,"inprogress":20,"uat":13,"golive":23,"yts":5,"scoping":16,"twixor":36,"inhouse":28,"mandays":100}}},"2026-06":{"rowCount":1,"data":{"North":{"total":1,"inprogress":1,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"Total":{"total":1,"inprogress":1,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}},"2026-12":{"rowCount":2,"data":{"North":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"South":{"total":0,"inprogress":0,"uat":0,"golive":0,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"West":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":0,"inhouse":0,"mandays":0},"UAE":{"total":1,"inprogress":0,"uat":0,"golive":1,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0},"Total":{"total":2,"inprogress":0,"uat":0,"golive":2,"yts":0,"scoping":0,"twixor":1,"inhouse":0,"mandays":0}}}}};
+
+const REGIONS = ['North','South','West','UAE'];
+const MON = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+const ALL_MONTHS = Object.keys(DB.months).sort();
+
+function mLabel(k) { if(k==='all') return 'All dates'; const [y,m]=k.split('-'); return `${MON[m]} ${y}`; }
+function getData(k) { return k==='all' ? DB.all : DB.months[k].data; }
+function getCount(k) { return k==='all' ? DB.totalRows : DB.months[k].rowCount; }
+
+let C = {};
+function kill(...ids) { ids.forEach(id=>{ if(C[id]){try{C[id].destroy();}catch(e){} delete C[id];} }); }
+
+function renderSummary(data) {
+  const t = data['Total'];
+  document.getElementById('summary-grid').innerHTML = [
+    ['Total projects',t.total],['Go live',t.golive],['In progress',t.inprogress],
+    ['UAT',t.uat],['Yet to start',t.yts],['Pipeline / scoping',t.scoping],
+    ['Twixor',t.twixor],['Inhouse',t.inhouse],['Mandays saved',t.mandays]
+  ].map(([l,v])=>`<div class="metric"><div class="metric-label">${l}</div><div class="metric-value">${v}</div></div>`).join('');
+}
+
+function renderRegionTable(data) {
+  const R = REGIONS, T = data['Total'];
+  document.getElementById('region-table-wrap').innerHTML = `<table>
+    <thead><tr><th>Region</th><th>Projects</th><th>In progress</th><th>UAT</th><th>Go live</th><th>Yet to start</th><th>Scoping / pipeline</th><th>Twixor</th><th>Inhouse</th><th>Mandays saved</th></tr></thead>
+    <tbody>
+      ${R.map(r=>`<tr><td><strong>${r}</strong></td><td>${data[r].total}</td><td>${data[r].inprogress}</td><td>${data[r].uat}</td><td>${data[r].golive}</td><td>${data[r].yts}</td><td>${data[r].scoping}</td><td>${data[r].twixor}</td><td>${data[r].inhouse}</td><td>${data[r].mandays}</td></tr>`).join('')}
+      <tr class="total-row"><td>Total</td><td>${T.total}</td><td>${T.inprogress}</td><td>${T.uat}</td><td>${T.golive}</td><td>${T.yts}</td><td>${T.scoping}</td><td>${T.twixor}</td><td>${T.inhouse}</td><td>${T.mandays}</td></tr>
+    </tbody>
+  </table>`;
+}
+
+function renderRegionCharts(data) {
+  kill('c1','c2','c3','c4');
+  const opts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false}}} };
+  C.c1 = new Chart(document.getElementById('chart1'),{type:'bar',data:{labels:REGIONS,datasets:[
+    {label:'Total',      data:REGIONS.map(r=>data[r].total),      backgroundColor:'#378ADD'},
+    {label:'Go live',    data:REGIONS.map(r=>data[r].golive),     backgroundColor:'#1D9E75'},
+    {label:'In progress',data:REGIONS.map(r=>data[r].inprogress), backgroundColor:'#EF9F27'},
+    {label:'UAT',        data:REGIONS.map(r=>data[r].uat),        backgroundColor:'#E24B4A'},
+  ]},options:opts});
+  C.c2 = new Chart(document.getElementById('chart2'),{type:'bar',data:{labels:REGIONS,datasets:[
+    {label:'Twixor', data:REGIONS.map(r=>data[r].twixor),  backgroundColor:'#534AB7'},
+    {label:'Inhouse',data:REGIONS.map(r=>data[r].inhouse), backgroundColor:'#888780'},
+  ]},options:opts});
+  const t = data['Total'];
+  C.c3 = new Chart(document.getElementById('chart3'),{type:'doughnut',data:{
+    labels:['Go live','In progress','UAT','Yet to start','Scoping/pipeline'],
+    datasets:[{data:[t.golive,t.inprogress,t.uat,t.yts,t.scoping],
+      backgroundColor:['#1D9E75','#EF9F27','#378ADD','#888780','#D4537E'],borderWidth:1}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}}});
+  C.c4 = new Chart(document.getElementById('chart4'),{type:'bar',data:{labels:REGIONS,datasets:[
+    {label:'Mandays saved',data:REGIONS.map(r=>data[r].mandays),backgroundColor:'#1D9E75'}
+  ]},options:opts});
+}
+
+function renderMonthTable() {
+  const fields = ['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
+  const labels = ['Projects','In progress','UAT','Go live','Yet to start','Scoping / pipeline','Twixor','Inhouse','Mandays saved'];
+  const gt = DB.all['Total'];
+  const hdrs = ALL_MONTHS.map(k=>`<th class="month-hdr">${mLabel(k)}</th>`).join('') + `<th class="month-hdr">Total</th>`;
+  const rows = fields.map((f,fi)=>{
+    const cells = ALL_MONTHS.map(k=>{ const v=DB.months[k].data['Total'][f]; return `<td class="mcell${v>0?' hi':''}">${v}</td>`; }).join('');
+    return `<tr><td><strong>${labels[fi]}</strong></td>${cells}<td class="mcell hi">${gt[f]}</td></tr>`;
+  }).join('');
+  document.getElementById('month-table-wrap').innerHTML = `<table>
+    <thead><tr><th style="min-width:160px">Metric</th>${hdrs}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderTrendCharts() {
+  kill('t1','t2','t3');
+  const ml = ALL_MONTHS.map(mLabel);
+  const md = k => DB.months[k].data['Total'];
+  const tOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:45}}} };
+  C.t1 = new Chart(document.getElementById('trend1'),{type:'bar',data:{labels:ml,datasets:[
+    {label:'Total',      data:ALL_MONTHS.map(k=>md(k).total),      backgroundColor:'#378ADD'},
+    {label:'Go live',    data:ALL_MONTHS.map(k=>md(k).golive),     backgroundColor:'#1D9E75'},
+    {label:'In progress',data:ALL_MONTHS.map(k=>md(k).inprogress), backgroundColor:'#EF9F27'},
+    {label:'UAT',        data:ALL_MONTHS.map(k=>md(k).uat),        backgroundColor:'#E24B4A'},
+  ]},options:tOpts});
+  C.t2 = new Chart(document.getElementById('trend2'),{type:'line',data:{labels:ml,datasets:[
+    {label:'Twixor', data:ALL_MONTHS.map(k=>md(k).twixor),  borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.1)',tension:0.3,fill:true,pointRadius:4},
+    {label:'Inhouse',data:ALL_MONTHS.map(k=>md(k).inhouse), borderColor:'#888780',backgroundColor:'rgba(136,135,128,0.1)',tension:0.3,fill:true,pointRadius:4},
+  ]},options:tOpts});
+  C.t3 = new Chart(document.getElementById('trend3'),{type:'line',data:{labels:ml,datasets:[
+    {label:'Mandays saved',data:ALL_MONTHS.map(k=>md(k).mandays),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.1)',tension:0.3,fill:true,pointRadius:4},
+  ]},options:tOpts});
+}
+
+function selectMonth(key) {
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
+  document.getElementById('info-pill').textContent = `${getCount(key)} of ${DB.totalRows} rows — ${mLabel(key)}`;
+  const data = getData(key);
+  renderSummary(data);
+  renderRegionTable(data);
+  renderRegionCharts(data);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id===`panel-${tab}`));
+}
+
+renderMonthTable();
+renderTrendCharts();
+selectMonth('all');
+</script>
+</body>
+</html>
