@@ -14,37 +14,68 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --navy:#07112A;--blue:#0057FF;--blue-hover:#0047D4;
-  --blue-light:rgba(0,87,255,0.12);--blue-border:rgba(0,87,255,0.3);
-  --white:#FFFFFF;--off-white:#F4F6FB;--card:#FFFFFF;
+  --blue-light:rgba(0,87,255,0.10);--blue-border:rgba(0,87,255,0.28);
+  --white:#FFF;--off-white:#F4F6FB;--card:#FFF;
   --text:#0D1E3F;--text-sec:#5B6B8A;--text-muted:#8A9AB8;
-  --border:rgba(13,30,63,0.10);--border-strong:rgba(13,30,63,0.18);
+  --border:rgba(13,30,63,0.09);--border-strong:rgba(13,30,63,0.17);
   --radius:10px;--radius-lg:14px;
-  --shadow:0 1px 4px rgba(7,17,42,0.08),0 4px 16px rgba(7,17,42,0.06);
-  --shadow-sm:0 1px 3px rgba(7,17,42,0.07);
+  --shadow:0 1px 4px rgba(7,17,42,0.07),0 4px 16px rgba(7,17,42,0.05);
+  --shadow-sm:0 1px 3px rgba(7,17,42,0.06);
 }
 body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text);font-size:14px;line-height:1.55;min-height:100vh;}
-.topbar{background:var(--navy);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.25);}
+
+/* TOPBAR */
+.topbar{background:var(--navy);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.25);}
 .topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .logo-mark{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;}
 .logo-text{font-weight:700;font-size:16px;color:#fff;letter-spacing:-0.02em;}
 .logo-sub{font-size:11px;color:rgba(255,255,255,0.45);font-weight:400;margin-left:2px;}
-.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
 .topbar-pill{font-size:11px;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.08);border:0.5px solid rgba(255,255,255,0.15);border-radius:20px;padding:4px 11px;display:flex;align-items:center;gap:5px;}
 .topbar-pill i{font-size:13px;color:#4ADE80;}
-.dl-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s,transform 0.1s;font-family:'Inter',sans-serif;}
-.dl-btn:hover{background:var(--blue-hover);}
-.dl-btn:active{transform:scale(0.97);}
-.page{max-width:1040px;margin:0 auto;padding:1.75rem 1.5rem 4rem;}
-.page-header{margin-bottom:1.5rem;}
-.page-header h1{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.03em;}
-.page-header p{font-size:13px;color:var(--text-sec);margin-top:4px;}
-.header-row{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;}
-.filter-bar{display:flex;align-items:center;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
-.filter-label{font-size:12px;font-weight:500;color:var(--text-sec);margin-right:2px;}
+.btn-top{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s;font-family:'Inter',sans-serif;}
+.btn-top:hover{background:var(--blue-hover);}
+.btn-top.outline{background:transparent;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.85);}
+.btn-top.outline:hover{background:rgba(255,255,255,0.1);}
+
+/* PAGE */
+.page{max-width:1080px;margin:0 auto;padding:1.75rem 1.5rem 5rem;}
+
+/* PAGE HEADER */
+.page-hdr{margin-bottom:1.25rem;}
+.page-hdr h1{font-size:21px;font-weight:700;color:var(--text);letter-spacing:-0.03em;}
+.page-hdr p{font-size:13px;color:var(--text-sec);margin-top:3px;}
+
+/* SEARCH + FILTER BAR */
+.control-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:1.25rem;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;}
+.search-row{display:flex;gap:10px;align-items:center;}
+.search-box{flex:1;position:relative;}
+.search-box i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:15px;pointer-events:none;}
+.search-box input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);background:var(--off-white);outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+.search-box input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light);background:#fff;}
+.search-box input::placeholder{color:var(--text-muted);}
+.clear-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;padding:4px 8px;border-radius:6px;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.clear-btn:hover{color:var(--text);background:var(--off-white);}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:140px;flex:1;}
+.filter-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;}
+.filter-select{padding:7px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;color:var(--text);background:var(--white);outline:none;cursor:pointer;transition:border-color 0.15s;}
+.filter-select:focus{border-color:var(--blue);}
+.active-filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.filter-tag{display:inline-flex;align-items:center;gap:5px;background:var(--blue-light);border:1px solid var(--blue-border);color:var(--blue);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500;}
+.filter-tag button{background:none;border:none;cursor:pointer;color:var(--blue);font-size:13px;padding:0;line-height:1;opacity:0.7;}
+.filter-tag button:hover{opacity:1;}
+.result-count{font-size:12px;color:var(--text-sec);white-space:nowrap;}
+
+/* MONTH CHIPS */
+.month-bar{display:flex;align-items:center;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.filter-label-sm{font-size:12px;font-weight:500;color:var(--text-sec);margin-right:2px;}
 .chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-strong);background:var(--white);color:var(--text-sec);transition:all 0.15s;white-space:nowrap;font-family:'Inter',sans-serif;box-shadow:var(--shadow-sm);}
 .chip:hover:not(.active){background:var(--blue-light);border-color:var(--blue-border);color:var(--blue);}
-.chip.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(0,87,255,0.3);}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(0,87,255,0.28);}
 .info-pill{font-size:11px;color:var(--text-muted);background:var(--off-white);border:1px solid var(--border);border-radius:20px;padding:4px 11px;}
+
+/* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin-bottom:1.5rem;}
 .kpi{background:var(--card);border-radius:var(--radius);padding:14px 16px;border:1px solid var(--border);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:box-shadow 0.15s,transform 0.1s;}
 .kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--blue);border-radius:3px 0 0 3px;}
@@ -53,44 +84,84 @@ body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text
 .kpi.accent .kpi-value{color:var(--blue);}
 .kpi.clickable{cursor:pointer;}
 .kpi.clickable:hover{box-shadow:0 4px 16px rgba(0,87,255,0.18);transform:translateY(-1px);}
+
+/* TABS */
 .tab-bar{display:flex;gap:2px;margin-bottom:1.25rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;box-shadow:var(--shadow-sm);}
 .tab{padding:7px 18px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-sec);border-radius:7px;transition:all 0.15s;font-family:'Inter',sans-serif;}
 .tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,87,255,0.25);}
 .tab:hover:not(.active){background:var(--off-white);color:var(--text);}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
+
+/* SECTION TITLE */
 .section-title{font-size:11px;font-weight:600;color:var(--text-sec);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:6px;}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* TABLES */
 .table-wrap{overflow-x:auto;margin-bottom:1.5rem;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);}
 table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);}
 thead{position:sticky;top:0;z-index:2;}
-th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-sec);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--off-white);text-transform:uppercase;letter-spacing:0.04em;}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-sec);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--off-white);text-transform:uppercase;letter-spacing:0.04em;cursor:pointer;user-select:none;}
+th:hover{background:#ebebeb;}
+th .sort-icon{margin-left:4px;opacity:0.4;font-size:10px;}
+th.sorted .sort-icon{opacity:1;color:var(--blue);}
 th.num{text-align:center;}
-th.mhdr{background:var(--navy);color:rgba(255,255,255,0.7);font-size:11px;border-left:2px solid rgba(255,255,255,0.1);text-align:center;padding:10px 12px;}
+th.mhdr{background:var(--navy);color:rgba(255,255,255,0.7);font-size:11px;border-left:2px solid rgba(255,255,255,0.1);text-align:center;padding:10px 12px;cursor:default;}
+th.mhdr:hover{background:var(--navy);}
 td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap;}
 td.num{text-align:center;}
 td.mcell{border-left:2px solid var(--border);text-align:center;font-size:12px;color:var(--text-muted);}
 td.mcell.hi{color:var(--text);font-weight:600;}
 td.mcell.zero{color:var(--border-strong);}
 tr.total-row td{font-weight:700;background:linear-gradient(90deg,rgba(0,87,255,0.05),rgba(0,87,255,0.02));}
-tr.total-row td.mcell{background:transparent;}
-tbody tr:hover td{background:rgba(0,87,255,0.03);}
+tbody tr:hover td{background:rgba(0,87,255,0.025);}
 tr:last-child td{border-bottom:none;}
 .region-badge{display:inline-flex;align-items:center;gap:5px;font-weight:600;}
 .rdot{width:7px;height:7px;border-radius:50%;display:inline-block;}
-.drill-num{cursor:pointer;color:var(--blue);font-weight:600;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;transition:color 0.1s;}
+.drill-num{cursor:pointer;color:var(--blue);font-weight:600;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .drill-num:hover{color:var(--blue-hover);}
-.drill-num.zero{color:var(--text-muted);cursor:default;text-decoration:none;font-weight:400;}
+.no-data{text-align:center;padding:40px 20px;color:var(--text-sec);font-size:13px;}
+
+/* PROGRESS BAR */
+.prog-bar{height:5px;background:var(--border);border-radius:3px;min-width:60px;}
+.prog-fill{height:100%;border-radius:3px;background:var(--blue);transition:width 0.3s;}
+
+/* STATUS PILL */
+.sp{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;}
+.sp-live{background:#D1FAE5;color:#065F46;}
+.sp-uat{background:#DBEAFE;color:#1E40AF;}
+.sp-ip{background:#FEF3C7;color:#92400E;}
+.sp-scoping{background:#F3E8FF;color:#6B21A8;}
+.sp-yts{background:#F1F5F9;color:#475569;}
+.sp-other{background:#F1F5F9;color:#6B7280;}
+
+/* BA SECTION */
+.ba-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:1.5rem;}
+.ba-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-sm);}
+.ba-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ba-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.ba-name{font-weight:600;font-size:14px;color:var(--text);margin-left:10px;}
+.ba-count{font-size:12px;color:var(--text-muted);}
+.ba-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.ba-stat{background:var(--off-white);border-radius:8px;padding:8px 10px;}
+.ba-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;}
+.ba-stat-value{font-size:18px;font-weight:700;color:var(--text);}
+.ba-bar-row{margin-top:10px;}
+.ba-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-sec);margin-bottom:4px;}
+.ba-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.ba-bar-fill{height:100%;border-radius:3px;transition:width 0.3s;}
+
+/* CHART GRID */
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem;}
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;box-shadow:var(--shadow-sm);}
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:var(--text-sec);}
 .legend span{display:flex;align-items:center;gap:5px;font-weight:500;}
 .ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
-.footer{text-align:center;font-size:12px;color:var(--text-muted);margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;}
+
 /* DRAWER */
-.drawer-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.45);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.drawer-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.45);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s;}
 .drawer-overlay.open{opacity:1;pointer-events:all;}
-.drawer{position:fixed;top:0;right:0;height:100vh;width:min(820px,96vw);background:#fff;z-index:201;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.32,0,0.15,1);display:flex;flex-direction:column;box-shadow:-4px 0 32px rgba(7,17,42,0.18);}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(860px,96vw);background:#fff;z-index:301;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.32,0,0.15,1);display:flex;flex-direction:column;box-shadow:-4px 0 32px rgba(7,17,42,0.18);}
 .drawer.open{transform:translateX(0);}
 .drawer-hdr{background:var(--navy);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .drawer-title{color:#fff;font-weight:600;font-size:15px;}
@@ -106,16 +177,37 @@ tr:last-child td{border-bottom:none;}
 .dtable th{text-align:left;padding:9px 14px;font-size:10px;font-weight:600;color:var(--text-sec);border-bottom:1px solid var(--border);background:var(--off-white);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;position:sticky;top:0;z-index:1;}
 .dtable td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;line-height:1.45;}
 .dtable td.nw{white-space:nowrap;}
-.dtable tbody tr:hover td{background:rgba(0,87,255,0.03);}
+.dtable tbody tr:hover td{background:rgba(0,87,255,0.025);}
 .dtable tr:last-child td{border-bottom:none;}
-.sp{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;}
-.sp-live{background:#D1FAE5;color:#065F46;}
-.sp-uat{background:#DBEAFE;color:#1E40AF;}
-.sp-ip{background:#FEF3C7;color:#92400E;}
-.sp-scoping{background:#F3E8FF;color:#6B21A8;}
-.sp-yts{background:#F1F5F9;color:#475569;}
-.sp-other{background:#F1F5F9;color:#6B7280;}
-@media(max-width:640px){.chart-grid{grid-template-columns:1fr;}.topbar{padding:0 1rem;}.page{padding:1.25rem 1rem 3rem;}.kpi-value{font-size:22px;}}
+
+/* FOOTER */
+.footer{text-align:center;font-size:12px;color:var(--text-muted);margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* PROJECT DETAIL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.5);z-index:400;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 48px rgba(7,17,42,0.22);transform:translateY(12px);transition:transform 0.25s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-hdr{background:var(--navy);padding:18px 22px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.modal-hdr-title{color:#fff;font-weight:700;font-size:16px;letter-spacing:-0.01em;line-height:1.3;}
+.modal-hdr-sub{color:rgba(255,255,255,0.5);font-size:12px;margin-top:3px;}
+.modal-close{background:rgba(255,255,255,0.1);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:background 0.15s;}
+.modal-close:hover{background:rgba(255,255,255,0.2);}
+.modal-body{padding:20px 22px;}
+.modal-section{margin-bottom:18px;}
+.modal-section-title{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.modal-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-field{background:var(--off-white);border-radius:8px;padding:10px 12px;}
+.modal-field.full{grid-column:1/-1;}
+.modal-field-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.modal-field-value{font-size:13px;color:var(--text);font-weight:500;line-height:1.45;}
+.modal-field-value.muted{color:var(--text-sec);font-weight:400;}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;}
+.btn-modal-close{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-modal-close:hover{background:var(--blue-hover);}
+.dtable tbody tr{cursor:pointer;}
+.dtable tbody tr:hover td{background:rgba(0,87,255,0.06)!important;}
+@media(max-width:640px){.chart-grid{grid-template-columns:1fr;}.topbar{padding:0 1rem;}.page{padding:1.25rem 1rem 3rem;}.kpi-value{font-size:22px;}.ba-grid{grid-template-columns:1fr;}.filter-row{flex-direction:column;}.filter-group{min-width:100%;}.modal-fields{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -127,7 +219,7 @@ tr:last-child td{border-bottom:none;}
   </a>
   <div class="topbar-right">
     <span class="topbar-pill"><i class="ti ti-circle-check"></i> Live &middot; 27 May 2026</span>
-    <button class="dl-btn" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
+    <button class="btn-top outline" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
   </div>
 </div>
 
@@ -150,7 +242,7 @@ tr:last-child td{border-bottom:none;}
       <thead>
         <tr>
           <th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Status</th>
-          <th>Dev type</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing activities</th>
+          <th>Dev</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing</th>
         </tr>
       </thead>
       <tbody id="dBody"></tbody>
@@ -158,16 +250,99 @@ tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- Project detail modal -->
+<div class="modal-overlay" id="projModalOverlay" onclick="closeProjModal()">
+  <div class="modal" id="projModal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-hdr-title" id="pmTitle"></div>
+        <div class="modal-hdr-sub" id="pmSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeProjModal()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="pmBody"></div>
+    <div class="modal-footer">
+      <button class="btn-modal-close" onclick="closeProjModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="page">
-  <div class="header-row">
-    <div class="page-header">
-      <h1>BA Team &mdash; Project Analytics</h1>
-      <p>139 projects &nbsp;&middot;&nbsp; Apr 2026 onwards &nbsp;&middot;&nbsp; Last updated 27 May 2026</p>
+  <div class="page-hdr">
+    <h1>BA Team &mdash; Project Analytics</h1>
+    <p>139 projects &nbsp;&middot;&nbsp; Apr 2026 onwards &nbsp;&middot;&nbsp; Last updated 27 May 2026</p>
+  </div>
+
+  <!-- SEARCH + FILTERS -->
+  <div class="control-bar">
+    <div class="search-row">
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input type="text" id="searchInput" placeholder="Search projects, usecases, BA names..." oninput="onSearch()"/>
+      </div>
+      <button class="clear-btn" onclick="clearAll()"><i class="ti ti-x"></i> Clear all</button>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <div class="filter-label">Region</div>
+        <select class="filter-select" id="fRegion" onchange="applyFilters()">
+          <option value="">All regions</option>
+          <option>North</option><option>South</option><option>West</option><option>UAE</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Status</div>
+        <select class="filter-select" id="fStatus" onchange="applyFilters()">
+          <option value="">All statuses</option>
+          <option value="golive">Go Live / Live</option>
+          <option value="inprogress">In Progress</option>
+          <option value="uat">UAT</option>
+          <option value="scoping">Scoping / Pipeline</option>
+          <option value="yts">Yet to Start</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Development</div>
+        <select class="filter-select" id="fDev" onchange="applyFilters()">
+          <option value="">All types</option>
+          <option value="Twixor">Twixor</option>
+          <option value="Inhouse">Inhouse</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">BA</div>
+        <select class="filter-select" id="fBA" onchange="applyFilters()">
+          <option value="">All BAs</option>
+          <option>Aniruddha</option><option>Ankit</option><option>Daimi Syed</option>
+          <option>Himanshu</option><option>Kiran</option><option>Megha</option>
+          <option>Raj</option><option>Somya</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Month</div>
+        <select class="filter-select" id="fMonth" onchange="applyFilters()">
+          <option value="">All months</option>
+          <option value="2026-04">Apr 2026</option>
+          <option value="2026-05">May 2026</option>
+          <option value="2026-06">Jun 2026</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div class="active-filters" id="activeTags"></div>
+      <span class="result-count" id="resultCount"></span>
     </div>
   </div>
 
-  <div class="filter-bar">
-    <span class="filter-label">Month:</span>
+  <!-- FILTERED PROJECT TABLE -->
+  <div id="filteredSection" style="display:none;margin-bottom:1.5rem;">
+    <p class="section-title">Search / filter results</p>
+    <div class="table-wrap" id="filteredTableWrap"></div>
+  </div>
+
+  <!-- MONTH FILTER CHIPS -->
+  <div class="month-bar">
+    <span class="filter-label-sm">Month:</span>
     <button class="chip active" data-key="all" onclick="selectMonth('all')">All</button>
     <button class="chip" data-key="2026-04" onclick="selectMonth('2026-04')">Apr 2026</button>
     <button class="chip" data-key="2026-05" onclick="selectMonth('2026-05')">May 2026</button>
@@ -175,14 +350,16 @@ tr:last-child td{border-bottom:none;}
     <span class="info-pill" id="infoPill"></span>
   </div>
 
-  <div class="kpi-grid" id="kpiGrid"></div>
-
+  <!-- TABS -->
   <div class="tab-bar">
-    <button class="tab active" data-tab="region" onclick="switchTab('region')">Region breakdown</button>
-    <button class="tab" data-tab="monthly" onclick="switchTab('monthly')">Month-wise analytics</button>
+    <button class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" data-tab="monthly" onclick="switchTab('monthly')">Month-wise</button>
+    <button class="tab" data-tab="ba" onclick="switchTab('ba')">BA-wise</button>
   </div>
 
-  <div class="tab-panel active" id="panel-region">
+  <!-- OVERVIEW TAB -->
+  <div class="tab-panel active" id="panel-overview">
+    <div class="kpi-grid" id="kpiGrid"></div>
     <p class="section-title">Region breakdown</p>
     <div class="table-wrap" id="regionTableWrap"></div>
     <div class="chart-grid">
@@ -217,6 +394,7 @@ tr:last-child td{border-bottom:none;}
     </div>
   </div>
 
+  <!-- MONTHLY TAB -->
   <div class="tab-panel" id="panel-monthly">
     <p class="section-title">Month-wise summary</p>
     <div class="table-wrap" id="monthTableWrap"></div>
@@ -247,324 +425,509 @@ tr:last-child td{border-bottom:none;}
     </div>
   </div>
 
+  <!-- BA TAB -->
+  <div class="tab-panel" id="panel-ba">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+      <p class="section-title" style="margin-bottom:0;flex:1">BA-wise analytics</p>
+      <select class="filter-select" id="baRegionFilter" onchange="renderBASection()" style="min-width:130px;">
+        <option value="">All regions</option>
+        <option>North</option><option>South</option><option>West</option><option>UAE</option>
+      </select>
+      <select class="filter-select" id="baStatusFilter" onchange="renderBASection()" style="min-width:130px;">
+        <option value="">All statuses</option>
+        <option value="golive">Go Live</option>
+        <option value="inprogress">In Progress</option>
+        <option value="uat">UAT</option>
+        <option value="scoping">Scoping/Pipeline</option>
+        <option value="yts">Yet to Start</option>
+      </select>
+    </div>
+    <div class="ba-grid" id="baGrid"></div>
+    <p class="section-title">BA comparison table</p>
+    <div class="table-wrap" id="baTableWrap"></div>
+    <div class="chart-grid" style="margin-top:0.5rem">
+      <div class="chart-card">
+        <p class="section-title">Projects per BA</p>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="baChart1"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="section-title">Status distribution per BA</p>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="baChart2"></canvas></div>
+      </div>
+    </div>
+  </div>
+
   <div class="footer">
     <span>&copy; 2026 Karix &mdash; a Tanla Platforms company</span>
     <span>&middot;</span><span>BA Team Project Analytics</span>
     <span>&middot;</span><span>Data filtered: Apr 2026 onwards</span>
   </div>
 </div>
-
 <script>
-
-/* DATA */
 const DB = {"lastUpdated": "27 May 2026", "totalRows": 139, "all": {"North": {"total": 54, "inprogress": 14, "uat": 4, "golive": 20, "yts": 12, "scoping": 4, "twixor": 33, "inhouse": 15, "mandays": 82}, "South": {"total": 47, "inprogress": 13, "uat": 6, "golive": 14, "yts": 1, "scoping": 12, "twixor": 18, "inhouse": 19, "mandays": 45}, "West": {"total": 30, "inprogress": 3, "uat": 2, "golive": 14, "yts": 0, "scoping": 11, "twixor": 1, "inhouse": 15, "mandays": 0}, "UAE": {"total": 8, "inprogress": 0, "uat": 3, "golive": 4, "yts": 0, "scoping": 1, "twixor": 1, "inhouse": 2, "mandays": 4}, "Total": {"total": 139, "inprogress": 30, "uat": 15, "golive": 52, "yts": 13, "scoping": 28, "twixor": 53, "inhouse": 51, "mandays": 131}}, "months": {"2026-04": {"rowCount": 62, "data": {"North": {"total": 28, "inprogress": 6, "uat": 2, "golive": 11, "yts": 7, "scoping": 2, "twixor": 16, "inhouse": 9, "mandays": 73}, "South": {"total": 16, "inprogress": 3, "uat": 3, "golive": 4, "yts": 0, "scoping": 6, "twixor": 5, "inhouse": 5, "mandays": 0}, "West": {"total": 14, "inprogress": 0, "uat": 1, "golive": 9, "yts": 0, "scoping": 4, "twixor": 0, "inhouse": 8, "mandays": 0}, "UAE": {"total": 4, "inprogress": 0, "uat": 0, "golive": 4, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 1, "mandays": 4}, "Total": {"total": 62, "inprogress": 9, "uat": 6, "golive": 28, "yts": 7, "scoping": 12, "twixor": 21, "inhouse": 23, "mandays": 77}}}, "2026-05": {"rowCount": 83, "data": {"North": {"total": 27, "inprogress": 8, "uat": 2, "golive": 10, "yts": 5, "scoping": 2, "twixor": 17, "inhouse": 7, "mandays": 10}, "South": {"total": 35, "inprogress": 10, "uat": 5, "golive": 12, "yts": 1, "scoping": 6, "twixor": 17, "inhouse": 14, "mandays": 45}, "West": {"total": 17, "inprogress": 3, "uat": 1, "golive": 6, "yts": 0, "scoping": 7, "twixor": 1, "inhouse": 8, "mandays": 0}, "UAE": {"total": 4, "inprogress": 0, "uat": 3, "golive": 0, "yts": 0, "scoping": 1, "twixor": 1, "inhouse": 1, "mandays": 0}, "Total": {"total": 83, "inprogress": 21, "uat": 11, "golive": 28, "yts": 6, "scoping": 16, "twixor": 36, "inhouse": 30, "mandays": 55}}}, "2026-06": {"rowCount": 1, "data": {"North": {"total": 1, "inprogress": 1, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 1, "inhouse": 0, "mandays": 0}, "South": {"total": 0, "inprogress": 0, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 0, "mandays": 0}, "West": {"total": 0, "inprogress": 0, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 0, "mandays": 0}, "UAE": {"total": 0, "inprogress": 0, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 0, "inhouse": 0, "mandays": 0}, "Total": {"total": 1, "inprogress": 1, "uat": 0, "golive": 0, "yts": 0, "scoping": 0, "twixor": 1, "inhouse": 0, "mandays": 0}}}}};
-const RAW = {"cols": ["Project", "Region", "Usecase", "BA", "Start Date", "Due Date / ETA", "Status", "Progress %", "Development", "Mandays Saved", "Ongoing Activities", "Comments/Description"], "rows": [["Home R Us (Lals)", "UAE", "Button payload journey for delivery confirmation", "Aniruddha", "2025-12-25", "2026-04-28", "Live", "100.0", "", "", "", "Client slow"], ["Truemeds PDP", "West", "Abandoned cart on RCS", "Aniruddha", "2026-01-28", "2026-04-15", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Torrent Diagnostics", "West", "Live agent flow", "Aniruddha", "2026-01-21", "2026-04-10", "Live", "100.0", "", "", "", "WABA pending"], ["Salik", "UAE", "Gen AI FAQs POC", "Aniruddha", "2026-02-20", "2026-04-01", "Live", "100.0", "", "", "", ""], ["Prefr", "West", "POC for Voice", "Aniruddha", "2026-03-17", "2026-04-20", "Live", "100.0", "Inhouse Dev", "", "", ""], ["TVS", "South", "POC for commercial vehicle loan voice", "Aniruddha", "2026-03-23", "2026-04-17", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Hero Fincorp", "West", "Live agent", "Aniruddha", "2026-03-25", "2026-04-01", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Yes Bank", "West", "Lead Capture via WhatsApp /SFTP", "Aniruddha", "2026-04-06", "", "Scoping", "10.0", "", "", "", "Efforts going to change."], ["UAE Space Agency", "UAE", "AI chatbot RFP via SImplai", "Aniruddha", "2026-04-02", "", "End of life", "10.0", "", "", "", "This was just RFI."], ["Mondelez", "West", "Employee absenteeism journey", "Aniruddha", "2026-04-02", "2026-04-10", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Prefr", "West", "CR for API update", "Aniruddha", "2026-04-06", "", "Live", "10.0", "", "", "", "Done via Twixor support"], ["Webengage Melooha", "West", "Add WebENgage Optin/Optout API", "Aniruddha", "2026-04-07", "2026-04-09", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Webengage Firstclub", "West", "Add WebENgage Optin/Optout API", "Aniruddha", "2026-04-07", "2026-04-09", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Tata Cliq", "West", "Abandoned cart voice POC via smallest.ai", "Aniruddha", "2026-04-10", "2026-05-05", "Live", "100.0", "Inhouse Dev", "", "", ""], ["Cholamandalam Finance", "South", "POC for collections", "Aniruddha", "2026-04-20", "2026-04-27", "Live", "100.0", "Inhouse Dev", "", "", ""], ["HDFC Life", "West", "Native payments via RZP", "Aniruddha", "2026-04-28", "", "Scoping", "5.0", "", "", "", ""], ["EFL", "West", "Agentic AI voice bot", "Aniruddha", "2026-04-27", "", "Scoping", "5.0", "", "", "", ""], ["HDFC Ergo", "West", "Payment config via RZP", "Aniruddha", "2026-04-28", "", "Scoping", "10.0", "", "", "", ""], ["HDFC ergo", "West", "Myra Payment integration", "Aniruddha", "2026-05-11", "", "Scoping", "", "", "", "", ""], ["Jiostar Disney", "West", "Daily quiz for 15 days", "Aniruddha", "2026-05-08", "", "End of life", "", "", "", "", ""], ["SBI", "West", "Green pin modification", "Aniruddha", "2026-05-07", "", "Development", "80.0", "Inhouse", "", "", ""], ["SBI", "West", "Manage DC modification", "Aniruddha", "2026-05-07", "", "Development", "20.0", "Inhouse", "", "", ""], ["Al Habtoor", "UAE", "VOC - Web bot - service advisor upload", "Aniruddha", "2026-05-07", "", "UAT", "80.0", "", "", "", ""], ["Paisawaala", "West", "Live agent", "Aniruddha", "2026-05-18", "", "Live", "100.0", "Inhouse", "", "", ""], ["SBI General", "West", "CTWA to collect lead details", "Aniruddha", "2026-05-19", "", "Scoping", "10.0", "", "", "", ""], ["Sultan Foods (Barakat)", "UAE", "Button payload survey and Webengage", "Aniruddha", "2026-05-22", "", "Scoping", "", "", "", "", ""], ["Tata motors", "West", "Multiple journey Migration from Gupshup", "Aniruddha", "2026-05-19", "", "Scoping", "", "", "", "", ""], ["Piramal", "West", "AI bot for HR use case", "Aniruddha", "2026-05-21", "", "Scoping", "", "", "", "", ""], ["HDFC life", "West", "Native Payments Integration", "Aniruddha", "2026-05-22", "", "Scoping", "", "Inhouse", "", "", ""], ["Motilal Oswal", "West", "WhatsApp Chatbot Configuration", "Aniruddha", "2026-05-25", "", "Scoping", "", "", "", "", ""], ["SBI Life", "West", "SBI Life Insurance Agentic AI", "Aniruddha", "2026-05-22", "2026-05-25", "Live", "", "", "", "", ""], ["SBI", "West", "SBI EPay integration", "Aniruddha", "2026-05-25", "", "Scoping", "", "", "", "", ""], ["SBI", "South", "Funnel dashboard + Manage Debit Card", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.8", "Twixor", "", "", ""], ["Bandhan Bank", "South", "Debit card phase 2 + Credit Card Journey UAT", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.65", "Twixor", "", "", ""], ["BOB", "South", "Urdu observations + CBDC + Link redirection", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.75", "Twixor", "", "", ""], ["BOI", "South", "UAT sign off + Re KYC + Migration", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.65", "Twixor", "", "", ""], ["CSB", "South", "Account statement + Debit card use case", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "0.45", "Twixor", "", "", ""], ["PSB", "North", "Multilingual implementation", "Daimi Syed", "2026-05-04", "", "Yet to Start(Assigned)", "0.4", "Twixor", "", "", ""], ["Housing", "North", "Moengage platform push", "Ankit/Himanshu", "2026-04-15", "", "Yet to Start(Assigned)", "0.2", "Twixor", "0", "", ""], ["Setu BBPS", "North", "Intent based upi link", "Ankit", "2026-04-15", "", "Live", "1", "Inhouse", "", "Go live done", ""], ["NICL CSAT and NPS", "North", "CSAT plus nps integration", "Ankit", "2026-04-12", "", "Live", "0.9", "Twixor", "5", "UAT done", ""], ["Spice jet", "North", "Complete aviation use case", "Ankit", "2026-04-16", "", "In Progress", "0.3", "Twixor", "-34", "Hold due to sales confirmation", ""], ["Isckon", "North", "Catalog journey", "Ankit", "2026-04-17", "", "Pipeline", "0.2", "Twixor", "", "", ""], ["Berger AI", "North", "Voice AI + Whatsapp calling", "", "2026-04-17", "", "Yet to Start(Assigned)", "0.2", "Inhouse", "", "", ""], ["Hindware Journey", "North", "Catalog plus brand film journey", "Ankit", "2026-04-20", "", "Live", "0.8", "Inhouse", "2", "", ""], ["DHBVN", "North", "UPI link webview", "Ankit", "2026-04-22", "", "Pipeline", "0.1", "Twixor", "", "", ""], ["Zillion Redemption", "North", "Product recommendation + Payment", "Ankit", "2026-04-24", "", "In Progress", "0.4", "Twixor", "21", "", ""], ["Berger Certificate", "North", "Berger Certificate", "Ankit", "2026-04-28", "", "Live", "1", "Inhouse", "7", "Bot went live 04/05/26", ""], ["Vouchagram", "North", "Vouchagram", "Ankit", "2026-04-30", "", "In progress", "0.3", "Twixor", "", "", ""], ["PB Partners", "North", "PB Partners", "", "2026-05-04", "", "In Progress", "0.85", "Inhouse", "7", "CTWA credentials awaiting", ""], ["BharatPe - Credit Nirvana", "North", "Settlement agreement + 48hr nudge", "Ankit", "2026-05-07", "", "Hypercare", "1", "Twixor", "", "", ""], ["Rainbow LSQ Integration", "North", "Send all bot events to LSQ CRM", "Ankit", "2026-05-19", "", "UAT", "0.8", "Twixor", "", "", ""], ["BMH Capital", "UAE", "BMH Capital", "Kiran", "2026-04-13", "2026-04-30", "Live", "1", "Inhouse", "4", "", ""], ["Multiplier", "North", "Employee help desk", "Kiran", "2026-03-20", "2026-05-01", "In Progress", "0.8", "Twixor", "", "", ""], ["TNeGA", "South", "Phase 2B development 4 services", "Kiran", "", "2026-05-02", "Yet to Start(Assigned)", "0.4", "Twixor", "", "", ""], ["Funcity", "South", "Birthday party CR", "Kiran", "2026-04-02", "2026-05-03", "Live", "0.5", "Twixor", "", "", ""], ["Malabar", "North", "Australia bot issues", "Kiran", "2026-03-31", "2026-05-04", "In Progress", "0.7", "Twixor", "", "", ""], ["Kapsons", "North", "Personal assistance / Egift card", "Kiran", "2026-03-31", "2026-05-05", "In Progress", "0.8", "Twixor", "", "", ""], ["SBI", "West", "Nominee add/update", "Kiran", "2026-02-12", "2026-05-06", "Live", "1", "Twixor", "", "", ""], ["Lifestyle", "South", "CR - UAT observations", "Kiran", "2026-03-15", "2026-05-07", "UAT", "0.5", "Inhouse", "", "", ""], ["CMRL", "South", "Add station - UAT bot not working", "Kiran", "2026-03-19", "2026-05-06", "Live", "1", "Twixor", "", "", ""], ["Funcity", "South", "Fun pass CR", "Kiran", "2026-04-10", "2026-05-02", "UAT", "0.9", "Twixor", "", "", ""], ["CAGL Primary Bot", "South", "Live Migration", "Kiran", "2026-02-23", "2026-05-10", "Live", "1", "Twixor", "", "", ""], ["CAGL Unnati flows", "South", "new Requirements", "Kiran", "2026-03-22", "2026-05-11", "Live", "1", "Inhouse", "", "", ""], ["Funcity", "South", "Dashboard issues", "Kiran", "2026-04-28", "2026-05-02", "LIVE", "1", "twixor", "", "", ""], ["Funcity", "South", "4 NEW Requests", "Kiran", "2026-05-07", "2026-05-12", "Development", "0.5", "twixor", "", "", ""], ["Multiplier", "North", "Feedback Form Implementation", "Kiran", "2026-05-07", "2026-05-25", "Scoping", "", "twixor", "", "", ""], ["TNeGA", "South", "Small Farmer, KCC CR", "Kiran", "2026-05-04", "2026-05-16", "Development", "0.5", "twixor", "", "", ""], ["Funcity", "South", "Funblock new Requirement", "", "2026-05-15", "2026-05-19", "", "", "", "", "", ""], ["Cagl", "South", "View Pass Book Implementation", "Kiran", "2026-05-04", "", "Scoping", "", "twixor", "", "", ""], ["Yes Bank", "North", "Credit limit increase bot", "Himanshu", "2026-04-13", "2026-04-30", "In Progress", "1", "Twixor", "--", "", ""], ["Bandhan Bank", "North", "Credit card services bot", "Himanshu", "2026-04-15", "2026-06-09", "In Progress", "0.4", "Twixor", "--", "", ""], ["TrueBalance", "North", "Pre-approved loan via WhatsApp", "Himanshu", "2026-04-24", "2026-04-30", "Live", "1", "Inhouse", "--", "", ""], ["Aditya Birla", "North", "IT support tickets chatbot", "Himanshu", "2026-04-24", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Sum NXT", "North", "WhatsApp subscription + UPI", "Himanshu", "2026-04-24", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Tagg Teleservices", "North", "Shipment tracking bot", "Himanshu", "2026-04-28", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Pradhan Mantri Aawas Yojna", "North", "PMAY-U 2.0 notification", "Himanshu", "2026-05-05", "2026-05-08", "Live", "1", "Twixor", "--", "", ""], ["Eresolution", "North", "CTWA loan assistance bot", "Himanshu", "2026-05-08", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["Ayushman Bharat Digital Mission", "North", "ABDM WhatsApp Chatbot", "Himanshu", "2026-05-11", "", "UAT", "1", "Inhouse", "--", "", ""], ["Bhatia Cloth House", "North", "AI-powered WhatsApp FAQ bot", "Himanshu", "2026-05-25", "", "Yet to Start(Assigned)", "0", "Twixor", "--", "", ""], ["FabIndia", "North", "WhatsApp profile verification bot", "Himanshu", "2026-05-11", "", "Yet to Start(Assigned)", "0", "Inhouse", "--", "", ""], ["Lenskart", "North", "Dashboard Creation", "Himanshu", "2026-05-11", "", "In Progress", "0.2", "Twixor", "--", "", ""], ["Housing", "North", "Housing project", "Himanshu", "2026-04-16", "", "Yet to Start(Assigned)", "0", "", "--", "", ""], ["OneMoney", "North", "OneMoney project", "Himanshu", "2026-04-08", "", "Yet to Start(Assigned)", "0", "", "--", "", ""], ["Pinelabs-2", "South", "Activate Bharat card", "Megha", "2026-03-03", "2026-05-12", "Live", "1", "Inhouse", "8 Days", "Go live done.", ""], ["Malabar UK", "South", "Form + live agent connection", "Megha", "2026-04-22", "2026-05-18", "UAT", "0.9", "Twixor", "0 Days", "Bot dropped for UAT", ""], ["Flipkart-RCS", "South", "Feedback WA journey of NPS", "Megha", "2026-05-05", "2026-05-18", "Live", "1", "Inhouse", "10 Days", "Go live", ""], ["Flipkart-WA", "South", "Feedback WA journey of NPS", "Megha", "2026-05-05", "2026-05-18", "Live", "1", "Inhouse", "10 Days", "Go Live", ""], ["Flipkart-CTWA", "South", "Flipkart wholesale journey", "Megha", "2026-05-11", "2026-05-21", "UAT", "0", "Inhouse", "8 Days", "English Language on UAT", ""], ["Myntra-WA", "South", "Mothers day carousel journey", "Megha", "2026-05-08", "2026-05-08", "Live", "1", "Inhouse", "2 Days", "Live Bot", ""], ["Unlimited", "North", "V-Mart RCS bot replication", "Megha", "2026-05-13", "2026-05-14", "Live", "1", "Inhouse", "0 Days", "", ""], ["Furlenco", "North", "QR reply auto message journey", "Megha", "2026-05-19", "2026-05-21", "Live", "1", "Inhouse", "1 Day", "Go live on 27th May", ""], ["Licious-Optin", "South", "Opt in and Opt out journey", "Megha", "2026-05-18", "2026-05-27", "In Progress", "0", "Inhouse", "1 Day", "Development in progress", ""], ["Licious-Know more", "South", "Know more QR button integration", "Megha", "2026-05-25", "2026-05-04", "In Progress", "0", "Inhouse", "3 Days", "Development to get started", ""], ["TATA Digital ZIPCARE", "West", "Insurance journey", "Raj", "", "2026-04-27", "UAT", "1", "Inhouse", "", "", ""], ["Paisawalla", "West", "Paisawalla", "Raj", "", "2026-05-20", "UAT", "1", "Inhouse", "", "", ""], ["AMS SSE", "UAE", "Brand info and service journey", "Raj", "2026-05-20", "2026-05-25", "UAT", "0.9", "Twixor", "", "", ""], ["Jio Star", "West", "static bot", "Raj", "2026-05-22", "2026-05-25", "Live", "1", "Inhouse", "", "", ""], ["Tarahum NEW CR", "UAE", "NEW CR for the bot", "Raj", "2026-05-18", "2026-05-27", "UAT", "0.9", "Inhouse", "", "", ""], ["TMIBASL", "West", "New Development", "Raj", "2026-05-18", "", "In Progress", "0.05", "Inhouse", "", "", ""], ["Vmart", "North", "Journeys Replication", "Somya", "2026-01-13", "2026-04-22", "Live", "1.0", "Twixor", "", "", ""], ["Hindware", "North", "City and State visibility fix", "Somya", "2026-02-23", "2026-04-22", "UAT", "0.9", "Twixor", "", "UAT Signoff pending", ""], ["MCA (PMIS)", "North", "VF Waba Chatbot", "Somya", "2026-03-02", "2026-04-01", "Live", "1.0", "Inhouse", "", "", ""], ["Umang", "North", "WhatsApp Service Go-Live", "Somya", "2026-03-02", "2026-04-30", "Live", "1.0", "Inhouse", "", "", ""], ["KSITM", "South", "Kerala State Electric Board", "Somya", "2026-04-21", "", "In Progress", "0.5", "Inhouse", "", "Under Development", ""], ["DGG (ANTF)", "North", "ANTF WA Bot and Ticket panel", "Somya", "2026-03-09", "2026-05-09", "Live", "1.0", "Twixor", "", "", ""], ["DGG (ACAL)", "North", "ACAL WA Bot and Ticket panel", "Somya", "2026-03-12", "2026-05-10", "Live", "1.0", "Twixor", "", "", ""], ["DGG (Egov)", "North", "Egov Bot", "Somya", "2026-03-19", "2026-05-06", "Live", "1.0", "Inhouse", "", "", ""], ["DGG (Invest Punjab)", "North", "Invest Punjab WA Bot", "Somya", "2026-04-16", "2026-05-06", "Live", "1.0", "Inhouse", "", "", ""], ["Myntra", "North", "Carousel RCS journey", "Somya", "2026-04-07", "2026-04-24", "Live", "1.0", "Inhouse", "", "", ""], ["Vmart/Unlimited", "North", "Changes in Hi Flow", "Somya", "2026-04-15", "2026-04-30", "UAT", "0.8", "Twixor", "", "Development in progress", ""], ["Flipkart", "South", "NPS Journey", "Somya", "2026-04-06", "", "UAT", "0.8", "", "", "", ""], ["Nastasia", "South", "Nestasia Bot Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0.0", "", "", "", ""], ["DEI", "South", "DEI Global Bot Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0.0", "", "", "", ""], ["Olam Agri", "South", "Olam Agri Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0.0", "", "", "", ""], ["Jewel", "South", "Jewel testimonial", "Somya", "2026-04-15", "", "In Progress", "0.4", "", "", "Script sent to client", ""], ["Funblock", "South", "Birthday Party Block", "Somya", "2026-04-21", "", "Pipeline", "0.0", "", "", "", ""], ["Libas", "North", "Store Locator", "Somya", "2026-04-24", "2026-04-24", "Live", "", "Twixor", "", "", ""], ["Aham Marketing", "South", "Form triggered over BIM", "Somya", "2026-04-27", "", "Pipeline", "0.1", "Inhouse", "", "", ""], ["Libas", "North", "Case Study approval", "Somya", "2026-04-28", "", "In Progress", "0.5", "", "", "", ""], ["Prefr", "South", "Optout functionality feasibility", "Somya", "2026-04-28", "", "In Progress", "0.1", "Twixor", "", "Development in progress", ""], ["Licious", "South", "Licious Offer Awareness Bot", "Somya", "2026-04-29", "", "Pipeline", "0.1", "Inhouse", "", "", ""], ["KSITM", "South", "Whatsapp Service Onboarding", "Somya", "2026-05-05", "", "Pipeline", "0.1", "Ihouse", "", "", ""], ["Flipkart", "South", "NPS CTWA", "Somya", "2026-05-05", "", "UAT", "0.8", "Inhouse", "", "", ""], ["Zepto", "South", "Auto response", "Somya", "2026-05-06", "", "Live", "1.0", "Twixor", "", "", ""], ["Myntra", "South", "Carousel journey", "Somya", "2026-05-07", "", "Live", "1.0", "Inhouse", "", "", ""], ["ANTF", "North", "Post Prod bugs rectification", "Somya", "2026-05-11", "", "In Progress", "0.6", "Twixor", "", "", ""], ["ACAL", "North", "Post Prod bugs rectification", "Somya", "2026-05-11", "", "In Progress", "0.8", "Twixor", "", "", ""], ["KSITM", "South", "Civil services", "Somya", "2026-05-05", "", "Pipeline", "0.1", "Twixor", "", "", ""], ["DGG Punjab Gov", "North", "Auto templates config", "Somya", "2026-05-13", "", "In Progress", "0.1", "", "", ""], ["KSITM", "North", "Higher Secondary Results WhatsApp", "Somya", "2026-05-19", "", "Live", "1.0", "Twixor", "", "Live", ""], ["Orange Health", "South", "CTWA Bot Effort", "Somya", "2026-05-25", "", "Pipeline", "0.1", "", "", "", ""], ["Myntra", "South", "WA AI for EORS", "Somya", "2026-05-25", "", "Live", "1.0", "Inhouse", "", "Live", ""], ["Umang", "North", "Webhook Configuration", "Somya", "2026-05-25", "", "Pipeline", "0.1", "", "", "", ""], ["Unlimited", "North", "RCS journey replication", "Megha", "2026-05-13", "", "Live", "1.0", "", "", "", ""], ["Licious", "South", "Optin/Opt out", "Megha", "2026-05-18", "", "In Progress", "0.1", "Inhouse", "", "", ""], ["Elo Elo", "South", "Bot Effort Estimation", "Megha", "2026-05-18", "", "Pipeline", "0.1", "", "", "", ""], ["Furlenco", "South", "Bot Request", "Megha", "2026-05-19", "", "Pipeline", "0.1", "", "", "", ""], ["EMI wave off journey", "North", "EMI wave off journey", "Himanshu", "2026-05-05", "", "Yet to Start(Assigned)", "0.2", "Twixor", "", "", ""]]};
+const RAW = {"cols": ["Project", "Region", "Usecase", "BA", "Start Date", "Due Date", "Status", "Progress %", "Development", "Mandays Saved", "Ongoing Activities", "Comments"], "rows": [["Home R Us (Lals)", "UAE", "Button payload journey", "Aniruddha", "2025-12-25", "2026-04-28", "Live", "100", "", "", "", ""], ["Truemeds PDP", "West", "Abandoned cart on RCS", "Aniruddha", "2026-01-28", "2026-04-15", "Live", "100", "Inhouse", "", "", ""], ["Torrent Diagnostics", "West", "Live agent flow", "Aniruddha", "2026-01-21", "2026-04-10", "Live", "100", "", "", "", ""], ["Salik", "UAE", "Gen AI FAQs POC", "Aniruddha", "2026-02-20", "2026-04-01", "Live", "100", "", "", "", ""], ["Prefr", "West", "POC for Voice", "Aniruddha", "2026-03-17", "2026-04-20", "Live", "100", "Inhouse", "", "", ""], ["TVS", "South", "POC for commercial vehicle loan voice", "Aniruddha", "2026-03-23", "2026-04-17", "Live", "100", "Inhouse", "", "", ""], ["Hero Fincorp", "West", "Live agent", "Aniruddha", "2026-03-25", "2026-04-01", "Live", "100", "Inhouse", "", "", ""], ["Yes Bank", "West", "Lead Capture via WhatsApp SFTP", "Aniruddha", "2026-04-06", "", "Scoping", "10", "", "", "", ""], ["UAE Space Agency", "UAE", "AI chatbot RFP", "Aniruddha", "2026-04-02", "", "End of life", "10", "", "", "", ""], ["Mondelez", "West", "Employee absenteeism journey", "Aniruddha", "2026-04-02", "2026-04-10", "Live", "100", "Inhouse", "", "", ""], ["Prefr", "West", "CR for API update", "Aniruddha", "2026-04-06", "", "Live", "10", "", "", "", ""], ["Webengage Melooha", "West", "Add WebENgage Optin Optout API", "Aniruddha", "2026-04-07", "2026-04-09", "Live", "100", "Inhouse", "", "", ""], ["Webengage Firstclub", "West", "Add WebENgage Optin Optout API", "Aniruddha", "2026-04-07", "2026-04-09", "Live", "100", "Inhouse", "", "", ""], ["Tata Cliq", "West", "Abandoned cart voice POC", "Aniruddha", "2026-04-10", "2026-05-05", "Live", "100", "Inhouse", "", "", ""], ["Cholamandalam Finance", "South", "POC for collections", "Aniruddha", "2026-04-20", "2026-04-27", "Live", "100", "Inhouse", "", "", ""], ["HDFC Life", "West", "Native payments via RZP", "Aniruddha", "2026-04-28", "", "Scoping", "5", "", "", "", ""], ["EFL", "West", "Agentic AI voice bot", "Aniruddha", "2026-04-27", "", "Scoping", "5", "", "", "", ""], ["HDFC Ergo", "West", "Payment config via RZP", "Aniruddha", "2026-04-28", "", "Scoping", "10", "", "", "", ""], ["HDFC ergo", "West", "Myra Payment integration", "Aniruddha", "2026-05-11", "", "Scoping", "", "", "", "", ""], ["Jiostar Disney", "West", "Daily quiz for 15 days", "Aniruddha", "2026-05-08", "", "End of life", "", "", "", "", ""], ["SBI", "West", "Green pin modification", "Aniruddha", "2026-05-07", "", "Development", "80", "Inhouse", "", "", ""], ["SBI", "West", "Manage DC modification", "Aniruddha", "2026-05-07", "", "Development", "20", "Inhouse", "", "", ""], ["Al Habtoor", "UAE", "VOC Web bot service advisor", "Aniruddha", "2026-05-07", "", "UAT", "80", "", "", "", ""], ["Paisawaala", "West", "Live agent", "Aniruddha", "2026-05-18", "", "Live", "100", "Inhouse", "", "", ""], ["SBI General", "West", "CTWA to collect lead details", "Aniruddha", "2026-05-19", "", "Scoping", "10", "", "", "", ""], ["Sultan Foods", "UAE", "Button payload survey", "Aniruddha", "2026-05-22", "", "Scoping", "", "", "", "", ""], ["Tata motors", "West", "Journey Migration from Gupshup", "Aniruddha", "2026-05-19", "", "Scoping", "", "", "", "", ""], ["Piramal", "West", "AI bot for HR use case", "Aniruddha", "2026-05-21", "", "Scoping", "", "", "", "", ""], ["HDFC life", "West", "Native Payments Integration", "Aniruddha", "2026-05-22", "", "Scoping", "", "Inhouse", "", "", ""], ["Motilal Oswal", "West", "WhatsApp Chatbot Configuration", "Aniruddha", "2026-05-25", "", "Scoping", "", "", "", "", ""], ["SBI Life", "West", "SBI Life Insurance Agentic AI", "Aniruddha", "2026-05-22", "2026-05-25", "Live", "", "", "", "", ""], ["SBI", "West", "SBI EPay integration", "Aniruddha", "2026-05-25", "", "Scoping", "", "", "", "", ""], ["SBI", "South", "Funnel dashboard + Manage Debit Card", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "80", "Twixor", "", "", ""], ["Bandhan Bank", "South", "Debit card phase 2 + Credit Card UAT", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "65", "Twixor", "", "", ""], ["BOB", "South", "Urdu observations + CBDC + Link redirection", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "75", "Twixor", "", "", ""], ["BOI", "South", "UAT sign off + Re KYC + Migration", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "65", "Twixor", "", "", ""], ["CSB", "South", "Account statement + Debit card use case", "Daimi Syed", "2026-05-04", "2026-05-29", "In Progress", "45", "Twixor", "", "", ""], ["PSB", "North", "Multilingual implementation", "Daimi Syed", "2026-05-04", "", "Yet to Start(Assigned)", "40", "Twixor", "", "", ""], ["Housing", "North", "Moengage platform push", "Ankit", "2026-04-15", "", "Yet to Start(Assigned)", "20", "Twixor", "", "", ""], ["Setu BBPS", "North", "Intent based upi link", "Ankit", "2026-04-15", "", "Live", "100", "Inhouse", "", "Go live done", ""], ["NICL CSAT and NPS", "North", "CSAT plus nps integration", "Ankit", "2026-04-12", "", "Live", "90", "Twixor", "5", "UAT done", ""], ["Spice jet", "North", "Complete aviation use case", "Ankit", "2026-04-16", "", "In Progress", "30", "Twixor", "", "Hold", ""], ["Isckon", "North", "Catalog journey", "Ankit", "2026-04-17", "", "Pipeline", "20", "Twixor", "", "", ""], ["Berger AI", "North", "Voice AI Whatsapp calling", "Ankit", "2026-04-17", "", "Yet to Start(Assigned)", "20", "Inhouse", "", "", ""], ["Hindware Journey", "North", "Catalog plus brand film journey", "Ankit", "2026-04-20", "", "Live", "80", "Inhouse", "2", "", ""], ["DHBVN", "North", "UPI link webview", "Ankit", "2026-04-22", "", "Pipeline", "10", "Twixor", "", "", ""], ["Zillion Redemption", "North", "Product recommendation + Payment", "Ankit", "2026-04-24", "", "In Progress", "40", "Twixor", "21", "", ""], ["Berger Certificate", "North", "Berger Certificate", "Ankit", "2026-04-28", "", "Live", "100", "Inhouse", "7", "Bot went live", ""], ["Vouchagram", "North", "Vouchagram", "Ankit", "2026-04-30", "", "In progress", "30", "Twixor", "", "", ""], ["PB Partners", "North", "PB Partners", "Ankit", "2026-05-04", "", "In Progress", "85", "Inhouse", "7", "CTWA pending", ""], ["BharatPe", "North", "Settlement agreement 48hr nudge", "Ankit", "2026-05-07", "", "Hypercare", "100", "Twixor", "", "", ""], ["Rainbow LSQ Integration", "North", "Send all bot events to LSQ CRM", "Ankit", "2026-05-19", "", "UAT", "80", "Twixor", "", "", ""], ["BMH Capital", "UAE", "BMH Capital", "Kiran", "2026-04-13", "2026-04-30", "Live", "100", "Inhouse", "4", "", ""], ["Multiplier", "North", "Employee help desk", "Kiran", "2026-03-20", "2026-05-01", "In Progress", "80", "Twixor", "", "", ""], ["TNeGA", "South", "Phase 2B development 4 services", "Kiran", "", "2026-05-02", "Yet to Start(Assigned)", "40", "Twixor", "", "", ""], ["Funcity", "South", "Birthday party CR", "Kiran", "2026-04-02", "2026-05-03", "Live", "50", "Twixor", "", "", ""], ["Malabar", "North", "Australia bot issues", "Kiran", "2026-03-31", "2026-05-04", "In Progress", "70", "Twixor", "", "", ""], ["Kapsons", "North", "Personal assistance Egift card", "Kiran", "2026-03-31", "2026-05-05", "In Progress", "80", "Twixor", "", "", ""], ["SBI", "West", "Nominee add update", "Kiran", "2026-02-12", "2026-05-06", "Live", "100", "Twixor", "", "", ""], ["Lifestyle", "South", "CR UAT observations", "Kiran", "2026-03-15", "2026-05-07", "UAT", "50", "Inhouse", "", "", ""], ["CMRL", "South", "Add station UAT bot", "Kiran", "2026-03-19", "2026-05-06", "Live", "100", "Twixor", "", "", ""], ["Funcity", "South", "Fun pass CR", "Kiran", "2026-04-10", "2026-05-02", "UAT", "90", "Twixor", "", "", ""], ["CAGL Primary Bot", "South", "Live Migration", "Kiran", "2026-02-23", "2026-05-10", "Live", "100", "Twixor", "", "", ""], ["CAGL Unnati flows", "South", "new Requirements", "Kiran", "2026-03-22", "2026-05-11", "Live", "100", "Inhouse", "", "", ""], ["Funcity", "South", "Dashboard issues", "Kiran", "2026-04-28", "2026-05-02", "Live", "100", "Twixor", "", "", ""], ["Funcity", "South", "4 NEW Requests", "Kiran", "2026-05-07", "2026-05-12", "In Progress", "50", "Twixor", "", "", ""], ["Multiplier", "North", "Feedback Form Implementation", "Kiran", "2026-05-07", "2026-05-25", "Scoping", "", "Twixor", "", "", ""], ["TNeGA", "South", "Small Farmer KCC CR", "Kiran", "2026-05-04", "2026-05-16", "In Progress", "50", "Twixor", "", "", ""], ["Funcity", "South", "Funblock new Requirement", "Kiran", "2026-05-15", "2026-05-19", "In Progress", "20", "", "", "", ""], ["Cagl", "South", "View Pass Book Implementation", "Kiran", "2026-05-04", "", "Scoping", "", "Twixor", "", "", ""], ["Yes Bank", "North", "Credit limit increase bot", "Himanshu", "2026-04-13", "2026-04-30", "In Progress", "100", "Twixor", "", "", ""], ["Bandhan Bank", "North", "Credit card services bot", "Himanshu", "2026-04-15", "2026-06-09", "In Progress", "40", "Twixor", "", "", ""], ["TrueBalance", "North", "Pre-approved loan via WhatsApp", "Himanshu", "2026-04-24", "2026-04-30", "Live", "100", "Inhouse", "", "", ""], ["Aditya Birla", "North", "IT support tickets chatbot", "Himanshu", "2026-04-24", "", "Yet to Start(Assigned)", "0", "Twixor", "", "", ""], ["Sum NXT", "North", "WhatsApp subscription UPI", "Himanshu", "2026-04-24", "", "Yet to Start(Assigned)", "0", "Twixor", "", "", ""], ["Tagg Teleservices", "North", "Shipment tracking bot", "Himanshu", "2026-04-28", "", "Yet to Start(Assigned)", "0", "Twixor", "", "", ""], ["PMAY", "North", "PMAY-U 2.0 notification", "Himanshu", "2026-05-05", "2026-05-08", "Live", "100", "Twixor", "", "", ""], ["Eresolution", "North", "CTWA loan assistance bot", "Himanshu", "2026-05-08", "", "Yet to Start(Assigned)", "0", "Twixor", "", "", ""], ["ABDM", "North", "ABDM WhatsApp Chatbot", "Himanshu", "2026-05-11", "", "UAT", "100", "Inhouse", "", "", ""], ["Bhatia Cloth House", "North", "AI FAQ bot", "Himanshu", "2026-05-25", "", "Yet to Start(Assigned)", "0", "Twixor", "", "", ""], ["FabIndia", "North", "WhatsApp profile verification bot", "Himanshu", "2026-05-11", "", "Yet to Start(Assigned)", "0", "Inhouse", "", "", ""], ["Lenskart", "North", "Dashboard Creation", "Himanshu", "2026-05-11", "", "In Progress", "20", "Twixor", "", "", ""], ["Housing", "North", "Housing project", "Himanshu", "2026-04-16", "", "Yet to Start(Assigned)", "0", "", "", "", ""], ["OneMoney", "North", "OneMoney project", "Himanshu", "2026-04-08", "", "Yet to Start(Assigned)", "0", "", "", "", ""], ["EMI wave off", "North", "EMI wave off journey", "Himanshu", "2026-05-05", "", "Yet to Start(Assigned)", "20", "Twixor", "", "", ""], ["Pinelabs-2", "South", "Activate Bharat card", "Megha", "2026-03-03", "2026-05-12", "Live", "100", "Inhouse", "8", "Go live done", ""], ["Malabar UK", "South", "Form + live agent connection", "Megha", "2026-04-22", "2026-05-18", "UAT", "90", "Twixor", "0", "Bot dropped for UAT", ""], ["Flipkart-RCS", "South", "Feedback WA journey NPS", "Megha", "2026-05-05", "2026-05-18", "Live", "100", "Inhouse", "10", "Go live", ""], ["Flipkart-WA", "South", "Feedback WA journey NPS", "Megha", "2026-05-05", "2026-05-18", "Live", "100", "Inhouse", "10", "Go Live", ""], ["Flipkart-CTWA", "South", "Flipkart wholesale journey", "Megha", "2026-05-11", "2026-05-21", "UAT", "0", "Inhouse", "8", "English Language on UAT", ""], ["Myntra-WA", "South", "Mothers day carousel journey", "Megha", "2026-05-08", "2026-05-08", "Live", "100", "Inhouse", "2", "Live Bot", ""], ["Unlimited", "North", "V-Mart RCS bot replication", "Megha", "2026-05-13", "2026-05-14", "Live", "100", "Inhouse", "0", "", ""], ["Furlenco", "North", "QR reply auto message journey", "Megha", "2026-05-19", "2026-05-21", "Live", "100", "Inhouse", "1", "Go live on 27th May", ""], ["Licious-Optin", "South", "Opt in and Opt out journey", "Megha", "2026-05-18", "2026-05-27", "In Progress", "0", "Inhouse", "1", "Development in progress", ""], ["Licious-Know more", "South", "Know more QR button integration", "Megha", "2026-05-25", "2026-05-04", "In Progress", "0", "Inhouse", "3", "Development to get started", ""], ["Elo Elo", "South", "Bot Effort Estimation", "Megha", "2026-05-18", "", "Pipeline", "10", "", "", "", ""], ["Furlenco", "South", "Bot Request", "Megha", "2026-05-19", "", "Pipeline", "10", "", "", "", ""], ["TATA Digital ZIPCARE", "West", "Insurance journey", "Raj", "", "2026-04-27", "UAT", "100", "Inhouse", "", "", ""], ["Paisawalla", "West", "Paisawalla", "Raj", "", "2026-05-20", "UAT", "100", "Inhouse", "", "", ""], ["AMS SSE", "UAE", "Brand info and service journey", "Raj", "2026-05-20", "2026-05-25", "UAT", "90", "Twixor", "", "", ""], ["Jio Star", "West", "static bot", "Raj", "2026-05-22", "2026-05-25", "Live", "100", "Inhouse", "", "", ""], ["Tarahum NEW CR", "UAE", "NEW CR for the bot", "Raj", "2026-05-18", "", "UAT", "90", "Inhouse", "", "", ""], ["TMIBASL", "West", "New Development", "Raj", "2026-05-18", "", "In Progress", "5", "Inhouse", "", "", ""], ["Vmart", "North", "Journeys Replication", "Somya", "2026-01-13", "2026-04-22", "Live", "100", "Twixor", "", "", ""], ["Hindware", "North", "City and State visibility fix", "Somya", "2026-02-23", "2026-04-22", "UAT", "90", "Twixor", "", "UAT Signoff pending", ""], ["MCA (PMIS)", "North", "VF Waba Chatbot", "Somya", "2026-03-02", "2026-04-01", "Live", "100", "Inhouse", "", "", ""], ["Umang", "North", "WhatsApp Service Go-Live", "Somya", "2026-03-02", "2026-04-30", "Live", "100", "Inhouse", "", "", ""], ["KSITM", "South", "Kerala State Electric Board", "Somya", "2026-04-21", "", "In Progress", "50", "Inhouse", "", "Under Development", ""], ["DGG ANTF", "North", "ANTF WA Bot and Ticket panel", "Somya", "2026-03-09", "2026-05-09", "Live", "100", "Twixor", "", "", ""], ["DGG ACAL", "North", "ACAL WA Bot and Ticket panel", "Somya", "2026-03-12", "2026-05-10", "Live", "100", "Twixor", "", "", ""], ["DGG Egov", "North", "Egov Bot", "Somya", "2026-03-19", "2026-05-06", "Live", "100", "Inhouse", "", "", ""], ["DGG Invest Punjab", "North", "Invest Punjab WA Bot", "Somya", "2026-04-16", "2026-05-06", "Live", "100", "Inhouse", "", "", ""], ["Myntra", "North", "Carousel RCS journey", "Somya", "2026-04-07", "2026-04-24", "Live", "100", "Inhouse", "", "", ""], ["Vmart/Unlimited", "North", "Changes in Hi Flow", "Somya", "2026-04-15", "2026-04-30", "UAT", "80", "Twixor", "", "Development in progress", ""], ["Flipkart", "South", "NPS Journey", "Somya", "2026-04-06", "", "UAT", "80", "", "", "", ""], ["Nastasia", "South", "Nestasia Bot Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0", "", "", "", ""], ["DEI", "South", "DEI Global Bot Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0", "", "", "", ""], ["Olam Agri", "South", "Olam Agri Effort Estimation", "Somya", "2026-04-13", "", "Pipeline", "0", "", "", "", ""], ["Jewel", "South", "Jewel testimonial", "Somya", "2026-04-15", "", "In Progress", "40", "", "", "Script sent to client", ""], ["Funblock", "South", "Birthday Party Block", "Somya", "2026-04-21", "", "Pipeline", "0", "", "", "", ""], ["Libas", "North", "Store Locator", "Somya", "2026-04-24", "2026-04-24", "Live", "", "Twixor", "", "", ""], ["Aham Marketing", "South", "Form triggered over BIM", "Somya", "2026-04-27", "", "Pipeline", "10", "Inhouse", "", "", ""], ["Libas", "North", "Case Study approval", "Somya", "2026-04-28", "", "In Progress", "50", "", "", "", ""], ["Prefr", "South", "Optout functionality feasibility", "Somya", "2026-04-28", "", "In Progress", "10", "Twixor", "", "Development in progress", ""], ["Licious", "South", "Licious Offer Awareness Bot", "Somya", "2026-04-29", "", "Pipeline", "10", "Inhouse", "", "", ""], ["KSITM", "South", "Whatsapp Service Onboarding", "Somya", "2026-05-05", "", "Pipeline", "10", "Inhouse", "", "", ""], ["Flipkart", "South", "NPS CTWA", "Somya", "2026-05-05", "", "UAT", "80", "Inhouse", "", "", ""], ["Zepto", "South", "Auto response", "Somya", "2026-05-06", "", "Live", "100", "Twixor", "", "", ""], ["Myntra", "South", "Carousel journey", "Somya", "2026-05-07", "", "Live", "100", "Inhouse", "", "", ""], ["ANTF", "North", "Post Prod bugs rectification", "Somya", "2026-05-11", "", "In Progress", "60", "Twixor", "", "", ""], ["ACAL", "North", "Post Prod bugs rectification", "Somya", "2026-05-11", "", "In Progress", "80", "Twixor", "", "", ""], ["KSITM", "South", "Civil services", "Somya", "2026-05-05", "", "Pipeline", "10", "Twixor", "", "", ""], ["DGG Punjab Gov", "North", "Auto templates config", "Somya", "2026-05-13", "", "In Progress", "10", "", "", ""], ["KSITM", "North", "Higher Secondary Results WhatsApp", "Somya", "2026-05-19", "", "Live", "100", "Twixor", "", "Live", ""], ["Orange Health", "South", "CTWA Bot Effort", "Somya", "2026-05-25", "", "Pipeline", "10", "", "", "", ""], ["Myntra", "South", "WA AI for EORS", "Somya", "2026-05-25", "", "Live", "100", "Inhouse", "", "Live", ""], ["Umang", "North", "Webhook Configuration", "Somya", "2026-05-25", "", "Pipeline", "10", "", "", "", ""], ["Unlimited", "North", "RCS journey replication", "Megha", "2026-05-13", "", "Live", "100", "", "", "", ""], ["Licious", "South", "Optin Opt out", "Megha", "2026-05-18", "", "In Progress", "10", "Inhouse", "", "", ""]]};
 
 /* CONSTANTS */
-const REGIONS = ['North','South','West','UAE'];
-const REGION_COLORS = {'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
-const MON = {'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
-const ALL_MONTHS = Object.keys(DB.months).sort();
-const CHART_OPTS = {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
+const REGIONS=['North','South','West','UAE'];
+const RCOLORS={'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
+const BAS=['Aniruddha','Ankit','Daimi Syed','Himanshu','Kiran','Megha','Raj','Somya'];
+const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#F97316'];
+const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+const ALL_MONTHS=Object.keys(DB.months).sort();
+const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
+const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11};
 
-function mLabel(k) { if(k==='all') return 'All dates'; const [y,m]=k.split('-'); return (MON[m]||m)+' '+y; }
-function getData(k) { return k==='all' ? DB.all : DB.months[k].data; }
-function getCount(k) { return k==='all' ? DB.totalRows : DB.months[k].rowCount; }
+function mLabel(k){if(k==='all')return'All dates';const[y,m]=k.split('-');return(MON[m]||m)+' '+y;}
+function getData(k){return k==='all'?DB.all:DB.months[k].data;}
+function getCount(k){return k==='all'?DB.totalRows:DB.months[k].rowCount;}
 
-let currentMonthKey = 'all';
-let drawerRows = [];
-let C = {};
-function kill(...ids) { ids.forEach(id=>{ if(C[id]){ try{C[id].destroy();}catch(e){} delete C[id]; } }); }
+let C={};
+function kill(...ids){ids.forEach(id=>{if(C[id]){try{C[id].destroy();}catch(e){}delete C[id];}});}
+let drawerRows=[];
+let currentMonthKey='all';
+let activeFilters={};
 
-/* KPI */
-function renderKPI(data) {
-  const t = data['Total'];
-  const defs = [
-    ['Total projects', t.total, true,  'all',        'all'],
-    ['Go live',        t.golive,false, 'all',        'golive'],
-    ['In progress',    t.inprogress,false,'all',     'inprogress'],
-    ['UAT',            t.uat,   false, 'all',        'uat'],
-    ['Yet to start',   t.yts,   false, 'all',        'yts'],
-    ['Pipeline/scoping',t.scoping,false,'all',       'scoping'],
-    ['Twixor',         t.twixor,false, 'all',        'twixor'],
-    ['Inhouse',        t.inhouse,false,'all',        'inhouse'],
-    ['Mandays saved',  t.mandays,false,'all',        'mandays'],
-  ];
-  const grid = document.getElementById('kpiGrid');
-  grid.innerHTML = '';
-  defs.forEach(([lbl, val, acc, region, field]) => {
-    const clickable = val > 0 && field !== 'mandays';
-    const div = document.createElement('div');
-    div.className = 'kpi' + (acc?' accent':'') + (clickable?' clickable':'');
-    if (clickable) div.onclick = () => openDrawer(region, field, lbl, currentMonthKey);
-    const l = document.createElement('div'); l.className='kpi-label'; l.textContent=lbl;
-    const v = document.createElement('div'); v.className='kpi-value'; v.textContent=val;
-    div.appendChild(l); div.appendChild(v);
-    grid.appendChild(div);
-  });
+/* STATUS HELPERS */
+function normStatus(s){
+  if(!s)return'unknown';
+  const sl=String(s).trim().toLowerCase();
+  if(['live','hypercare','livebot'].includes(sl))return'golive';
+  if(sl==='uat')return'uat';
+  if(['in progress','development','in-progress','in progress '].includes(sl))return'inprogress';
+  if(sl.includes('yet to start'))return'yts';
+  if(['pipeline','scoping','feasibility'].some(k=>sl.includes(k)))return'scoping';
+  return'unknown';
+}
+function normDev(s){
+  if(!s)return'';
+  const sl=String(s).trim().toLowerCase();
+  if(sl.includes('twixor'))return'Twixor';
+  if(sl.includes('inhouse')||sl.includes('ihouse'))return'Inhouse';
+  return'';
+}
+function normBA(s){
+  if(!s)return'';
+  const sl=String(s).trim().toLowerCase();
+  for(const ba of BAS){if(sl.includes(ba.toLowerCase().split(' ')[0]))return ba;}
+  return String(s).trim();
+}
+function statusClass(s){
+  const n=normStatus(s);
+  return n==='golive'?'sp-live':n==='uat'?'sp-uat':n==='inprogress'?'sp-ip':n==='scoping'?'sp-scoping':n==='yts'?'sp-yts':'sp-other';
+}
+function inMonth(row,mk){
+  if(!mk||mk==='')return true;
+  const[y,m]=mk.split('-');
+  const chk=d=>{if(!d)return false;const dt=new Date(d);return!isNaN(dt)&&dt.getFullYear()===+y&&(dt.getMonth()+1)===+m;};
+  return chk(row[CI.start])||chk(row[CI.due]);
 }
 
-/* REGION TABLE */
-function drillCell(region, field, label, val, monthKey) {
-  const td = document.createElement('td');
-  td.className = 'num';
-  if (val === 0 || field === 'mandays') {
-    td.textContent = val;
-  } else {
-    const span = document.createElement('span');
-    span.className = 'drill-num';
-    span.textContent = val;
-    span.onclick = () => openDrawer(region, field, label + (region!=='all' ? ' — ' + region : ''), monthKey);
-    td.appendChild(span);
-  }
-  return td;
-}
-
-function renderRegionTable(data) {
-  const wrap = document.getElementById('regionTableWrap');
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th>Region</th><th class="num">Projects</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Go live</th><th class="num">Yet to start</th><th class="num">Scoping/pipeline</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays saved</th></tr>';
-  table.appendChild(thead);
-  const tbody = document.createElement('tbody');
-  REGIONS.forEach(r => {
-    const tr = document.createElement('tr');
-    const td0 = document.createElement('td');
-    td0.innerHTML = '<span class="region-badge"><span class="rdot" style="background:'+REGION_COLORS[r]+'"></span>'+r+'</span>';
-    tr.appendChild(td0);
-    [['all','Projects',data[r].total],['inprogress','In Progress',data[r].inprogress],['uat','UAT',data[r].uat],['golive','Go Live',data[r].golive],['yts','Yet to Start',data[r].yts],['scoping','Scoping/Pipeline',data[r].scoping],['twixor','Twixor',data[r].twixor],['inhouse','Inhouse',data[r].inhouse],['mandays','Mandays',data[r].mandays]].forEach(([f,lbl,v]) => {
-      tr.appendChild(drillCell(r, f, lbl, v, currentMonthKey));
-    });
-    tbody.appendChild(tr);
-  });
-  const trTot = document.createElement('tr');
-  trTot.className = 'total-row';
-  const tdLbl = document.createElement('td'); tdLbl.innerHTML = '<strong>Total</strong>'; trTot.appendChild(tdLbl);
-  const T = data['Total'];
-  [['all','Projects',T.total],['inprogress','In Progress',T.inprogress],['uat','UAT',T.uat],['golive','Go Live',T.golive],['yts','Yet to Start',T.yts],['scoping','Scoping/Pipeline',T.scoping],['twixor','Twixor',T.twixor],['inhouse','Inhouse',T.inhouse],['mandays','Mandays',T.mandays]].forEach(([f,lbl,v]) => {
-    trTot.appendChild(drillCell('all', f, lbl, v, currentMonthKey));
-  });
-  tbody.appendChild(trTot);
-  table.appendChild(tbody);
-  wrap.innerHTML = '';
-  wrap.appendChild(table);
-}
-
-/* REGION CHARTS */
-function renderRegionCharts(data) {
-  kill('c1','c2','c3','c4');
-  C.c1=new Chart(document.getElementById('chart1'),{type:'bar',data:{labels:REGIONS,datasets:[
-    {label:'Total',data:REGIONS.map(r=>data[r].total),backgroundColor:'#0057FF'},
-    {label:'Go live',data:REGIONS.map(r=>data[r].golive),backgroundColor:'#10B981'},
-    {label:'In progress',data:REGIONS.map(r=>data[r].inprogress),backgroundColor:'#F59E0B'},
-    {label:'UAT',data:REGIONS.map(r=>data[r].uat),backgroundColor:'#EF4444'},
-  ]},options:CHART_OPTS});
-  C.c2=new Chart(document.getElementById('chart2'),{type:'bar',data:{labels:REGIONS,datasets:[
-    {label:'Twixor',data:REGIONS.map(r=>data[r].twixor),backgroundColor:'#6366F1'},
-    {label:'Inhouse',data:REGIONS.map(r=>data[r].inhouse),backgroundColor:'#8B9AB8'},
-  ]},options:CHART_OPTS});
-  const t=data['Total'];
-  C.c3=new Chart(document.getElementById('chart3'),{type:'doughnut',data:{
-    labels:['Go live','In progress','UAT','Yet to start','Scoping/pipeline'],
-    datasets:[{data:[t.golive,t.inprogress,t.uat,t.yts,t.scoping],backgroundColor:['#10B981','#F59E0B','#0057FF','#8B9AB8','#EC4899'],borderWidth:2,borderColor:'#fff'}]
-  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
-  C.c4=new Chart(document.getElementById('chart4'),{type:'bar',data:{labels:REGIONS,datasets:[
-    {label:'Mandays saved',data:REGIONS.map(r=>data[r].mandays),backgroundColor:REGIONS.map(r=>REGION_COLORS[r])}
-  ]},options:CHART_OPTS});
-}
-
-/* MONTH TABLE */
-function renderMonthTable() {
-  const fields =    ['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
-  const fieldKeys = ['all',  'inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
-  const labels =    ['Projects','In progress','UAT','Go live','Yet to start','Scoping/pipeline','Twixor','Inhouse','Mandays saved'];
-  const gt = DB.all['Total'];
-  const wrap = document.getElementById('monthTableWrap');
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  const hrow = document.createElement('tr');
-  const th0 = document.createElement('th'); th0.style.minWidth='165px'; th0.textContent='Metric'; hrow.appendChild(th0);
-  ALL_MONTHS.forEach(k => { const th=document.createElement('th'); th.className='mhdr'; th.textContent=mLabel(k); hrow.appendChild(th); });
-  const thTot = document.createElement('th'); thTot.className='mhdr'; thTot.style.cssText='background:#07112A;color:#fff;'; thTot.textContent='Total'; hrow.appendChild(thTot);
-  thead.appendChild(hrow); table.appendChild(thead);
-  const tbody = document.createElement('tbody');
-  fields.forEach((f,fi) => {
-    const fk = fieldKeys[fi];
-    const tr = document.createElement('tr');
-    const tdl = document.createElement('td'); tdl.innerHTML = '<strong>'+labels[fi]+'</strong>'; tr.appendChild(tdl);
-    ALL_MONTHS.forEach(k => {
-      const v = DB.months[k].data['Total'][f];
-      const td = document.createElement('td');
-      td.className = 'mcell' + (v>0?' hi':' zero');
-      if (v>0 && fk!=='mandays') {
-        const sp=document.createElement('span'); sp.className='drill-num'; sp.textContent=v;
-        sp.onclick = () => openDrawer('all', fk, labels[fi]+' — '+mLabel(k), k);
-        td.appendChild(sp);
-      } else { td.textContent=v; }
-      tr.appendChild(td);
-    });
-    const tv = gt[f];
-    const tdT = document.createElement('td'); tdT.className='mcell hi'; tdT.style.fontWeight='700';
-    if (tv>0 && fk!=='mandays') {
-      const sp=document.createElement('span'); sp.className='drill-num'; sp.textContent=tv;
-      sp.onclick = () => openDrawer('all', fk, labels[fi]+' — All', 'all');
-      tdT.appendChild(sp);
-    } else { tdT.textContent=tv; }
-    tr.appendChild(tdT);
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody); wrap.innerHTML=''; wrap.appendChild(table);
-}
-
-/* TREND CHARTS */
-function renderTrendCharts() {
-  kill('t1','t2','t3');
-  const ml=ALL_MONTHS.map(mLabel);
-  const md=k=>DB.months[k].data['Total'];
-  const tO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,maxRotation:30}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-  C.t1=new Chart(document.getElementById('trend1'),{type:'bar',data:{labels:ml,datasets:[
-    {label:'Total',data:ALL_MONTHS.map(k=>md(k).total),backgroundColor:'rgba(0,87,255,0.85)'},
-    {label:'Go live',data:ALL_MONTHS.map(k=>md(k).golive),backgroundColor:'#10B981'},
-    {label:'In progress',data:ALL_MONTHS.map(k=>md(k).inprogress),backgroundColor:'#F59E0B'},
-    {label:'UAT',data:ALL_MONTHS.map(k=>md(k).uat),backgroundColor:'#EF4444'},
-  ]},options:tO});
-  C.t2=new Chart(document.getElementById('trend2'),{type:'line',data:{labels:ml,datasets:[
-    {label:'Twixor',data:ALL_MONTHS.map(k=>md(k).twixor),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#6366F1'},
-    {label:'Inhouse',data:ALL_MONTHS.map(k=>md(k).inhouse),borderColor:'#8B9AB8',backgroundColor:'rgba(139,154,184,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#8B9AB8'},
-  ]},options:tO});
-  C.t3=new Chart(document.getElementById('trend3'),{type:'line',data:{labels:ml,datasets:[
-    {label:'Mandays',data:ALL_MONTHS.map(k=>md(k).mandays),borderColor:'#10B981',backgroundColor:'rgba(16,185,129,0.12)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#10B981'},
-  ]},options:tO});
-}
-
-/* MONTH SELECT */
-function selectMonth(key) {
-  currentMonthKey = key;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
-  document.getElementById('infoPill').textContent = getCount(key)+' of '+DB.totalRows+' rows — '+mLabel(key);
-  const data=getData(key);
-  renderKPI(data);
-  renderRegionTable(data);
-  renderRegionCharts(data);
-}
-
-/* TAB SWITCH */
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
-}
-
-/* STATUS PILL */
-function statusPill(s) {
-  if (!s) return '<span class="sp sp-other">—</span>';
-  const sl = s.toLowerCase().trim();
-  let cls = 'sp-other';
-  if (['live','hypercare','livebot'].includes(sl)) cls='sp-live';
-  else if (sl==='uat') cls='sp-uat';
-  else if (['in progress','development','in-progress'].includes(sl)) cls='sp-ip';
-  else if (sl.includes('yet to start')) cls='sp-yts';
-  else if (['pipeline','scoping','feasibility'].some(k=>sl.includes(k))) cls='sp-scoping';
-  return '<span class="sp '+cls+'">'+s+'</span>';
-}
-
-/* FILTER RAW */
-function filterRaw(region, field, monthKey) {
-  const C2={project:0,region:1,usecase:2,ba:3,start:4,due:5,status:6,progress:7,dev:8,mandays:9,ongoing:10};
-  const sl=s=>String(s||'').toLowerCase().trim();
-  return RAW.rows.filter(row => {
-    const r = sl(row[C2.region]);
-    if (region !== 'all' && r !== region.toLowerCase()) return false;
-    if (monthKey !== 'all') {
-      const [y,m] = monthKey.split('-');
-      const inD = d => { if(!d) return false; const dt=new Date(d); return !isNaN(dt)&&dt.getFullYear()===+y&&(dt.getMonth()+1)===+m; };
-      if (!inD(row[C2.start]) && !inD(row[C2.due])) return false;
-    }
-    if (field === 'all') return true;
-    const st = sl(row[C2.status]);
-    const dev = sl(row[C2.dev]);
-    if (field==='golive') return ['live','hypercare','end of life','livebot'].includes(st);
-    if (field==='inprogress') return ['in progress','development','in-progress'].includes(st);
-    if (field==='uat') return st==='uat';
-    if (field==='yts') return st.includes('yet to start');
-    if (field==='scoping') return ['pipeline','scoping','feasibility'].some(k=>st.includes(k));
-    if (field==='twixor') return dev.includes('twixor');
-    if (field==='inhouse') return dev.includes('inhouse')||dev.includes('ihouse');
+/* FILTER */
+function filterRaw({region='',status='',dev='',ba='',month='',search=''}={}){
+  const q=search.trim().toLowerCase();
+  return RAW.rows.filter(row=>{
+    if(region&&String(row[CI.reg]).trim()!==region)return false;
+    if(status&&normStatus(row[CI.status])!==status)return false;
+    if(dev&&normDev(row[CI.dev])!==dev)return false;
+    if(ba&&normBA(row[CI.ba])!==ba)return false;
+    if(month&&!inMonth(row,month))return false;
+    if(q){const hay=[row[CI.proj],row[CI.use],row[CI.ba],row[CI.reg],row[CI.status],row[CI.dev]].join(' ').toLowerCase();if(!hay.includes(q))return false;}
     return true;
   });
 }
 
-/* OPEN DRAWER */
-function openDrawer(region, field, label, monthKey) {
-  drawerRows = filterRaw(region, field, monthKey || currentMonthKey);
-  document.getElementById('dTitle').textContent = label;
-  const mStr = monthKey && monthKey!=='all' ? ' · '+mLabel(monthKey) : '';
-  document.getElementById('dSub').textContent = drawerRows.length+' project'+(drawerRows.length!==1?'s':'')+mStr;
-  document.getElementById('dCount').textContent = 'Showing '+drawerRows.length+' project'+(drawerRows.length!==1?'s':'');
-  const CI={project:0,region:1,ba:3,start:4,due:5,status:6,progress:7,dev:8,mandays:9,ongoing:10,usecase:2};
-  const tbody = document.getElementById('dBody');
-  tbody.innerHTML = '';
-  drawerRows.forEach((row,i) => {
-    const tr = document.createElement('tr');
-    const pct = row[CI.progress] ? Math.round(parseFloat(row[CI.progress])*100)+'%' : '—';
-    const usecase = (row[CI.usecase]||'').substring(0,70) + ((row[CI.usecase]||'').length>70?'…':'');
-    tr.innerHTML =
-      '<td class="nw" style="color:var(--text-muted);font-size:11px">'+(i+1)+'</td>'+
-      '<td><strong>'+(row[CI.project]||'—')+'</strong>'+(usecase?'<div style="font-size:11px;color:var(--text-sec);margin-top:1px">'+usecase+'</div>':'')+'</td>'+
-      '<td class="nw"><span class="region-badge"><span class="rdot" style="background:'+(REGION_COLORS[row[CI.region]]||'#8B9AB8')+'"></span>'+row[CI.region]+'</span></td>'+
-      '<td class="nw">'+(row[CI.ba]||'—')+'</td>'+
-      '<td class="nw">'+statusPill(row[CI.status])+'</td>'+
-      '<td class="nw" style="font-size:12px">'+(row[CI.dev]||'—')+'</td>'+
-      '<td class="nw" style="font-size:12px;color:var(--text-sec)">'+(row[CI.start]||'—')+'</td>'+
-      '<td class="nw" style="font-size:12px;color:var(--text-sec)">'+(row[CI.due]||'—')+'</td>'+
-      '<td class="nw" style="font-size:12px">'+pct+'</td>'+
-      '<td class="nw" style="font-size:12px">'+(row[CI.mandays]||'—')+'</td>'+
-      '<td style="font-size:11px;color:var(--text-sec);min-width:160px;white-space:normal">'+(row[CI.ongoing]||'—')+'</td>';
+/* SEARCH & FILTER UI */
+function onSearch(){activeFilters.search=document.getElementById('searchInput').value;applyFilters();}
+function applyFilters(){
+  activeFilters.region=document.getElementById('fRegion').value;
+  activeFilters.status=document.getElementById('fStatus').value;
+  activeFilters.dev=document.getElementById('fDev').value;
+  activeFilters.ba=document.getElementById('fBA').value;
+  activeFilters.month=document.getElementById('fMonth').value;
+  const rows=filterRaw(activeFilters);
+  renderActiveTags();
+  renderFilteredTable(rows);
+}
+function clearAll(){
+  document.getElementById('searchInput').value='';
+  ['fRegion','fStatus','fDev','fBA','fMonth'].forEach(id=>document.getElementById(id).value='');
+  activeFilters={};
+  renderActiveTags();
+  renderFilteredTable([]);
+  document.getElementById('filteredSection').style.display='none';
+}
+function renderActiveTags(){
+  const labels={region:'Region',status:'Status',dev:'Dev',ba:'BA',month:'Month',search:'Search'};
+  const tags=document.getElementById('activeTags');tags.innerHTML='';let hasAny=false;
+  Object.entries(activeFilters).forEach(([k,v])=>{
+    if(!v)return;hasAny=true;
+    const span=document.createElement('span');span.className='filter-tag';
+    const strong=document.createElement('strong');strong.textContent=v;
+    span.textContent=labels[k]+': ';span.appendChild(strong);
+    const btn=document.createElement('button');btn.innerHTML='&times;';
+    const idMap={region:'fRegion',status:'fStatus',dev:'fDev',ba:'fBA',month:'fMonth',search:'searchInput'};
+    btn.onclick=()=>{
+      const el=document.getElementById(idMap[k]);
+      if(el)el.value='';
+      delete activeFilters[k];applyFilters();
+    };
+    span.appendChild(btn);tags.appendChild(span);
+  });
+  const count=document.getElementById('resultCount');
+  if(hasAny){const n=filterRaw(activeFilters).length;count.textContent=n+' project'+(n!==1?'s':'')+' matched';}
+  else count.textContent='';
+}
+
+/* FILTERED TABLE */
+/* PROJECT DETAIL MODAL */
+function openProjModal(row){
+  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
+  document.getElementById('pmTitle').textContent=row[CI.proj]||'Project Detail';
+  document.getElementById('pmSub').textContent=(row[CI.ba]?'BA: '+row[CI.ba]+' \u00b7 ':'')+row[CI.reg];
+  const fields=[
+    {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
+    {label:'BA',value:row[CI.ba]||'\u2014'},
+    {label:'Status',value:row[CI.status]||'\u2014',pill:true},
+    {label:'Development',value:row[CI.dev]||'\u2014'},
+    {label:'Start Date',value:row[CI.start]||'\u2014'},
+    {label:'Due Date',value:row[CI.due]||'\u2014'},
+    {label:'Progress',value:pct},
+    {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
+    {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
+    {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
+    {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
+  ];
+  const body=document.getElementById('pmBody');body.innerHTML='';
+  const sec=document.createElement('div');sec.className='modal-section';
+  const st=document.createElement('div');st.className='modal-section-title';st.textContent='Project Details';sec.appendChild(st);
+  const grid=document.createElement('div');grid.className='modal-fields';
+  fields.forEach(f=>{
+    const div=document.createElement('div');div.className='modal-field'+(f.full?' full':'');
+    const lbl=document.createElement('div');lbl.className='modal-field-label';lbl.textContent=f.label;
+    const val=document.createElement('div');
+    if(f.pill&&f.value&&f.value!=='\u2014'){
+      val.className='modal-field-value';
+      const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
+    } else if(f.color){
+      val.className='modal-field-value';
+      const rb=document.createElement('span');rb.className='region-badge';
+      const dot=document.createElement('span');dot.className='rdot';dot.style.background=f.color;dot.innerHTML='&nbsp;';
+      rb.appendChild(dot);rb.appendChild(document.createTextNode(' '+f.value));val.appendChild(rb);
+    } else {
+      val.className='modal-field-value'+(f.full?' muted':'');val.textContent=f.value;
+    }
+    div.appendChild(lbl);div.appendChild(val);grid.appendChild(div);
+  });
+  sec.appendChild(grid);body.appendChild(sec);
+  document.getElementById('projModalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeProjModal(){
+  document.getElementById('projModalOverlay').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open'))
+    document.body.style.overflow='';
+}
+
+function makeRow(row,i){
+  const tr=document.createElement('tr');tr.style.cursor='pointer';tr.title='Click to view project details';
+  tr.onclick=()=>openProjModal(row);
+  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
+  const uc=(row[CI.use]||'').substring(0,50)+((row[CI.use]||'').length>50?'\u2026':'');
+  const td0=document.createElement('td');td0.style.cssText='color:var(--text-muted);font-size:11px';td0.textContent=i+1;tr.appendChild(td0);
+  const td1=document.createElement('td');td1.style.cssText='white-space:normal;min-width:120px';const b=document.createElement('strong');b.textContent=row[CI.proj]||'\u2014';td1.appendChild(b);tr.appendChild(td1);
+  const td2=document.createElement('td');td2.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[row[CI.reg]]||'#8B9AB8')+'">&nbsp;</span>'+row[CI.reg]+'</span>';tr.appendChild(td2);
+  const td3=document.createElement('td');td3.style.whiteSpace='nowrap';td3.textContent=row[CI.ba]||'\u2014';tr.appendChild(td3);
+  const td4=document.createElement('td');td4.style.cssText='white-space:normal;min-width:160px;font-size:12px;color:var(--text-sec)';td4.textContent=uc;tr.appendChild(td4);
+  const td5=document.createElement('td');const sp=document.createElement('span');sp.className='sp '+statusClass(row[CI.status]);sp.textContent=row[CI.status]||'\u2014';td5.appendChild(sp);tr.appendChild(td5);
+  const td6=document.createElement('td');td6.style.cssText='white-space:nowrap;font-size:12px';td6.textContent=row[CI.dev]||'\u2014';tr.appendChild(td6);
+  const td7=document.createElement('td');td7.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td7.textContent=row[CI.start]||'\u2014';tr.appendChild(td7);
+  const td8=document.createElement('td');td8.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td8.textContent=row[CI.due]||'\u2014';tr.appendChild(td8);
+  const td9=document.createElement('td');td9.style.whiteSpace='nowrap';td9.textContent=pct;tr.appendChild(td9);
+  const td10=document.createElement('td');td10.style.cssText='white-space:nowrap;font-size:12px';td10.textContent=row[CI.mandays]||'\u2014';tr.appendChild(td10);
+  const td11=document.createElement('td');td11.style.cssText='white-space:normal;min-width:140px;font-size:11px;color:var(--text-sec)';td11.textContent=row[CI.ongoing]||'\u2014';tr.appendChild(td11);
+  return tr;
+}
+function renderFilteredTable(rows){
+  const sec=document.getElementById('filteredSection');
+  const wrap=document.getElementById('filteredTableWrap');
+  if(!rows.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  thead.innerHTML='<tr><th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Usecase</th><th>Status</th><th>Dev</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing</th></tr>';
+  table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
+  table.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(table);
+}
+
+/* KPI */
+function renderKPI(data){
+  const t=data['Total'];
+  const defs=[['Total projects',t.total,true,'all','all'],['Go live',t.golive,false,'all','golive'],['In progress',t.inprogress,false,'all','inprogress'],['UAT',t.uat,false,'all','uat'],['Yet to start',t.yts,false,'all','yts'],['Pipeline/scoping',t.scoping,false,'all','scoping'],['Twixor',t.twixor,false,'all','twixor'],['Inhouse',t.inhouse,false,'all','inhouse'],['Mandays saved',t.mandays,false,'all','mandays']];
+  const grid=document.getElementById('kpiGrid');grid.innerHTML='';
+  defs.forEach(([lbl,val,acc,region,field])=>{
+    const clickable=val>0&&field!=='mandays';
+    const div=document.createElement('div');div.className='kpi'+(acc?' accent':'')+(clickable?' clickable':'');
+    if(clickable)div.onclick=()=>openDrawer(region,field,lbl,currentMonthKey);
+    const l=document.createElement('div');l.className='kpi-label';l.textContent=lbl;
+    const v=document.createElement('div');v.className='kpi-value';v.textContent=val;
+    div.appendChild(l);div.appendChild(v);grid.appendChild(div);
+  });
+}
+
+/* REGION TABLE */
+function drillCell(region,field,lbl,val){
+  const td=document.createElement('td');td.className='num';
+  if(val===0||field==='mandays'){td.textContent=val;return td;}
+  const sp=document.createElement('span');sp.className='drill-num';sp.textContent=val;
+  sp.onclick=()=>openDrawer(region,field,lbl+(region!=='all'?' \u2014 '+region:''),currentMonthKey);
+  td.appendChild(sp);return td;
+}
+function renderRegionTable(data){
+  const wrap=document.getElementById('regionTableWrap');
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  thead.innerHTML='<tr><th>Region</th><th class="num">Projects</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Go live</th><th class="num">Yet to start</th><th class="num">Scoping/pipeline</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays saved</th></tr>';
+  table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  REGIONS.forEach(r=>{
+    const tr=document.createElement('tr');
+    const td0=document.createElement('td');td0.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+RCOLORS[r]+'">&nbsp;</span>'+r+'</span>';tr.appendChild(td0);
+    [['all','Projects',data[r].total],['inprogress','In Progress',data[r].inprogress],['uat','UAT',data[r].uat],['golive','Go Live',data[r].golive],['yts','Yet to Start',data[r].yts],['scoping','Scoping',data[r].scoping],['twixor','Twixor',data[r].twixor],['inhouse','Inhouse',data[r].inhouse],['mandays','Mandays',data[r].mandays]].forEach(([f,l,v])=>tr.appendChild(drillCell(r,f,l,v)));
     tbody.appendChild(tr);
   });
+  const trT=document.createElement('tr');trT.className='total-row';
+  const tdL=document.createElement('td');tdL.innerHTML='<strong>Total</strong>';trT.appendChild(tdL);
+  const T=data['Total'];
+  [['all','Projects',T.total],['inprogress','In Progress',T.inprogress],['uat','UAT',T.uat],['golive','Go Live',T.golive],['yts','Yet to Start',T.yts],['scoping','Scoping',T.scoping],['twixor','Twixor',T.twixor],['inhouse','Inhouse',T.inhouse],['mandays','Mandays',T.mandays]].forEach(([f,l,v])=>trT.appendChild(drillCell('all',f,l,v)));
+  tbody.appendChild(trT);table.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(table);
+}
+
+/* REGION CHARTS */
+function renderRegionCharts(data){
+  kill('c1','c2','c3','c4');
+  C.c1=new Chart(document.getElementById('chart1'),{type:'bar',data:{labels:REGIONS,datasets:[{label:'Total',data:REGIONS.map(r=>data[r].total),backgroundColor:'#0057FF'},{label:'Go live',data:REGIONS.map(r=>data[r].golive),backgroundColor:'#10B981'},{label:'In progress',data:REGIONS.map(r=>data[r].inprogress),backgroundColor:'#F59E0B'},{label:'UAT',data:REGIONS.map(r=>data[r].uat),backgroundColor:'#EF4444'}]},options:CHART_OPTS});
+  C.c2=new Chart(document.getElementById('chart2'),{type:'bar',data:{labels:REGIONS,datasets:[{label:'Twixor',data:REGIONS.map(r=>data[r].twixor),backgroundColor:'#6366F1'},{label:'Inhouse',data:REGIONS.map(r=>data[r].inhouse),backgroundColor:'#8B9AB8'}]},options:CHART_OPTS});
+  const t=data['Total'];
+  C.c3=new Chart(document.getElementById('chart3'),{type:'doughnut',data:{labels:['Go live','In progress','UAT','Yet to start','Scoping/pipeline'],datasets:[{data:[t.golive,t.inprogress,t.uat,t.yts,t.scoping],backgroundColor:['#10B981','#F59E0B','#0057FF','#8B9AB8','#EC4899'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+  C.c4=new Chart(document.getElementById('chart4'),{type:'bar',data:{labels:REGIONS,datasets:[{label:'Mandays saved',data:REGIONS.map(r=>data[r].mandays),backgroundColor:REGIONS.map(r=>RCOLORS[r])}]},options:CHART_OPTS});
+}
+
+/* MONTH TABLE */
+function renderMonthTable(){
+  const fields=['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
+  const fkeys=['all','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
+  const lbls=['Projects','In progress','UAT','Go live','Yet to start','Scoping/pipeline','Twixor','Inhouse','Mandays saved'];
+  const gt=DB.all['Total'];
+  const wrap=document.getElementById('monthTableWrap');
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  const hrow=document.createElement('tr');
+  const th0=document.createElement('th');th0.style.minWidth='165px';th0.textContent='Metric';hrow.appendChild(th0);
+  ALL_MONTHS.forEach(k=>{const th=document.createElement('th');th.className='mhdr';th.textContent=mLabel(k);hrow.appendChild(th);});
+  const thT=document.createElement('th');thT.className='mhdr';thT.style.cssText='background:#07112A;color:#fff;';thT.textContent='Total';hrow.appendChild(thT);
+  thead.appendChild(hrow);table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  fields.forEach((f,fi)=>{
+    const fk=fkeys[fi];const tr=document.createElement('tr');
+    const tdl=document.createElement('td');const strong=document.createElement('strong');strong.textContent=lbls[fi];tdl.appendChild(strong);tr.appendChild(tdl);
+    ALL_MONTHS.forEach(k=>{
+      const v=DB.months[k].data['Total'][f];
+      const td=document.createElement('td');td.className='mcell'+(v>0?' hi':' zero');
+      if(v>0&&fk!=='mandays'){const sp=document.createElement('span');sp.className='drill-num';sp.textContent=v;sp.onclick=()=>openDrawer('all',fk,lbls[fi]+' \u2014 '+mLabel(k),k);td.appendChild(sp);}else{td.textContent=v;}
+      tr.appendChild(td);
+    });
+    const tv=gt[f];const tdT=document.createElement('td');tdT.className='mcell hi';tdT.style.fontWeight='700';
+    if(tv>0&&fk!=='mandays'){const sp=document.createElement('span');sp.className='drill-num';sp.textContent=tv;sp.onclick=()=>openDrawer('all',fk,lbls[fi]+' \u2014 All','all');tdT.appendChild(sp);}else{tdT.textContent=tv;}
+    tr.appendChild(tdT);tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(table);
+}
+
+/* TREND CHARTS */
+function renderTrendCharts(){
+  kill('t1','t2','t3');
+  const ml=ALL_MONTHS.map(mLabel);
+  const md=k=>DB.months[k].data['Total'];
+  const tO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,maxRotation:30}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
+  C.t1=new Chart(document.getElementById('trend1'),{type:'bar',data:{labels:ml,datasets:[{label:'Total',data:ALL_MONTHS.map(k=>md(k).total),backgroundColor:'rgba(0,87,255,0.85)'},{label:'Go live',data:ALL_MONTHS.map(k=>md(k).golive),backgroundColor:'#10B981'},{label:'In progress',data:ALL_MONTHS.map(k=>md(k).inprogress),backgroundColor:'#F59E0B'},{label:'UAT',data:ALL_MONTHS.map(k=>md(k).uat),backgroundColor:'#EF4444'}]},options:tO});
+  C.t2=new Chart(document.getElementById('trend2'),{type:'line',data:{labels:ml,datasets:[{label:'Twixor',data:ALL_MONTHS.map(k=>md(k).twixor),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#6366F1'},{label:'Inhouse',data:ALL_MONTHS.map(k=>md(k).inhouse),borderColor:'#8B9AB8',backgroundColor:'rgba(139,154,184,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#8B9AB8'}]},options:tO});
+  C.t3=new Chart(document.getElementById('trend3'),{type:'line',data:{labels:ml,datasets:[{label:'Mandays',data:ALL_MONTHS.map(k=>md(k).mandays),borderColor:'#10B981',backgroundColor:'rgba(16,185,129,0.12)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#10B981'}]},options:tO});
+}
+
+/* BA SECTION */
+function renderBASection(){
+  const regionF=document.getElementById('baRegionFilter').value;
+  const statusF=document.getElementById('baStatusFilter').value;
+  const monthF=currentMonthKey==='all'?'':currentMonthKey;
+  const rows=filterRaw({region:regionF,status:statusF,month:monthF});
+  const baStats={};
+  BAS.forEach(ba=>{baStats[ba]={total:0,golive:0,inprogress:0,uat:0,yts:0,scoping:0,twixor:0,inhouse:0,mandays:0};});
+  rows.forEach(row=>{
+    const ba=normBA(row[CI.ba]);if(!baStats[ba])return;
+    baStats[ba].total++;
+    const st=normStatus(row[CI.status]);
+    if(st==='golive')baStats[ba].golive++;else if(st==='inprogress')baStats[ba].inprogress++;else if(st==='uat')baStats[ba].uat++;else if(st==='yts')baStats[ba].yts++;else if(st==='scoping')baStats[ba].scoping++;
+    const dev=normDev(row[CI.dev]);if(dev==='Twixor')baStats[ba].twixor++;else if(dev==='Inhouse')baStats[ba].inhouse++;
+    baStats[ba].mandays+=parseInt(String(row[CI.mandays]).replace(/[^0-9]/g,''))||0;
+  });
+
+  const monthLabel_=currentMonthKey==='all'?'':' \u2014 '+mLabel(currentMonthKey);
+
+  // Cards
+  const grid=document.getElementById('baGrid');grid.innerHTML='';
+  BAS.forEach((ba,bi)=>{
+    const s=baStats[ba];if(!s.total)return;
+    const lr=Math.round(s.golive/s.total*100);
+    const initials=ba.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const card=document.createElement('div');card.className='ba-card';card.style.cursor='pointer';
+    // clicking card header opens ALL projects for this BA
+    const hdr=document.createElement('div');hdr.className='ba-card-hdr';
+    const left=document.createElement('div');left.style.cssText='display:flex;align-items:center';
+    const av=document.createElement('div');av.className='ba-avatar';av.style.background=BA_COLORS[bi];av.textContent=initials;
+    const nm=document.createElement('span');nm.className='ba-name';nm.style.marginLeft='10px';nm.textContent=ba;
+    left.appendChild(av);left.appendChild(nm);
+    const cnt=document.createElement('span');cnt.className='ba-count';cnt.style.cursor='pointer';
+    cnt.textContent=s.total+' project'+(s.total!==1?'s':'');
+    cnt.title='Click to view all '+ba+' projects';
+    cnt.onclick=(e)=>{e.stopPropagation();openDrawer('all','all',ba+monthLabel_,currentMonthKey,ba);};
+    hdr.appendChild(left);hdr.appendChild(cnt);
+
+    // stat mini-cards — each opens specific subset
+    const stats=document.createElement('div');stats.className='ba-stats';
+    const statDefs=[['Go live',s.golive,'#10B981','golive'],['In progress',s.inprogress,'#F59E0B','inprogress'],['UAT',s.uat,'#0057FF','uat'],['Yet to start',s.yts,'','yts']];
+    statDefs.forEach(([l,v,c,field])=>{
+      const st2=document.createElement('div');st2.className='ba-stat';
+      if(v>0){st2.style.cursor='pointer';st2.title='View '+l+' projects for '+ba;st2.onclick=(e)=>{e.stopPropagation();openDrawer('all',field,ba+' \u2014 '+l+monthLabel_,currentMonthKey,ba);};}
+      const sl=document.createElement('div');sl.className='ba-stat-label';sl.textContent=l;
+      const sv=document.createElement('div');sv.className='ba-stat-value';if(c)sv.style.color=c;sv.textContent=v;
+      st2.appendChild(sl);st2.appendChild(sv);stats.appendChild(st2);
+    });
+
+    const barRow=document.createElement('div');barRow.className='ba-bar-row';
+    const barLabel=document.createElement('div');barLabel.className='ba-bar-label';
+    const bl1=document.createElement('span');bl1.textContent='Delivery rate';
+    const bl2=document.createElement('span');bl2.textContent=lr+'%';
+    barLabel.appendChild(bl1);barLabel.appendChild(bl2);
+    const barTrack=document.createElement('div');barTrack.className='ba-bar-track';
+    const barFill=document.createElement('div');barFill.className='ba-bar-fill';
+    barFill.style.cssText='width:'+lr+'%;background:'+BA_COLORS[bi];barFill.innerHTML='&nbsp;';
+    barTrack.appendChild(barFill);barRow.appendChild(barLabel);barRow.appendChild(barTrack);
+    card.appendChild(hdr);card.appendChild(stats);card.appendChild(barRow);grid.appendChild(card);
+  });
+
+  // BA comparison table with clickable cells per field
+  const tableWrap=document.getElementById('baTableWrap');
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  thead.innerHTML='<tr><th>BA</th><th class="num">Total</th><th class="num">Go live</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Yet to start</th><th class="num">Scoping</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays</th></tr>';
+  table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  BAS.forEach((ba,bi)=>{
+    const s=baStats[ba];if(!s.total)return;
+    const tr=document.createElement('tr');
+    const td0=document.createElement('td');
+    td0.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+BA_COLORS[bi]+'">&nbsp;</span>'+ba+'</span>';
+    tr.appendChild(td0);
+    const fieldMap=[['all',s.total],['golive',s.golive],['inprogress',s.inprogress],['uat',s.uat],['yts',s.yts],['scoping',s.scoping],['twixor',s.twixor],['inhouse',s.inhouse],['mandays',s.mandays]];
+    fieldMap.forEach(([field,v])=>{
+      const td=document.createElement('td');td.className='num';
+      if(v>0&&field!=='mandays'){
+        const sp=document.createElement('span');sp.className='drill-num';sp.textContent=v;
+        const _ba=ba,_field=field;
+        sp.onclick=()=>openDrawer('all',_field,ba+(field==='all'?'':' \u2014 '+field)+monthLabel_,currentMonthKey,_ba);
+        td.appendChild(sp);
+      }else{td.textContent=v;}
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);tableWrap.innerHTML='';tableWrap.appendChild(table);
+
+  // Charts
+  const activeBAs=BAS.filter(ba=>baStats[ba].total>0);
+  kill('baChart1','baChart2');
+  C.baChart1=new Chart(document.getElementById('baChart1'),{type:'bar',data:{labels:activeBAs,datasets:[{label:'Total',data:activeBAs.map(ba=>baStats[ba].total),backgroundColor:activeBAs.map(ba=>BA_COLORS[BAS.indexOf(ba)]||'#8B9AB8')}]},options:{...CHART_OPTS,plugins:{legend:{display:false}}}});
+  C.baChart2=new Chart(document.getElementById('baChart2'),{type:'bar',data:{labels:activeBAs,datasets:[{label:'Go live',data:activeBAs.map(ba=>baStats[ba].golive),backgroundColor:'#10B981'},{label:'In progress',data:activeBAs.map(ba=>baStats[ba].inprogress),backgroundColor:'#F59E0B'},{label:'UAT',data:activeBAs.map(ba=>baStats[ba].uat),backgroundColor:'#0057FF'},{label:'Scoping',data:activeBAs.map(ba=>baStats[ba].scoping),backgroundColor:'#8B5CF6'},{label:'Yet to start',data:activeBAs.map(ba=>baStats[ba].yts),backgroundColor:'#8B9AB8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{autoSkip:false}},y:{stacked:true,grid:{color:'rgba(0,0,0,0.04)'}}}}});
+}
+
+/* MONTH SELECT */
+function selectMonth(key){
+  currentMonthKey=key;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
+  document.getElementById('infoPill').textContent=getCount(key)+' of '+DB.totalRows+' rows \u2014 '+mLabel(key);
+  const data=getData(key);
+  renderKPI(data);renderRegionTable(data);renderRegionCharts(data);
+  // If BA tab is active, refresh it with new month
+  const baTab=document.getElementById('panel-ba');
+  if(baTab&&baTab.classList.contains('active'))renderBASection();
+}
+
+/* TAB SWITCH */
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
+  if(tab==='ba')renderBASection();
+}
+
+/* DRAWER */
+function openDrawer(region,field,label,monthKey,baFilter){
+  let rows=filterRaw({region:region==='all'?'':region,month:monthKey==='all'?'':monthKey,ba:baFilter||''});
+  if(field==='golive')rows=rows.filter(r=>normStatus(r[CI.status])==='golive');
+  else if(field==='inprogress')rows=rows.filter(r=>normStatus(r[CI.status])==='inprogress');
+  else if(field==='uat')rows=rows.filter(r=>normStatus(r[CI.status])==='uat');
+  else if(field==='yts')rows=rows.filter(r=>normStatus(r[CI.status])==='yts');
+  else if(field==='scoping')rows=rows.filter(r=>normStatus(r[CI.status])==='scoping');
+  else if(field==='twixor')rows=rows.filter(r=>normDev(r[CI.dev])==='Twixor');
+  else if(field==='inhouse')rows=rows.filter(r=>normDev(r[CI.dev])==='Inhouse');
+  drawerRows=rows;
+  document.getElementById('dTitle').textContent=label;
+  const mStr=monthKey&&monthKey!=='all'?' \u00b7 '+mLabel(monthKey):'';
+  document.getElementById('dSub').textContent=rows.length+' project'+(rows.length!==1?'s':'')+mStr;
+  document.getElementById('dCount').textContent='Showing '+rows.length+' project'+(rows.length!==1?'s':'');
+  const tbody=document.getElementById('dBody');tbody.innerHTML='';
+  rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
   document.getElementById('dOverlay').classList.add('open');
   document.getElementById('drawer').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
 }
-
-function closeDrawer() {
+function closeDrawer(){
   document.getElementById('dOverlay').classList.remove('open');
   document.getElementById('drawer').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';
 }
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('projModalOverlay').classList.contains('open'))closeProjModal();
+    else closeDrawer();
+  }
+});
 
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
-
-/* DRAWER EXCEL EXPORT */
-function downloadDrawerExcel() {
-  if (!drawerRows.length) return;
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([RAW.cols, ...drawerRows]);
-  ws['!cols'] = [{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:14},{wch:30},{wch:40}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Filtered Projects');
-  XLSX.writeFile(wb, 'BA_Projects_'+document.getElementById('dTitle').textContent.replace(/[^a-z0-9]/gi,'_').slice(0,30)+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+/* EXPORTS */
+function downloadDrawerExcel(){
+  if(!drawerRows.length)return;
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([RAW.cols,...drawerRows]);
+  ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:12},{wch:30},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,ws,'Filtered Projects');
+  XLSX.writeFile(wb,'BA_Projects_'+document.getElementById('dTitle').textContent.replace(/[^a-z0-9]/gi,'_').slice(0,30)+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
-
-/* FULL EXCEL DOWNLOAD */
-function downloadExcel() {
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([RAW.cols, ...RAW.rows]);
-  ws['!cols'] = [{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:14},{wch:30},{wch:40}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Project Report');
-  const sumRows = [
-    ['Region','Projects','In Progress','UAT','Go Live','Yet to Start','Scoping/Pipeline','Twixor','Inhouse','Mandays Saved'],
-    ...REGIONS.map(r=>[r,DB.all[r].total,DB.all[r].inprogress,DB.all[r].uat,DB.all[r].golive,DB.all[r].yts,DB.all[r].scoping,DB.all[r].twixor,DB.all[r].inhouse,DB.all[r].mandays]),
-    ['Total',DB.all.Total.total,DB.all.Total.inprogress,DB.all.Total.uat,DB.all.Total.golive,DB.all.Total.yts,DB.all.Total.scoping,DB.all.Total.twixor,DB.all.Total.inhouse,DB.all.Total.mandays]
-  ];
-  const ws2 = XLSX.utils.aoa_to_sheet(sumRows);
-  XLSX.utils.book_append_sheet(wb, ws2, 'Analytics Summary');
-  XLSX.writeFile(wb, 'BA_Project_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
+function downloadExcel(){
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([RAW.cols,...RAW.rows]);
+  ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:12},{wch:30},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,ws,'Project Report');
+  const sumRows=[['Region','Projects','In Progress','UAT','Go Live','Yet to Start','Scoping','Twixor','Inhouse','Mandays'],...REGIONS.map(r=>[r,DB.all[r].total,DB.all[r].inprogress,DB.all[r].uat,DB.all[r].golive,DB.all[r].yts,DB.all[r].scoping,DB.all[r].twixor,DB.all[r].inhouse,DB.all[r].mandays]),['Total',DB.all.Total.total,DB.all.Total.inprogress,DB.all.Total.uat,DB.all.Total.golive,DB.all.Total.yts,DB.all.Total.scoping,DB.all.Total.twixor,DB.all.Total.inhouse,DB.all.Total.mandays]];
+  const ws2=XLSX.utils.aoa_to_sheet(sumRows);
+  XLSX.utils.book_append_sheet(wb,ws2,'Analytics Summary');
+  XLSX.writeFile(wb,'BA_Project_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 /* INIT */
 renderMonthTable();
 renderTrendCharts();
 selectMonth('all');
-
 </script>
 </body>
 </html>
