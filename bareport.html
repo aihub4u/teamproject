@@ -183,6 +183,35 @@ tr:last-child td{border-bottom:none;}
 /* FOOTER */
 .footer{text-align:center;font-size:12px;color:var(--text-muted);margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;}
 
+/* EMAIL MODAL */
+.email-modal-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.5);z-index:400;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;padding:20px;}
+.email-modal-overlay.open{opacity:1;pointer-events:all;}
+.email-modal{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:480px;box-shadow:0 8px 48px rgba(7,17,42,0.22);transform:translateY(12px);transition:transform 0.25s;}
+.email-modal-overlay.open .email-modal{transform:translateY(0);}
+.email-modal-hdr{background:var(--navy);padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;align-items:center;justify-content:space-between;}
+.email-modal-title{color:#fff;font-weight:600;font-size:15px;}
+.email-modal-close{background:rgba(255,255,255,0.1);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.email-modal-close:hover{background:rgba(255,255,255,0.2);}
+.email-modal-body{padding:20px;}
+.email-field{margin-bottom:14px;}
+.email-field label{display:block;font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+.email-field input,.email-field textarea{width:100%;padding:9px 12px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:border-color 0.15s,box-shadow 0.15s;resize:vertical;}
+.email-field input:focus,.email-field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light);}
+.email-field small{display:block;font-size:11px;color:var(--text-muted);margin-top:4px;}
+.email-modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;}
+.email-status{font-size:12px;flex:1;}
+.email-status.success{color:#059669;}
+.email-status.error{color:#DC2626;}
+.btn-send{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:6px;transition:background 0.15s;}
+.btn-send:hover{background:var(--blue-hover);}
+.btn-send:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-cancel{background:transparent;border:1px solid var(--border-strong);color:var(--text-sec);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-cancel:hover{background:var(--off-white);}
+.script-url-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:14px;}
+.script-url-row .email-field{flex:1;margin-bottom:0;}
+.setup-note{background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:14px;line-height:1.6;}
+.setup-note strong{display:block;margin-bottom:4px;}
+
 /* PASSWORD GATE */
 .gate-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
 .gate-box{background:#fff;border-radius:var(--radius-lg);padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 48px rgba(0,0,0,0.3);text-align:center;}
@@ -254,6 +283,7 @@ tr:last-child td{border-bottom:none;}
   </a>
   <div class="topbar-right">
     <span class="topbar-pill"><i class="ti ti-circle-check"></i> Live &middot; 27 May 2026</span>
+    <button class="btn-top outline" onclick="openEmailModal()"><i class="ti ti-mail"></i> Send report</button>
     <button class="btn-top outline" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
   </div>
 </div>
@@ -284,6 +314,46 @@ tr:last-child td{border-bottom:none;}
     </table>
   </div>
 </div>
+
+<!-- Email report modal -->
+<div class="email-modal-overlay" id="emailModalOverlay" onclick="closeEmailModal()">
+  <div class="email-modal" onclick="event.stopPropagation()">
+    <div class="email-modal-hdr">
+      <span class="email-modal-title"><i class="ti ti-mail"></i> &nbsp;Send dashboard report</span>
+      <button class="email-modal-close" onclick="closeEmailModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="email-modal-body">
+      <div class="setup-note" id="scriptSetupNote" style="display:none;"></div>
+      <div class="script-url-row" style="display:none;">
+        <div class="email-field">
+          <label>Apps Script Web App URL</label>
+          <input type="url" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/..." oninput="saveScriptUrl()"/>
+        </div>
+      </div>
+      <div class="email-field">
+        <label>To (recipients)</label>
+        <input type="text" id="emailTo" placeholder="sonia@karix.com, raj@karix.com"/>
+        <small>Separate multiple addresses with commas</small>
+      </div>
+      <div class="email-field">
+        <label>Subject</label>
+        <input type="text" id="emailSubject" value="BA Team Project Analytics Report — 27 May 2026"/>
+      </div>
+      <div class="email-field">
+        <label>Note (optional)</label>
+        <textarea id="emailNote" rows="2" placeholder="Add a personal note to include at the top of the email..."></textarea>
+      </div>
+    </div>
+    <div class="email-modal-footer">
+      <span class="email-status" id="emailStatus"></span>
+      <button class="btn-cancel" onclick="closeEmailModal()">Cancel</button>
+      <button class="btn-send" id="sendBtn" onclick="sendReport()"><i class="ti ti-send"></i> Send report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Apps Script setup instructions -->
+<div id="appsScriptInstructions" style="display:none;"></div>
 
 <!-- Project detail modal -->
 <div class="modal-overlay" id="projModalOverlay" onclick="closeProjModal()">
@@ -959,7 +1029,277 @@ function downloadExcel(){
   XLSX.writeFile(wb,'BA_Project_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
-/* PASSWORD GATE */
+/* ═══ EMAIL REPORT ═══ */
+function openEmailModal(){
+  // Restore saved script URL
+  const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbzUFXX-XY-oPJjGB8VCPGh_fL5Mkd4J4pjlX3OKzOGMDfxGoPoaINmhqftj_c3bo2vI/exec';
+  const saved=localStorage.getItem('karix_script_url')||APPS_SCRIPT_URL;
+  document.getElementById('appsScriptUrl').value=saved;
+  localStorage.setItem('karix_script_url',saved);
+  document.getElementById('scriptSetupNote').style.display=saved?'none':'block';
+  document.getElementById('emailStatus').textContent='';
+  document.getElementById('emailStatus').className='email-status';
+  document.getElementById('sendBtn').disabled=false;
+  document.getElementById('emailModalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeEmailModal(){
+  document.getElementById('emailModalOverlay').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open')&&
+     !document.getElementById('projModalOverlay').classList.contains('open'))
+    document.body.style.overflow='';
+}
+function saveScriptUrl(){
+  const v=document.getElementById('appsScriptUrl').value.trim();
+  if(v) localStorage.setItem('karix_script_url',v);
+  document.getElementById('scriptSetupNote').style.display=v?'none':'block';
+}
+
+function buildEmailHTML(note){
+  const T=DB.all['Total'];
+  const d=DB.lastUpdated;
+  const mon=currentMonthKey==='all'?'All months':mLabel(currentMonthKey);
+
+  // KPI row
+  const kpis=[
+    {l:'Total Projects',v:T.total,c:'#0057FF'},
+    {l:'Go Live',v:T.golive,c:'#10B981'},
+    {l:'In Progress',v:T.inprogress,c:'#F59E0B'},
+    {l:'UAT',v:T.uat,c:'#0057FF'},
+    {l:'Yet to Start',v:T.yts,c:'#6B7280'},
+    {l:'Pipeline/Scoping',v:T.scoping,c:'#8B5CF6'},
+    {l:'Twixor',v:T.twixor,c:'#6366F1'},
+    {l:'Inhouse',v:T.inhouse,c:'#8B9AB8'},
+    {l:'Mandays Saved',v:T.mandays,c:'#10B981'},
+  ];
+
+  const kpiCells=kpis.map(k=>`
+    <td style="padding:12px 10px;text-align:center;background:#fff;border-radius:8px;min-width:80px;">
+      <div style="font-size:24px;font-weight:700;color:${k.c};letter-spacing:-0.03em;">${k.v}</div>
+      <div style="font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">${k.l}</div>
+    </td>
+    <td style="width:6px;"></td>`).join('');
+
+  // Region table rows
+  const regionRows=REGIONS.map(r=>{
+    const d2=DB.all[r];
+    return `<tr>
+      <td style="padding:10px 14px;font-weight:600;color:#0D1E3F;border-bottom:1px solid #F1F5F9;">${r}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;">${d2.total}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#F59E0B;font-weight:600;">${d2.inprogress}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#0057FF;font-weight:600;">${d2.uat}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#10B981;font-weight:600;">${d2.golive}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#6B7280;">${d2.yts}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#8B5CF6;">${d2.scoping}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#6366F1;">${d2.twixor}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#8B9AB8;">${d2.inhouse}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#10B981;font-weight:600;">${d2.mandays}</td>
+    </tr>`;
+  }).join('');
+
+  // Month trend rows
+  const monthRows=ALL_MONTHS.map(k=>{
+    const md=DB.months[k].data['Total'];
+    const liveRate=md.total>0?Math.round(md.golive/md.total*100):0;
+    return `<tr>
+      <td style="padding:10px 14px;font-weight:600;color:#0D1E3F;border-bottom:1px solid #F1F5F9;">${mLabel(k)}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;">${md.total}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#10B981;font-weight:600;">${md.golive}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#F59E0B;">${md.inprogress}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#0057FF;">${md.uat}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#8B5CF6;">${md.scoping}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;">
+        <div style="display:inline-block;background:#E0F2FE;color:#0057FF;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${liveRate}%</div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Auto insights
+  const insights=[];
+  const topRegion=REGIONS.reduce((a,b)=>DB.all[a].total>DB.all[b].total?a:b);
+  const topLive=REGIONS.reduce((a,b)=>DB.all[a].golive>DB.all[b].golive?a:b);
+  insights.push(`<b>${topRegion}</b> leads with the most projects (${DB.all[topRegion].total} total)`);
+  insights.push(`<b>${topLive}</b> has the highest Go Live count (${DB.all[topLive].golive} projects)`);
+  insights.push(`Overall delivery rate: <b>${Math.round(T.golive/T.total*100)}%</b> (${T.golive} of ${T.total} projects live)`);
+  if(ALL_MONTHS.length>=2){
+    const m1=DB.months[ALL_MONTHS[0]].data['Total'];
+    const m2=DB.months[ALL_MONTHS[1]].data['Total'];
+    const diff=m2.total-m1.total;
+    const arrow=diff>=0?'&#8593;':'&#8595;';
+    const col=diff>=0?'#10B981':'#EF4444';
+    insights.push(`${mLabel(ALL_MONTHS[1])} had <b style="color:${col}">${arrow} ${Math.abs(diff)} ${diff>=0?'more':'fewer'} projects</b> than ${mLabel(ALL_MONTHS[0])}`);
+  }
+  insights.push(`<b>${T.twixor}</b> Twixor vs <b>${T.inhouse}</b> Inhouse — ${T.twixor>T.inhouse?'Twixor-heavy':'Inhouse-heavy'} delivery mix`);
+  const insightItems=insights.map(i=>`
+    <tr><td style="padding:7px 14px;border-bottom:1px solid #F1F5F9;font-size:13px;color:#374151;">
+      <span style="color:#0057FF;margin-right:8px;">&#8250;</span>${i}
+    </td></tr>`).join('');
+
+  const noteBlock=note?`
+    <tr><td style="padding:0 0 24px;">
+      <div style="background:#F0F9FF;border-left:3px solid #0057FF;padding:14px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#374151;line-height:1.6;">
+        ${note.replace(/\n/g,'<br>')}
+      </div>
+    </td></tr>`:'';
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#F4F6FB;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6FB;padding:32px 16px;">
+<tr><td>
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;margin:0 auto;">
+
+  <!-- HEADER -->
+  <tr><td style="background:#07112A;border-radius:12px 12px 0 0;padding:24px 28px;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td>
+          <div style="display:inline-flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;background:#0057FF;border-radius:7px;display:inline-block;text-align:center;line-height:32px;font-weight:700;font-size:14px;color:#fff;">K</div>
+            <span style="font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.02em;margin-left:8px;">Karix</span>
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);margin-left:2px;">a Tanla company</span>
+          </div>
+          <div style="margin-top:16px;">
+            <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.02em;">BA Team Project Analytics</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;">Report date: ${d} &nbsp;&middot;&nbsp; Period: ${mon}</div>
+          </div>
+        </td>
+        <td style="text-align:right;vertical-align:top;">
+          <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 12px;display:inline-block;">
+            <span style="font-size:11px;font-weight:600;color:#4ADE80;">&#9679; Live data</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- WHITE BODY -->
+  <tr><td style="background:#fff;padding:28px;border-radius:0 0 12px 12px;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+
+    <!-- NOTE -->
+    ${noteBlock}
+
+    <!-- INSIGHTS -->
+    <tr><td style="padding-bottom:24px;">
+      <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #F1F5F9;">&#128161; Key insights</div>
+      <table width="100%" cellpadding="0" cellspacing="0">${insightItems}</table>
+    </td></tr>
+
+    <!-- KPI SUMMARY -->
+    <tr><td style="padding-bottom:24px;">
+      <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #F1F5F9;">&#128202; Summary</div>
+      <table cellpadding="0" cellspacing="0" style="background:#F4F6FB;border-radius:10px;padding:12px;width:100%;">
+        <tr>${kpiCells}</tr>
+      </table>
+    </td></tr>
+
+    <!-- REGION TABLE -->
+    <tr><td style="padding-bottom:24px;">
+      <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #F1F5F9;">&#127758; Region breakdown</div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr style="background:#F4F6FB;">
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Region</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Projects</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">In Progress</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">UAT</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Go Live</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Yet to Start</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Scoping</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Twixor</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Inhouse</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Mandays</th>
+        </tr>
+        ${regionRows}
+        <tr style="background:#F4F6FB;">
+          <td style="padding:10px 14px;font-weight:700;color:#0D1E3F;">Total</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;">${T.total}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#F59E0B;">${T.inprogress}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#0057FF;">${T.uat}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#10B981;">${T.golive}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;">${T.yts}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#8B5CF6;">${T.scoping}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#6366F1;">${T.twixor}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#8B9AB8;">${T.inhouse}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#10B981;">${T.mandays}</td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- MONTH TABLE -->
+    <tr><td style="padding-bottom:24px;">
+      <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #F1F5F9;">&#128197; Month-wise trend</div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr style="background:#F4F6FB;">
+          <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Month</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Total</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Go Live</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">In Progress</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">UAT</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Scoping</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Delivery rate</th>
+        </tr>
+        ${monthRows}
+      </table>
+    </td></tr>
+
+    <!-- FOOTER -->
+    <tr><td style="padding-top:8px;border-top:1px solid #F1F5F9;text-align:center;">
+      <div style="font-size:11px;color:#9CA3AF;line-height:1.7;">
+        This report was generated automatically from the Karix BA Team Analytics Dashboard.<br>
+        Data reflects projects with start or due date from Apr 2026 onwards.<br>
+        <span style="color:#0057FF;">karix.com</span> &nbsp;&middot;&nbsp; a Tanla Platforms company
+      </div>
+    </td></tr>
+
+  </table>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+async function sendReport(){
+  const scriptUrl=document.getElementById('appsScriptUrl').value.trim();
+  const to=document.getElementById('emailTo').value.trim();
+  const subject=document.getElementById('emailSubject').value.trim();
+  const note=document.getElementById('emailNote').value.trim();
+  const statusEl=document.getElementById('emailStatus');
+  const sendBtn=document.getElementById('sendBtn');
+
+  if(!scriptUrl){statusEl.className='email-status error';statusEl.textContent='Please enter your Apps Script URL first.';return;}
+  if(!to){statusEl.className='email-status error';statusEl.textContent='Please enter at least one recipient.';return;}
+  if(!subject){statusEl.className='email-status error';statusEl.textContent='Please enter a subject line.';return;}
+
+  sendBtn.disabled=true;sendBtn.innerHTML='<i class="ti ti-loader-2"></i> Sending...';
+  statusEl.className='email-status';statusEl.textContent='';
+
+  const htmlBody=buildEmailHTML(note);
+  const payload={to,subject,htmlBody,from:'BA Team Analytics Dashboard'};
+
+  try{
+    const res=await fetch(scriptUrl,{method:'POST',body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(data.status==='ok'){
+      statusEl.className='email-status success';
+      statusEl.innerHTML='<i class="ti ti-circle-check"></i> Report sent successfully!';
+      sendBtn.innerHTML='<i class="ti ti-check"></i> Sent!';
+      setTimeout(()=>{closeEmailModal();sendBtn.disabled=false;sendBtn.innerHTML='<i class="ti ti-send"></i> Send report';},2000);
+    } else {
+      throw new Error(data.message||'Unknown error');
+    }
+  } catch(e){
+    statusEl.className='email-status error';
+    statusEl.textContent='Failed to send: '+e.message;
+    sendBtn.disabled=false;sendBtn.innerHTML='<i class="ti ti-send"></i> Send report';
+  }
+}
+
+/* ═══ PASSWORD GATE ═══ */
 (function(){
   const HASH='b8f6c1b2a9d3e7f4c2a1d6e9b3f7c4a2d8e1f5c9b2a6d3e7f4c1b8a2d5e9f3';
   function sha256sim(s){
