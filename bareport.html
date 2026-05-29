@@ -583,6 +583,8 @@ const ALL_MONTHS=Object.keys(DB.months).sort();
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
 const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11};
 
+function revenue(m){return m*8000;}
+function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
 function mLabel(k){if(k==='all')return'All dates';const[y,m]=k.split('-');return(MON[m]||m)+' '+y;}
 function getData(k){return k==='all'?DB.all:DB.months[k].data;}
 function getCount(k){return k==='all'?DB.totalRows:DB.months[k].rowCount;}
@@ -770,7 +772,8 @@ function renderFilteredTable(rows){
 /* KPI */
 function renderKPI(data){
   const t=data['Total'];
-  const defs=[['Total projects',t.total,true,'all','all'],['Go live',t.golive,false,'all','golive'],['In progress',t.inprogress,false,'all','inprogress'],['UAT',t.uat,false,'all','uat'],['Yet to start',t.yts,false,'all','yts'],['Pipeline/scoping',t.scoping,false,'all','scoping'],['Twixor',t.twixor,false,'all','twixor'],['Inhouse',t.inhouse,false,'all','inhouse'],['Mandays saved',t.mandays,false,'all','mandays']];
+  const defs=[['Total projects',t.total,true,'all','all'],['Go live',t.golive,false,'all','golive'],['In progress',t.inprogress,false,'all','inprogress'],['UAT',t.uat,false,'all','uat'],['Yet to start',t.yts,false,'all','yts'],['Pipeline/scoping',t.scoping,false,'all','scoping'],['Twixor',t.twixor,false,'all','twixor'],['Inhouse',t.inhouse,false,'all','inhouse'],['Mandays saved',t.mandays,false,'all','mandays'],
+    ['Revenue saved',fmtINR(revenue(t.mandays)),false,'all','mandays']];
   const grid=document.getElementById('kpiGrid');grid.innerHTML='';
   defs.forEach(([lbl,val,acc,region,field])=>{
     const clickable=val>0&&field!=='mandays';
@@ -794,19 +797,21 @@ function renderRegionTable(data){
   const wrap=document.getElementById('regionTableWrap');
   const table=document.createElement('table');
   const thead=document.createElement('thead');
-  thead.innerHTML='<tr><th>Region</th><th class="num">Projects</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Go live</th><th class="num">Yet to start</th><th class="num">Scoping/pipeline</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays saved</th></tr>';
+  thead.innerHTML='<tr><th>Region</th><th class="num">Projects</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Go live</th><th class="num">Yet to start</th><th class="num">Scoping/pipeline</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays saved</th><th class="num" style="color:#1D9E75">Revenue saved</th></tr>';
   table.appendChild(thead);
   const tbody=document.createElement('tbody');
   REGIONS.forEach(r=>{
     const tr=document.createElement('tr');
     const td0=document.createElement('td');td0.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+RCOLORS[r]+'">&nbsp;</span>'+r+'</span>';tr.appendChild(td0);
     [['all','Projects',data[r].total],['inprogress','In Progress',data[r].inprogress],['uat','UAT',data[r].uat],['golive','Go Live',data[r].golive],['yts','Yet to Start',data[r].yts],['scoping','Scoping',data[r].scoping],['twixor','Twixor',data[r].twixor],['inhouse','Inhouse',data[r].inhouse],['mandays','Mandays',data[r].mandays]].forEach(([f,l,v])=>tr.appendChild(drillCell(r,f,l,v)));
+    const _td1=document.createElement('td');_td1.className='num';_td1.style.color='#1D9E75';_td1.style.fontWeight='500';_td1.textContent=fmtINR(revenue(data[r].mandays));tr.appendChild(_td1);
     tbody.appendChild(tr);
   });
   const trT=document.createElement('tr');trT.className='total-row';
   const tdL=document.createElement('td');tdL.innerHTML='<strong>Total</strong>';trT.appendChild(tdL);
   const T=data['Total'];
   [['all','Projects',T.total],['inprogress','In Progress',T.inprogress],['uat','UAT',T.uat],['golive','Go Live',T.golive],['yts','Yet to Start',T.yts],['scoping','Scoping',T.scoping],['twixor','Twixor',T.twixor],['inhouse','Inhouse',T.inhouse],['mandays','Mandays',T.mandays]].forEach(([f,l,v])=>trT.appendChild(drillCell('all',f,l,v)));
+  const _td2=document.createElement('td');_td2.className='num';_td2.style.color='#1D9E75';_td2.style.fontWeight='700';_td2.textContent=fmtINR(revenue(T.mandays));trT.appendChild(_td2);
   tbody.appendChild(trT);table.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(table);
 }
 
@@ -822,9 +827,9 @@ function renderRegionCharts(data){
 
 /* MONTH TABLE */
 function renderMonthTable(){
-  const fields=['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
-  const fkeys=['all','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays'];
-  const lbls=['Projects','In progress','UAT','Go live','Yet to start','Scoping/pipeline','Twixor','Inhouse','Mandays saved'];
+  const fields=['total','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays','revenue'];
+  const fkeys=['all','inprogress','uat','golive','yts','scoping','twixor','inhouse','mandays','mandays'];
+  const lbls=['Projects','In progress','UAT','Go live','Yet to start','Scoping/pipeline','Twixor','Inhouse','Mandays saved','Revenue saved (INR)'];
   const gt=DB.all['Total'];
   const wrap=document.getElementById('monthTableWrap');
   const table=document.createElement('table');
@@ -927,7 +932,7 @@ function renderBASection(){
   const tableWrap=document.getElementById('baTableWrap');
   const table=document.createElement('table');
   const thead=document.createElement('thead');
-  thead.innerHTML='<tr><th>BA</th><th class="num">Total</th><th class="num">Go live</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Yet to start</th><th class="num">Scoping</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays</th></tr>';
+  thead.innerHTML='<tr><th>BA</th><th class="num">Total</th><th class="num">Go live</th><th class="num">In progress</th><th class="num">UAT</th><th class="num">Yet to start</th><th class="num">Scoping</th><th class="num">Twixor</th><th class="num">Inhouse</th><th class="num">Mandays</th><th class="num" style="color:#1D9E75">Revenue saved</th></tr>';
   table.appendChild(thead);
   const tbody=document.createElement('tbody');
   BAS.forEach((ba,bi)=>{
@@ -1072,6 +1077,7 @@ function buildEmailHTML(note){
     {l:'Twixor',v:T.twixor,c:'#6366F1'},
     {l:'Inhouse',v:T.inhouse,c:'#8B9AB8'},
     {l:'Mandays Saved',v:T.mandays,c:'#10B981'},
+    {l:'Revenue Saved',v:fmtINR(revenue(T.mandays)),c:'#10B981'},
   ];
 
   const kpiCells=kpis.map(k=>`
@@ -1095,6 +1101,7 @@ function buildEmailHTML(note){
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#6366F1;">${d2.twixor}</td>
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#8B9AB8;">${d2.inhouse}</td>
       <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#10B981;font-weight:600;">${d2.mandays}</td>
+      <td style="padding:10px 14px;text-align:center;border-bottom:1px solid #F1F5F9;color:#10B981;font-weight:600;">${fmtINR(revenue(d2.mandays))}</td>
     </tr>`;
   }).join('');
 
@@ -1211,6 +1218,7 @@ function buildEmailHTML(note){
           <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Twixor</th>
           <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Inhouse</th>
           <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Mandays</th>
+          <th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:600;color:#1D9E75;text-transform:uppercase;letter-spacing:0.05em;">Revenue saved</th>
         </tr>
         ${regionRows}
         <tr style="background:#F4F6FB;">
@@ -1224,6 +1232,7 @@ function buildEmailHTML(note){
           <td style="padding:10px 14px;text-align:center;font-weight:700;color:#6366F1;">${T.twixor}</td>
           <td style="padding:10px 14px;text-align:center;font-weight:700;color:#8B9AB8;">${T.inhouse}</td>
           <td style="padding:10px 14px;text-align:center;font-weight:700;color:#10B981;">${T.mandays}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:#10B981;">${fmtINR(revenue(T.mandays))}</td>
         </tr>
       </table>
     </td></tr>
@@ -1279,15 +1288,29 @@ async function sendReport(){
   sendBtn.disabled=true;sendBtn.innerHTML='<i class="ti ti-loader-2"></i> Sending...';
   statusEl.className='email-status';statusEl.textContent='';
 
+  // Build Excel attachment as base64
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([RAW.cols,...RAW.rows]);
+  ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:12},{wch:30},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,ws,'Project Report');
+  const wbBinary=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
+
   const htmlBody=buildEmailHTML(note);
-  const payload={to,subject,htmlBody,from:'BA Team Analytics Dashboard'};
+  const payload={
+    to, subject, htmlBody,
+    attachment:{
+      filename:'BA_Project_Report_'+DB.lastUpdated.replace(/ /g,'_')+'.xlsx',
+      data:wbBinary,
+      mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }
+  };
 
   try{
     const res=await fetch(scriptUrl,{method:'POST',body:JSON.stringify(payload)});
     const data=await res.json();
     if(data.status==='ok'){
       statusEl.className='email-status success';
-      statusEl.innerHTML='<i class="ti ti-circle-check"></i> Report sent successfully!';
+      statusEl.innerHTML='<i class="ti ti-circle-check"></i> Report sent with Excel attachment!';
       sendBtn.innerHTML='<i class="ti ti-check"></i> Sent!';
       setTimeout(()=>{closeEmailModal();sendBtn.disabled=false;sendBtn.innerHTML='<i class="ti ti-send"></i> Send report';},2000);
     } else {
