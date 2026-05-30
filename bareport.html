@@ -315,9 +315,12 @@ tr:last-child td{border-bottom:none;}
     <div><span class="logo-text">Karix</span><span class="logo-sub">a Tanla company</span></div>
   </a>
   <div class="topbar-right">
-    <span class="topbar-pill"><i class="ti ti-circle-check"></i> Live &middot; 29 May 2026</span>
+    <span class="topbar-pill" id="userPill"><i class="ti ti-user"></i> </span>
     <button class="btn-top outline" onclick="openEmailModal()"><i class="ti ti-mail"></i> Send report</button>
     <button class="btn-top outline" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
+    <button class="btn-top outline" onclick="openChangePwd()" title="Change password"><i class="ti ti-key"></i></button>
+    <button class="btn-top outline" onclick="doLogout()" title="Sign out"><i class="ti ti-logout"></i></button>
+  </div>
   </div>
 </div>
 
@@ -326,14 +329,8 @@ tr:last-child td{border-bottom:none;}
   <div class="logo-mark" style="width:44px;height:44px;font-size:18px;margin-bottom:4px;">K</div>
   <div class="loading-spinner" id="loadingSpinner"></div>
   <div class="loading-text" id="loadingText">Loading dashboard data...</div>
-  <div class="loading-sub" id="loadingSub">Fetching from Google Sheets</div>
   <div class="loading-error hidden" id="loadingError"></div>
-  <div class="hidden" id="loadingUrlRow" style="margin-top:12px;width:100%;max-width:420px;">
-    <input type="url" id="loadingUrlInput" placeholder="Paste Apps Script URL here..."
-      style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:Inter,sans-serif;outline:none;margin-bottom:8px;"/>
-    <button class="retry-btn" onclick="saveUrlAndRetry()" style="width:100%;">Save URL &amp; Load</button>
-  </div>
-  <button class="retry-btn hidden" id="retryBtn" onclick="loadData()" style="margin-top:4px;">Retry</button>
+  <button class="retry-btn hidden" id="retryBtn" onclick="loadData()" style="margin-top:8px;">Retry</button>
 </div>
 
 <!-- Drill-down drawer -->
@@ -407,6 +404,36 @@ tr:last-child td{border-bottom:none;}
 
 <!-- Apps Script setup instructions -->
 <div id="appsScriptInstructions" style="display:none;"></div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="changePwdOverlay" onclick="closeChangePwd()">
+  <div class="modal" id="changePwdModal" onclick="event.stopPropagation()" style="max-width:400px;">
+    <div class="modal-hdr">
+      <div><div class="modal-hdr-title"><i class="ti ti-key"></i> &nbsp;Change Password</div></div>
+      <button class="modal-close" onclick="closeChangePwd()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="email-field">
+        <label>Current Password</label>
+        <input type="password" id="cpCurrent" placeholder="Enter current password"/>
+      </div>
+      <div class="email-field">
+        <label>New Password</label>
+        <input type="password" id="cpNew" placeholder="Enter new password"/>
+      </div>
+      <div class="email-field">
+        <label>Confirm New Password</label>
+        <input type="password" id="cpConfirm" placeholder="Re-enter new password" onkeydown="if(event.key==='Enter')submitChangePwd()"/>
+      </div>
+      <div class="gate-error" id="cpError" style="text-align:left;margin-top:0;"></div>
+    </div>
+    <div class="modal-footer">
+      <span class="email-status" id="cpStatus"></span>
+      <button class="btn-cancel" onclick="closeChangePwd()">Cancel</button>
+      <button class="btn-send" id="cpBtn" onclick="submitChangePwd()"><i class="ti ti-check"></i> Update password</button>
+    </div>
+  </div>
+</div>
 
 <!-- Project detail modal -->
 <div class="modal-overlay" id="projModalOverlay" onclick="closeProjModal()">
@@ -1919,7 +1946,9 @@ async function checkGate(){
       document.getElementById('mainPage').style.display='block';
       // Show logged in user in topbar
       const pill=document.querySelector('.topbar-pill');
-      if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+data.username+(data.role?' · '+data.role:'');
+      if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+data.username+(data.role?' &middot; '+data.role:'');
+    const userPill=document.getElementById('userPill');
+    if(userPill) userPill.innerHTML='<i class="ti ti-user"></i> '+data.username+(data.role?' &middot; '+data.role:'');
       loadData();
     } else {
       errEl.textContent=data.message||'Invalid username or password.';
@@ -1949,7 +1978,9 @@ function toggleGateEye(){
     document.getElementById('mainTopbar').style.display='flex';
     document.getElementById('mainPage').style.display='block';
     const pill=document.querySelector('.topbar-pill');
-    if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' · '+s.role:'');
+    if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
+    const userPill2=document.getElementById('userPill');
+    if(userPill2) userPill2.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
     startInactivityTimer();
     loadData();
   } else {
@@ -1962,8 +1993,7 @@ function showLoading(text, sub){
   const ov=document.getElementById('loadingOverlay');
   ov.classList.remove('hidden');
   document.getElementById('loadingText').textContent=text||'Loading...';
-  document.getElementById('loadingSub').textContent=sub||'';
-  document.getElementById('loadingError').classList.add('hidden');
+    document.getElementById('loadingError').classList.add('hidden');
   document.getElementById('retryBtn').classList.add('hidden');
 }
 function hideLoading(){
@@ -1971,28 +2001,84 @@ function hideLoading(){
 }
 function showLoadError(msg){
   document.getElementById('loadingText').textContent='Failed to load data';
-  document.getElementById('loadingSub').textContent='';
   document.getElementById('loadingSpinner').style.display='none';
   const err=document.getElementById('loadingError');
   err.textContent=msg;err.classList.remove('hidden');
   document.getElementById('retryBtn').classList.remove('hidden');
-  // Show URL input so user can update the script URL if needed
-  const urlRow=document.getElementById('loadingUrlRow');
-  urlRow.classList.remove('hidden');
-  const urlInput=document.getElementById('loadingUrlInput');
-  const current=localStorage.getItem('karix_script_url')||'';
-  if(current) urlInput.value=current;
 }
-function saveUrlAndRetry(){
-  const v=document.getElementById('loadingUrlInput').value.trim();
-  if(v){
-    localStorage.setItem('karix_script_url',v);
-    const emailInput=document.getElementById('appsScriptUrl');
-    if(emailInput) emailInput.value=v;
+
+/* ═══ LOGOUT ═══ */
+function doLogout(){
+  if(!confirm('Sign out of the dashboard?')) return;
+  // Tell server to invalidate session (best effort)
+  const HARDCODED_URL='https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  const url=localStorage.getItem('karix_script_url')||HARDCODED_URL;
+  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logout',token:sessionToken})}).catch(()=>{});
+  clearSession();
+  showGate('You have been signed out.');
+}
+
+/* ═══ CHANGE PASSWORD ═══ */
+function openChangePwd(){
+  document.getElementById('cpCurrent').value='';
+  document.getElementById('cpNew').value='';
+  document.getElementById('cpConfirm').value='';
+  document.getElementById('cpError').textContent='';
+  document.getElementById('cpStatus').textContent='';
+  document.getElementById('cpStatus').className='email-status';
+  document.getElementById('cpBtn').disabled=false;
+  document.getElementById('cpBtn').innerHTML='<i class="ti ti-check"></i> Update password';
+  document.getElementById('changePwdOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('cpCurrent').focus(),100);
+}
+
+function closeChangePwd(){
+  document.getElementById('changePwdOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+async function submitChangePwd(){
+  const current=document.getElementById('cpCurrent').value;
+  const newPwd=document.getElementById('cpNew').value;
+  const confirm2=document.getElementById('cpConfirm').value;
+  const errEl=document.getElementById('cpError');
+  const statusEl=document.getElementById('cpStatus');
+  const btn=document.getElementById('cpBtn');
+
+  errEl.textContent='';statusEl.textContent='';
+
+  if(!current||!newPwd||!confirm2){errEl.textContent='Please fill in all fields.';return;}
+  if(newPwd.length<4){errEl.textContent='New password must be at least 4 characters.';return;}
+  if(newPwd!==confirm2){errEl.textContent='New passwords do not match.';return;}
+  if(current===newPwd){errEl.textContent='New password must be different from current.';return;}
+
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Updating...';
+
+  try{
+    const HARDCODED_URL='https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+    const url=localStorage.getItem('karix_script_url')||HARDCODED_URL;
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'changePassword',token:sessionToken,currentPassword:current,newPassword:newPwd})
+    });
+    const data=await res.json();
+    if(data.status==='ok'){
+      statusEl.className='email-status success';
+      statusEl.innerHTML='<i class="ti ti-circle-check"></i> Password updated!';
+      btn.innerHTML='<i class="ti ti-check"></i> Done!';
+      setTimeout(()=>closeChangePwd(),1800);
+    } else if(data.status==='unauthorized'){
+      clearSession();showGate('Session expired. Please sign in again.');
+    } else {
+      errEl.textContent=data.message||'Failed to update password.';
+      btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Update password';
+    }
+  }catch(e){
+    errEl.textContent='Connection error. Please try again.';
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Update password';
   }
-  document.getElementById('loadingUrlRow').classList.add('hidden');
-  document.getElementById('loadingSpinner').style.display='';
-  loadData();
 }
 
 async function loadData(){
