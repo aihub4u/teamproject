@@ -311,11 +311,16 @@ tr:last-child td{border-bottom:none;}
 <!-- Loading overlay -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="logo-mark" style="width:44px;height:44px;font-size:18px;margin-bottom:4px;">K</div>
-  <div class="loading-spinner"></div>
+  <div class="loading-spinner" id="loadingSpinner"></div>
   <div class="loading-text" id="loadingText">Loading dashboard data...</div>
   <div class="loading-sub" id="loadingSub">Fetching from Google Sheets</div>
   <div class="loading-error hidden" id="loadingError"></div>
-  <button class="retry-btn hidden" id="retryBtn" onclick="loadData()">Retry</button>
+  <div class="hidden" id="loadingUrlRow" style="margin-top:12px;width:100%;max-width:420px;">
+    <input type="url" id="loadingUrlInput" placeholder="Paste Apps Script URL here..."
+      style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:Inter,sans-serif;outline:none;margin-bottom:8px;"/>
+    <button class="retry-btn" onclick="saveUrlAndRetry()" style="width:100%;">Save URL &amp; Load</button>
+  </div>
+  <button class="retry-btn hidden" id="retryBtn" onclick="loadData()" style="margin-top:4px;">Retry</button>
 </div>
 
 <!-- Drill-down drawer -->
@@ -1864,13 +1869,37 @@ function hideLoading(){
 function showLoadError(msg){
   document.getElementById('loadingText').textContent='Failed to load data';
   document.getElementById('loadingSub').textContent='';
+  document.getElementById('loadingSpinner').style.display='none';
   const err=document.getElementById('loadingError');
   err.textContent=msg;err.classList.remove('hidden');
   document.getElementById('retryBtn').classList.remove('hidden');
+  // Show URL input so user can update the script URL if needed
+  const urlRow=document.getElementById('loadingUrlRow');
+  urlRow.classList.remove('hidden');
+  const urlInput=document.getElementById('loadingUrlInput');
+  const current=localStorage.getItem('karix_script_url')||'';
+  if(current) urlInput.value=current;
+}
+function saveUrlAndRetry(){
+  const v=document.getElementById('loadingUrlInput').value.trim();
+  if(v){
+    localStorage.setItem('karix_script_url',v);
+    const emailInput=document.getElementById('appsScriptUrl');
+    if(emailInput) emailInput.value=v;
+  }
+  document.getElementById('loadingUrlRow').classList.add('hidden');
+  document.getElementById('loadingSpinner').style.display='';
+  loadData();
 }
 
 async function loadData(){
-  const url=document.getElementById('appsScriptUrl').value.trim();
+  // Always use the hardcoded URL as primary; localStorage as override
+  const HARDCODED_URL='https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  const stored=localStorage.getItem('karix_script_url');
+  const url=stored||HARDCODED_URL;
+  // Also keep the email modal input in sync
+  const urlInput=document.getElementById('appsScriptUrl');
+  if(urlInput&&!urlInput.value.trim()) urlInput.value=url;
   if(!url){
     showLoadError('No Apps Script URL configured. Please add it via the Send Report button.');
     return;
