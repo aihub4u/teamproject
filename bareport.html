@@ -389,7 +389,7 @@ tr:last-child td{border-bottom:none;}
 
 <div class="page" id="mainPage" style="display:none;">
   <div class="page-hdr">
-    <h1>BA Team &mdash; Project Analytics</h1>
+    <h1>BA Team - Project Analytics</h1>
     <p>146 projects &nbsp;&middot;&nbsp; Apr 2026 onwards &nbsp;&middot;&nbsp; Last updated 29 May 2026</p>
   </div>
 
@@ -1224,138 +1224,183 @@ function renderInsights(){
     datasets:[{label:'Delivery rate',data:REGIONS.map(r=>Math.round(DB.all[r].golive/DB.all[r].total*100)),backgroundColor:REGIONS.map(r=>{const rt=Math.round(DB.all[r].golive/DB.all[r].total*100);return rt>=50?'#10B981':rt>=30?'#F59E0B':'#EF4444';})}]
   },options:{...CHART_OPTS,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{max:100,grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>v+'%'}}}}});
 }
-  const vel=getVelocityData();
-  const portfolio=getClientPortfolio();
-  const T=DB.all['Total'];
-  const activeBAs=BAS.filter(ba=>vel[ba]&&vel[ba].count>0);
-  const fastestBA=activeBAs.reduce((a,b)=>vel[a].avg<vel[b].avg?a:b,'');
-  const busyBA=BAS.reduce((a,b)=>{
-    const aRows=RAW.rows.filter(r=>normBA(r[CI.ba])===a&&['inprogress','uat'].includes(normStatus(r[CI.status]))).length;
-    const bRows=RAW.rows.filter(r=>normBA(r[CI.ba])===b&&['inprogress','uat'].includes(normStatus(r[CI.status]))).length;
-    return aRows>bRows?a:b;
-  });
-  const expanding=portfolio.filter(c=>c.usecases>1).length;
-  const pipeVal=getPipelineData().length*5*8000;
-
-  const wrap=document.getElementById('insightsContent');
-  wrap.innerHTML='';
-
-  // Executive scorecard
-  const sc=document.createElement('div');
-  sc.innerHTML='<p class="section-title">Executive scorecard</p>';
-  const ragData=[
-    {label:'North',val:DB.all['North'].golive+'/'+DB.all['North'].total,rate:Math.round(DB.all['North'].golive/DB.all['North'].total*100),color:'#10B981'},
-    {label:'South',val:DB.all['South'].golive+'/'+DB.all['South'].total,rate:Math.round(DB.all['South'].golive/DB.all['South'].total*100),color:'#10B981'},
-    {label:'West',val:DB.all['West'].golive+'/'+DB.all['West'].total,rate:Math.round(DB.all['West'].golive/DB.all['West'].total*100),color:'#F59E0B'},
-    {label:'UAE',val:DB.all['UAE'].golive+'/'+DB.all['UAE'].total,rate:Math.round(DB.all['UAE'].golive/DB.all['UAE'].total*100),color:'#10B981'},
-  ];
-  const scGrid=document.createElement('div');scGrid.className='kpi-grid';scGrid.style.marginBottom='1.5rem';
-  ragData.forEach(r=>{
-    const rag=r.rate>=50?'#10B981':r.rate>=30?'#F59E0B':'#EF4444';
-    const d=document.createElement('div');d.className='kpi';
-    d.innerHTML='<div class="kpi-label">'+r.label+'</div><div class="kpi-value" style="font-size:18px;color:'+rag+'">'+r.val+'</div><div style="font-size:11px;color:'+rag+';margin-top:3px;font-weight:600;">'+r.rate+'% delivery rate</div>';
-    scGrid.appendChild(d);
-  });
-  // Pipeline value KPI
-  const pvd=document.createElement('div');pvd.className='kpi';
-  pvd.innerHTML='<div class="kpi-label">Pipeline value (est.)</div><div class="kpi-value" style="color:#8B5CF6;">'+fmtINR(pipeVal)+'</div><div style="font-size:11px;color:var(--text-muted);margin-top:3px;">'+getPipelineData().length+' scoping projects</div>';
-  scGrid.appendChild(pvd);
-  const revd=document.createElement('div');revd.className='kpi';
-  revd.innerHTML='<div class="kpi-label">Revenue delivered</div><div class="kpi-value" style="color:#10B981;">'+fmtINR(revenue(T.mandays))+'</div><div style="font-size:11px;color:var(--text-muted);margin-top:3px;">'+T.mandays+' mandays saved</div>';
-  scGrid.appendChild(revd);
-  sc.appendChild(scGrid);
-  wrap.appendChild(sc);
-
-  // Key insights list
-  const ins=document.createElement('div');ins.className='section';
-  ins.innerHTML='<p class="section-title">Key insights</p>';
-  const stmts=[
-    'Fastest BA: <strong>'+fastestBA+'</strong> averages <strong>'+vel[fastestBA].avg+' days</strong> from start to go-live',
-    'Highest active load: <strong>'+busyBA+'</strong> has the most concurrent active projects',
-    '<strong>'+expanding+'</strong> clients are expanding with multiple use cases — key upsell accounts',
-    'Scoping-to-live conversion: <strong>'+Math.round(T.golive/(T.total)*100)+'%</strong> overall across all regions',
-    'West leads delivery rate at <strong>'+Math.round(DB.all['West'].golive/DB.all['West'].total*100)+'%</strong> — best conversion of pipeline to live',
-    'UAE at <strong>50% delivery rate</strong> — highest per-project efficiency across all regions',
-    getUpcomingDue().length+' projects have due dates in the <strong>next 30 days</strong> — needs monitoring',
-    getAgeingData().stuck.filter(s=>s.days>60).length+' projects are <strong>stuck for 60+ days</strong> in active status — at risk',
-  ];
-  const stmtList=document.createElement('div');stmtList.className='stmt-list';
-  stmts.forEach(s=>{
-    const d=document.createElement('div');d.className='stmt';
-    d.innerHTML='<i class="ti ti-arrow-right stmt-icon"></i><span>'+s+'</span>';
-    stmtList.appendChild(d);
-  });
-  ins.appendChild(stmtList);
-  wrap.appendChild(ins);
-
-  // Delivery velocity
-  const veldiv=document.createElement('div');veldiv.className='section';
-  veldiv.innerHTML='<p class="section-title">Delivery velocity by BA</p>';
-  const velWrap=document.createElement('div');velWrap.className='table-wrap';
-  const velTable=document.createElement('table');
-  const vtHead=document.createElement('thead');
-  vtHead.innerHTML='<tr><th>BA</th><th class="num">Live projects</th><th class="num">Avg days to go-live</th><th>Speed</th></tr>';
-  velTable.appendChild(vtHead);
-  const vtBody=document.createElement('tbody');
-  activeBAs.sort((a,b)=>vel[a].avg-vel[b].avg).forEach((ba,bi)=>{
-    const tr=document.createElement('tr');
-    const avg=vel[ba].avg;
-    const spd=avg<=30?'Fast':avg<=60?'Moderate':'Slow';
-    const spdCol=avg<=30?'#10B981':avg<=60?'#F59E0B':'#EF4444';
-    tr.innerHTML='<td><span class="region-badge"><span class="rdot" style="background:'+BA_COLORS[BAS.indexOf(ba)]+'">&nbsp;</span>'+ba+'</span></td>'+
-      '<td class="num">'+vel[ba].count+'</td>'+
-      '<td class="num"><strong>'+avg+'</strong> days</td>'+
-      '<td><span class="sp" style="background:'+spdCol+'22;color:'+spdCol+'">'+spd+'</span></td>';
-    vtBody.appendChild(tr);
-  });
-  velTable.appendChild(vtBody);velWrap.appendChild(velTable);veldiv.appendChild(velWrap);wrap.appendChild(veldiv);
-
-  // Client portfolio
-  const cdiv=document.createElement('div');cdiv.className='section';
-  cdiv.innerHTML='<p class="section-title">Client portfolio — expanding accounts</p>';
-  const multiClients=portfolio.filter(c=>c.usecases>1).slice(0,15);
-  const cwrap=document.createElement('div');cwrap.className='table-wrap';
-  const ct=document.createElement('table');
-  const cth=document.createElement('thead');
-  cth.innerHTML='<tr><th>Client</th><th class="num">Use cases</th><th class="num">Live</th><th class="num">Active</th><th>Regions</th><th>BAs</th></tr>';
-  ct.appendChild(cth);
-  const ctb=document.createElement('tbody');
-  multiClients.forEach(c=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td><strong>'+c.name+'</strong></td>'+
-      '<td class="num" style="color:var(--blue);font-weight:600">'+c.usecases+'</td>'+
-      '<td class="num" style="color:#10B981;font-weight:600">'+c.live+'</td>'+
-      '<td class="num">'+c.active+'</td>'+
-      '<td style="font-size:12px;color:var(--text-sec)">'+c.regions+'</td>'+
-      '<td style="font-size:12px;color:var(--text-sec)">'+c.bas+'</td>';
-    ctb.appendChild(tr);
-  });
-  ct.appendChild(ctb);cwrap.appendChild(ct);cdiv.appendChild(cwrap);wrap.appendChild(cdiv);
-
-  // Charts
-  const cGrid=document.createElement('div');cGrid.className='chart-grid';
-  const c1=document.createElement('div');c1.className='chart-card';
-  c1.innerHTML='<p class="section-title">Delivery velocity by BA (days)</p><div style="position:relative;width:100%;height:240px;"><canvas id="velChart"></canvas></div>';
-  const c2=document.createElement('div');c2.className='chart-card';
-  c2.innerHTML='<p class="section-title">Region delivery rate (%)</p><div style="position:relative;width:100%;height:240px;"><canvas id="convChart"></canvas></div>';
-  cGrid.appendChild(c1);cGrid.appendChild(c2);wrap.appendChild(cGrid);
-
-  kill('velChart','convChart');
-  C.velChart=new Chart(document.getElementById('velChart'),{type:'bar',data:{
-    labels:activeBAs.sort((a,b)=>vel[a].avg-vel[b].avg),
-    datasets:[{label:'Avg days',data:activeBAs.sort((a,b)=>vel[a].avg-vel[b].avg).map(ba=>vel[ba].avg),backgroundColor:activeBAs.sort((a,b)=>vel[a].avg-vel[b].avg).map(ba=>vel[ba].avg<=30?'#10B981':vel[ba].avg<=60?'#F59E0B':'#EF4444')}]
-  },options:{...CHART_OPTS,plugins:{legend:{display:false}}}});
-  C.convChart=new Chart(document.getElementById('convChart'),{type:'bar',data:{
-    labels:REGIONS,
-    datasets:[{label:'Delivery rate %',data:REGIONS.map(r=>Math.round(DB.all[r].golive/DB.all[r].total*100)),backgroundColor:REGIONS.map(r=>{const rt=Math.round(DB.all[r].golive/DB.all[r].total*100);return rt>=50?'#10B981':rt>=30?'#F59E0B':'#EF4444';})}]
-  },options:{...CHART_OPTS,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{max:100,ticks:{callback:v=>v+'%'}}}}});
-}
 
 /* ═══ HELPER ═══ */
 function addSectionTitle(parent, text){
   const p=document.createElement('p');p.className='section-title';p.textContent=text;parent.appendChild(p);
 }
 
+
+/* ═══ AGEING TAB RENDER ═══ */
+function renderAgeing(){
+  const {buckets,stuck}=getAgeingData();
+  const upcoming=getUpcomingDue();
+  const wrap=document.getElementById('ageingContent');wrap.innerHTML='';
+
+  addSectionTitle(wrap,'Project ageing — active projects (In Progress + UAT)');
+  const kGrid=document.createElement('div');kGrid.className='kpi-grid';kGrid.style.marginBottom='1.5rem';
+  [{l:'0–30 days',v:buckets.b30,c:'#10B981',min:0,max:30},{l:'31–60 days',v:buckets.b60,c:'#F59E0B',min:31,max:60},{l:'61–90 days',v:buckets.b90,c:'#EF9F27',min:61,max:90},{l:'90+ days (critical)',v:buckets.b90p,c:'#EF4444',min:91,max:9999}].forEach(k=>{
+    const d=document.createElement('div');d.className='kpi'+(k.v>0?' clickable':'');
+    if(k.v>0){
+      d.title='Click to view these projects';
+      d.onclick=()=>{
+        const rows=RAW.rows.filter(r=>{
+          const st=normStatus(r[CI.status]);
+          if(!['inprogress','uat'].includes(st)) return false;
+          const days=daysBetween(r[CI.start],TODAY.toISOString().slice(0,10));
+          return days!==null&&days>=k.min&&days<=k.max;
+        });
+        drawerRows=rows;
+        document.getElementById('dTitle').textContent='Ageing: '+k.l;
+        document.getElementById('dSub').textContent=rows.length+' projects';
+        document.getElementById('dCount').textContent='Showing '+rows.length+' projects';
+        const tbody=document.getElementById('dBody');tbody.innerHTML='';
+        rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
+        document.getElementById('dOverlay').classList.add('open');
+        document.getElementById('drawer').classList.add('open');
+        document.body.style.overflow='hidden';
+      };
+    }
+    d.innerHTML='<div class="kpi-label">'+k.l+'</div><div class="kpi-value" style="color:'+k.c+'">'+k.v+'</div>';
+    kGrid.appendChild(d);
+  });
+  wrap.appendChild(kGrid);
+
+  addSectionTitle(wrap,'Projects stuck 30+ days — action needed');
+  const stWrap=document.createElement('div');stWrap.className='table-wrap';stWrap.style.marginBottom='1.5rem';
+  const stTable=document.createElement('table');
+  const stHead=document.createElement('thead');
+  stHead.innerHTML='<tr><th>Project</th><th>BA</th><th>Region</th><th>Status</th><th class="num">Days active</th><th>Due date</th><th>Risk</th></tr>';
+  stTable.appendChild(stHead);
+  const stBody=document.createElement('tbody');
+  if(stuck.length===0){
+    const tr=document.createElement('tr');tr.innerHTML='<td colspan="7" style="text-align:center;color:var(--text-sec);padding:20px;">No stuck projects</td>';stBody.appendChild(tr);
+  }
+  stuck.forEach(r=>{
+    const risk=r.days>90?'Critical':r.days>60?'High':'Medium';
+    const rCol=r.days>90?'#EF4444':r.days>60?'#F59E0B':'#854F0B';
+    const tr=document.createElement('tr');tr.className='clickable-row';
+    tr.onclick=()=>{const raw=RAW.rows.find(row=>row[CI.proj]===r.project&&normBA(row[CI.ba])===r.ba);if(raw)openProjModal(raw);};
+    tr.innerHTML='<td><strong>'+r.project+'</strong><div style="font-size:11px;color:var(--text-sec)">'+r.usecase.substring(0,50)+'</div></td>'+
+      '<td style="white-space:nowrap">'+r.ba+'</td>'+
+      '<td><span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[r.region]||'#8B9AB8')+'">&nbsp;</span>'+r.region+'</span></td>'+
+      '<td><span class="sp sp-ip">'+r.status+'</span></td>'+
+      '<td class="num" style="color:'+rCol+';font-weight:700">'+r.days+'</td>'+
+      '<td style="font-size:12px;color:var(--text-sec)">'+(r.due||'—')+'</td>'+
+      '<td><span class="sp" style="background:'+rCol+'22;color:'+rCol+'">'+risk+'</span></td>';
+    stBody.appendChild(tr);
+  });
+  stTable.appendChild(stBody);stWrap.appendChild(stTable);wrap.appendChild(stWrap);
+
+  addSectionTitle(wrap,'Due in next 30 days — '+upcoming.length+' projects');
+  if(upcoming.length>0){
+    const udWrap=document.createElement('div');udWrap.className='table-wrap';udWrap.style.marginBottom='1.5rem';
+    const udTable=document.createElement('table');
+    udTable.innerHTML='<thead><tr><th>Project</th><th>BA</th><th>Region</th><th>Status</th><th class="num">Days left</th><th>Due date</th></tr></thead>';
+    const udBody=document.createElement('tbody');
+    upcoming.forEach(r=>{
+      const urgency=r.daysLeft<=3?'#EF4444':r.daysLeft<=7?'#F59E0B':'#10B981';
+      const tr=document.createElement('tr');tr.className='clickable-row';
+      tr.onclick=()=>{const raw=RAW.rows.find(row=>row[CI.proj]===r.project&&normBA(row[CI.ba])===r.ba);if(raw)openProjModal(raw);};
+      tr.innerHTML='<td><strong>'+r.project+'</strong></td><td style="white-space:nowrap">'+r.ba+'</td>'+
+        '<td><span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[r.region]||'#8B9AB8')+'">&nbsp;</span>'+r.region+'</span></td>'+
+        '<td><span class="sp '+statusClass(r.status)+'">'+r.status+'</span></td>'+
+        '<td class="num" style="color:'+urgency+';font-weight:700">'+r.daysLeft+'d</td>'+
+        '<td style="font-size:12px;color:var(--text-sec)">'+r.due+'</td>';
+      udBody.appendChild(tr);
+    });
+    udTable.appendChild(udBody);udWrap.appendChild(udTable);wrap.appendChild(udWrap);
+  } else {
+    const p=document.createElement('p');p.style.cssText='color:var(--text-sec);font-size:13px;padding:0 0 1.5rem';p.textContent='No projects due in the next 30 days.';wrap.appendChild(p);
+  }
+
+  const chartCard=document.createElement('div');chartCard.className='chart-card';chartCard.style.marginBottom='1.5rem';
+  chartCard.innerHTML='<p class="section-title">Active projects by age bucket</p><div style="position:relative;width:100%;height:240px;"><canvas id="ageChart"></canvas></div>';
+  wrap.appendChild(chartCard);
+  kill('ageChart');
+  C.ageChart=new Chart(document.getElementById('ageChart'),{type:'doughnut',data:{
+    labels:['0–30 days','31–60 days','61–90 days','90+ days'],
+    datasets:[{data:[buckets.b30,buckets.b60,buckets.b90,buckets.b90p],backgroundColor:['#10B981','#F59E0B','#EF9F27','#EF4444'],borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+}
+
+/* ═══ PIPELINE TAB RENDER ═══ */
+function renderPipeline(){
+  const pipe=getPipelineData();
+  const T=DB.all['Total'];
+  const pipeVal=pipe.length*5*8000;
+  const wrap=document.getElementById('pipelineContent');wrap.innerHTML='';
+
+  addSectionTitle(wrap,'Pipeline & scoping overview');
+  const kGrid=document.createElement('div');kGrid.className='kpi-grid';kGrid.style.marginBottom='1.5rem';
+  [{l:'Scoping / pipeline',v:pipe.length,c:'#8B5CF6',click:()=>openDrawer('all','scoping','Scoping / Pipeline',currentMonthKey)},
+   {l:'Est. pipeline value',v:fmtINR(pipeVal),c:'#8B5CF6',click:()=>openDrawer('all','scoping','Scoping / Pipeline',currentMonthKey)},
+   {l:'Revenue delivered',v:fmtINR(revenue(T.mandays)),c:'#10B981',click:()=>openDrawer('all','golive','All Go-Live Projects',currentMonthKey)},
+   {l:'Overall conversion',v:Math.round(T.golive/T.total*100)+'%',c:'#0057FF',click:()=>openDrawer('all','golive','All Go-Live Projects',currentMonthKey)},
+  ].forEach(k=>{
+    const d=document.createElement('div');d.className='kpi clickable';d.onclick=k.click;
+    d.innerHTML='<div class="kpi-label">'+k.l+'</div><div class="kpi-value" style="color:'+k.c+'">'+k.v+'</div>';
+    kGrid.appendChild(d);
+  });
+  wrap.appendChild(kGrid);
+
+  addSectionTitle(wrap,'Conversion by region');
+  const convWrap=document.createElement('div');convWrap.className='table-wrap';convWrap.style.marginBottom='1.5rem';
+  const convTable=document.createElement('table');
+  convTable.innerHTML='<thead><tr><th>Region</th><th class="num">Total</th><th class="num">Live</th><th class="num">Scoping</th><th class="num">Rate</th><th>Health</th></tr></thead>';
+  const convBody=document.createElement('tbody');
+  REGIONS.forEach(r=>{
+    const d=DB.all[r];
+    const rate=Math.round(d.golive/d.total*100);
+    const hCol=rate>=50?'#10B981':rate>=30?'#F59E0B':'#EF4444';
+    const hlbl=rate>=50?'Strong':rate>=30?'Moderate':'Needs focus';
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><span class="region-badge"><span class="rdot" style="background:'+RCOLORS[r]+'">&nbsp;</span>'+r+'</span></td>'+
+      '<td class="num"><span class="drill-num" onclick="openDrawer(\''+r+'\',\'all\',\'All — '+r+'\',currentMonthKey)">'+d.total+'</span></td>'+
+      '<td class="num"><span class="drill-num" style="color:#10B981" onclick="openDrawer(\''+r+'\',\'golive\',\'Go Live — '+r+'\',currentMonthKey)">'+d.golive+'</span></td>'+
+      '<td class="num"><span class="drill-num" style="color:#8B5CF6" onclick="openDrawer(\''+r+'\',\'scoping\',\'Scoping — '+r+'\',currentMonthKey)">'+d.scoping+'</span></td>'+
+      '<td class="num" style="color:'+hCol+';font-weight:700">'+rate+'%</td>'+
+      '<td><span class="sp" style="background:'+hCol+'22;color:'+hCol+'">'+hlbl+'</span></td>';
+    convBody.appendChild(tr);
+  });
+  convTable.appendChild(convBody);convWrap.appendChild(convTable);wrap.appendChild(convWrap);
+
+  addSectionTitle(wrap,'All scoping / pipeline projects ('+pipe.length+')');
+  const pWrap=document.createElement('div');pWrap.className='table-wrap';pWrap.style.marginBottom='1.5rem';
+  const pTable=document.createElement('table');
+  pTable.innerHTML='<thead><tr><th>Project</th><th>BA</th><th>Region</th><th>Status</th><th>Est. value</th><th>Start date</th></tr></thead>';
+  const pBody=document.createElement('tbody');
+  if(pipe.length===0){pBody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-sec);padding:20px;">No pipeline projects</td></tr>';}
+  pipe.forEach(r=>{
+    const tr=document.createElement('tr');tr.className='clickable-row';
+    tr.onclick=()=>{const raw=RAW.rows.find(row=>row[CI.proj]===r.project&&normBA(row[CI.ba])===r.ba);if(raw)openProjModal(raw);};
+    tr.innerHTML='<td><strong>'+r.project+'</strong><div style="font-size:11px;color:var(--text-sec)">'+r.usecase.substring(0,55)+'</div></td>'+
+      '<td style="white-space:nowrap;font-size:12px">'+r.ba+'</td>'+
+      '<td><span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[r.region]||'#8B9AB8')+'">&nbsp;</span>'+r.region+'</span></td>'+
+      '<td><span class="sp sp-scoping">'+r.status+'</span></td>'+
+      '<td style="color:#8B5CF6;font-weight:500;font-size:12px">'+fmtINR(5*8000)+'</td>'+
+      '<td style="font-size:12px;color:var(--text-sec)">'+(r.start||'—')+'</td>';
+    pBody.appendChild(tr);
+  });
+  pTable.appendChild(pBody);pWrap.appendChild(pTable);wrap.appendChild(pWrap);
+
+  const cGrid=document.createElement('div');cGrid.className='chart-grid';
+  const ch1=document.createElement('div');ch1.className='chart-card';
+  ch1.innerHTML='<p class="section-title">Pipeline vs delivered by region</p><div style="position:relative;width:100%;height:240px;"><canvas id="pipeChart1"></canvas></div>';
+  const ch2=document.createElement('div');ch2.className='chart-card';
+  ch2.innerHTML='<p class="section-title">Scoping projects by BA</p><div style="position:relative;width:100%;height:240px;"><canvas id="pipeChart2"></canvas></div>';
+  cGrid.appendChild(ch1);cGrid.appendChild(ch2);wrap.appendChild(cGrid);
+  kill('pipeChart1','pipeChart2');
+  C.pipeChart1=new Chart(document.getElementById('pipeChart1'),{type:'bar',data:{
+    labels:REGIONS,
+    datasets:[{label:'Live',data:REGIONS.map(r=>DB.all[r].golive),backgroundColor:'#10B981'},{label:'Scoping',data:REGIONS.map(r=>DB.all[r].scoping),backgroundColor:'#8B5CF6'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:10}}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}}});
+  const activeBAPipe=BAS.filter(ba=>pipe.filter(r=>normBA(r.ba)===ba).length>0);
+  C.pipeChart2=new Chart(document.getElementById('pipeChart2'),{type:'bar',data:{
+    labels:activeBAPipe,
+    datasets:[{label:'Scoping',data:activeBAPipe.map(ba=>pipe.filter(r=>normBA(r.ba)===ba).length),backgroundColor:activeBAPipe.map(ba=>BA_COLORS[BAS.indexOf(ba)]||'#8B9AB8')}]
+  },options:{...CHART_OPTS,plugins:{legend:{display:false}}}});
+}
 
 /* ═══ UPDATED SWITCH TAB ═══ */
 function switchTab(tab){
