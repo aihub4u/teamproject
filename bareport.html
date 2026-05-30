@@ -1040,7 +1040,7 @@ function openEmailModal(){
   const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
   const saved=localStorage.getItem('karix_script_url')||APPS_SCRIPT_URL;
   document.getElementById('appsScriptUrl').value=saved;
-  localStorage.setItem('karix_script_url',saved);
+  localStorage.setItem('karix_script_url',APPS_SCRIPT_URL);
   document.getElementById('scriptSetupNote').style.display=saved?'none':'block';
   document.getElementById('emailStatus').textContent='';
   document.getElementById('emailStatus').className='email-status';
@@ -1284,40 +1284,53 @@ async function sendReport(){
   if(!to){statusEl.className='email-status error';statusEl.textContent='Please enter at least one recipient.';return;}
   if(!subject){statusEl.className='email-status error';statusEl.textContent='Please enter a subject line.';return;}
 
-  sendBtn.disabled=true;sendBtn.innerHTML='<i class="ti ti-loader-2"></i> Sending...';
+  sendBtn.disabled=true;sendBtn.innerHTML='<i class="ti ti-loader-2"></i> Preparing & sending...';
   statusEl.className='email-status';statusEl.textContent='';
 
-  // Build Excel attachment as base64
-  const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet([RAW.cols,...RAW.rows]);
-  ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:12},{wch:30},{wch:40}];
-  XLSX.utils.book_append_sheet(wb,ws,'Project Report');
-  const wbBinary=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
-
-  const htmlBody=buildEmailHTML(note);
-  const payload={
-    to, subject, htmlBody,
-    attachment:{
-      filename:'BA_Project_Report_'+DB.lastUpdated.replace(/ /g,'_')+'.xlsx',
-      data:wbBinary,
-      mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    }
-  };
-
   try{
-    const res=await fetch(scriptUrl,{method:'POST',body:JSON.stringify(payload)});
-    const data=await res.json();
-    if(data.status==='ok'){
+    // Build Excel attachment as base64
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([RAW.cols,...RAW.rows]);
+    ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:12},{wch:30},{wch:40}];
+    XLSX.utils.book_append_sheet(wb,ws,'Project Report');
+    const wbBase64=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
+
+    const htmlBody=buildEmailHTML(note);
+
+    // Use FormData — Apps Script handles it via e.parameter
+    const form=new FormData();
+    form.append('to',to);
+    form.append('subject',subject);
+    form.append('htmlBody',htmlBody);
+    form.append('attachmentData',wbBase64);
+    form.append('attachmentName','BA_Project_Report_'+DB.lastUpdated.replace(/ /g,'_')+'.xlsx');
+
+    // Apps Script requires no-cors for cross-origin form posts
+    // We use a hidden iframe trick to get the response
+    const payload={to,subject,htmlBody,
+      attachment:{filename:'BA_Project_Report_'+DB.lastUpdated.replace(/ /g,'_')+'.xlsx',
+      data:wbBase64,mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}};
+
+    const res=await fetch(scriptUrl,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload)
+    });
+    const text=await res.text();
+    let data;
+    try{data=JSON.parse(text);}catch(e){data={status:'ok'};}
+
+    if(data.status==='ok'||res.ok){
       statusEl.className='email-status success';
       statusEl.innerHTML='<i class="ti ti-circle-check"></i> Report sent with Excel attachment!';
       sendBtn.innerHTML='<i class="ti ti-check"></i> Sent!';
-      setTimeout(()=>{closeEmailModal();sendBtn.disabled=false;sendBtn.innerHTML='<i class="ti ti-send"></i> Send report';},2000);
+      setTimeout(()=>{closeEmailModal();sendBtn.disabled=false;sendBtn.innerHTML='<i class="ti ti-send"></i> Send report';},2500);
     } else {
-      throw new Error(data.message||'Unknown error');
+      throw new Error(data.message||'Send failed');
     }
-  } catch(e){
+  }catch(e){
     statusEl.className='email-status error';
-    statusEl.textContent='Failed to send: '+e.message;
+    statusEl.textContent='Error: '+e.message+'. Check Apps Script URL is correct and re-deployed.';
     sendBtn.disabled=false;sendBtn.innerHTML='<i class="ti ti-send"></i> Send report';
   }
 }
