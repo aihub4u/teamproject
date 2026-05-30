@@ -1596,13 +1596,13 @@ function buildEmailHTML(note){
   insights.push(`<b>${topRegion}</b> leads with the most projects (${DB.all[topRegion].total} total)`);
   insights.push(`<b>${topLive}</b> has the highest Go Live count (${DB.all[topLive].golive} projects)`);
   insights.push(`Overall delivery rate: <b>${Math.round(T.golive/T.total*100)}%</b> (${T.golive} of ${T.total} projects live)`);
-  if(ALL_MONTHS.length>=2){
-    const m1=DB.months[ALL_MONTHS[0]].data['Total'];
-    const m2=DB.months[ALL_MONTHS[1]].data['Total'];
+  if(getAllMonths().length>=2){
+    const m1=DB.months[getAllMonths()[0]].data['Total'];
+    const m2=DB.months[getAllMonths()[1]].data['Total'];
     const diff=m2.total-m1.total;
     const arrow=diff>=0?'&#8593;':'&#8595;';
     const col=diff>=0?'#10B981':'#EF4444';
-    insights.push(`${mLabel(ALL_MONTHS[1])} had <b style="color:${col}">${arrow} ${Math.abs(diff)} ${diff>=0?'more':'fewer'} projects</b> than ${mLabel(ALL_MONTHS[0])}`);
+    insights.push(`${mLabel(getAllMonths()[1])} had <b style="color:${col}">${arrow} ${Math.abs(diff)} ${diff>=0?'more':'fewer'} projects</b> than ${mLabel(getAllMonths()[0])}`);
   }
   insights.push(`<b>${T.twixor}</b> Twixor vs <b>${T.inhouse}</b> Inhouse — ${T.twixor>T.inhouse?'Twixor-heavy':'Inhouse-heavy'} delivery mix`);
   const insightItems=insights.map(i=>`
