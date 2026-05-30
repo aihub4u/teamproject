@@ -212,6 +212,16 @@ tr:last-child td{border-bottom:none;}
 .setup-note{background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:14px;line-height:1.6;}
 .setup-note strong{display:block;margin-bottom:4px;}
 
+.stmt-list{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.5rem;}
+.stmt{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.55;}
+.stmt:last-child{border-bottom:none;}
+.stmt-icon{color:var(--blue);font-size:14px;margin-top:2px;flex-shrink:0;}
+.section{margin-bottom:1.5rem;}
+.clickable-num{cursor:pointer;color:var(--blue);font-weight:600;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
+.clickable-num:hover{color:var(--blue-hover);}
+.clickable-row{cursor:pointer;}
+.clickable-row:hover td{background:rgba(0,87,255,0.05)!important;}
+
 /* PASSWORD GATE */
 .gate-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
 .gate-box{background:#fff;border-radius:var(--radius-lg);padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 48px rgba(0,0,0,0.3);text-align:center;}
@@ -379,7 +389,7 @@ tr:last-child td{border-bottom:none;}
 
 <div class="page" id="mainPage" style="display:none;">
   <div class="page-hdr">
-    <h1>BA Team Project Analytics</h1>
+    <h1>BA Team &mdash; Project Analytics</h1>
     <p>146 projects &nbsp;&middot;&nbsp; Apr 2026 onwards &nbsp;&middot;&nbsp; Last updated 29 May 2026</p>
   </div>
 
@@ -1078,6 +1088,146 @@ function renderInsights(){
   const portfolio=getClientPortfolio();
   const T=DB.all['Total'];
   const activeBAs=BAS.filter(ba=>vel[ba]&&vel[ba].count>0);
+  const fastestBA=activeBAs.length?activeBAs.reduce((a,b)=>vel[a].avg<vel[b].avg?a:b):'';
+  const busyBA=BAS.reduce((a,b)=>{
+    const aR=RAW.rows.filter(r=>normBA(r[CI.ba])===a&&['inprogress','uat'].includes(normStatus(r[CI.status]))).length;
+    const bR=RAW.rows.filter(r=>normBA(r[CI.ba])===b&&['inprogress','uat'].includes(normStatus(r[CI.status]))).length;
+    return aR>bR?a:b;
+  });
+  const expanding=portfolio.filter(c=>c.usecases>1).length;
+  const pipeVal=getPipelineData().length*5*8000;
+  const stuckCount=getAgeingData().stuck.filter(s=>s.days>60).length;
+  const upcomingCount=getUpcomingDue().length;
+
+  const wrap=document.getElementById('insightsContent');
+  wrap.innerHTML='';
+
+  // ── Executive Scorecard ──
+  addSectionTitle(wrap,'Executive scorecard');
+  const scGrid=document.createElement('div');scGrid.className='kpi-grid';scGrid.style.marginBottom='1.5rem';
+  REGIONS.forEach(r=>{
+    const d=DB.all[r];
+    const rate=Math.round(d.golive/d.total*100);
+    const col=rate>=50?'#10B981':rate>=30?'#F59E0B':'#EF4444';
+    const kpi=document.createElement('div');kpi.className='kpi clickable';
+    kpi.title='Click to view '+r+' go-live projects';
+    kpi.onclick=()=>openDrawer(r,'golive','Go Live — '+r,currentMonthKey);
+    kpi.innerHTML='<div class="kpi-label">'+r+'</div>'+
+      '<div class="kpi-value" style="font-size:18px;color:'+col+'">'+d.golive+'/'+d.total+'</div>'+
+      '<div style="font-size:11px;color:'+col+';margin-top:3px;font-weight:600;">'+rate+'% delivery rate</div>';
+    scGrid.appendChild(kpi);
+  });
+  const pvKpi=document.createElement('div');pvKpi.className='kpi clickable';
+  pvKpi.title='Click to view pipeline projects';
+  pvKpi.onclick=()=>openDrawer('all','scoping','Scoping / Pipeline',currentMonthKey);
+  pvKpi.innerHTML='<div class="kpi-label">Pipeline value (est.)</div><div class="kpi-value" style="color:#8B5CF6;">'+fmtINR(pipeVal)+'</div><div style="font-size:11px;color:var(--text-muted);margin-top:3px;">'+getPipelineData().length+' scoping projects</div>';
+  scGrid.appendChild(pvKpi);
+  const rvKpi=document.createElement('div');rvKpi.className='kpi clickable';
+  rvKpi.title='Click to view all delivered projects';
+  rvKpi.onclick=()=>openDrawer('all','golive','All Go-Live Projects',currentMonthKey);
+  rvKpi.innerHTML='<div class="kpi-label">Revenue delivered</div><div class="kpi-value" style="color:#10B981;">'+fmtINR(revenue(T.mandays))+'</div><div style="font-size:11px;color:var(--text-muted);margin-top:3px;">'+T.mandays+' mandays saved</div>';
+  scGrid.appendChild(rvKpi);
+  wrap.appendChild(scGrid);
+
+  // ── Key Insights ──
+  addSectionTitle(wrap,'Key insights');
+  const stmtList=document.createElement('div');stmtList.className='stmt-list';
+  const insights=[
+    {text:'Fastest BA: <strong>'+(fastestBA||'—')+'</strong> averages <strong>'+(fastestBA?vel[fastestBA].avg:0)+' days</strong> from start to go-live', onclick:fastestBA?()=>openDrawer('all','golive','Go-Live — '+fastestBA,currentMonthKey,fastestBA):null},
+    {text:'Highest active load: <strong>'+busyBA+'</strong> has the most concurrent active projects', onclick:()=>openDrawer('all','inprogress','In Progress — '+busyBA,currentMonthKey,busyBA)},
+    {text:'<strong>'+expanding+'</strong> clients are expanding with multiple use cases — key upsell accounts', onclick:null},
+    {text:'Overall conversion: <strong>'+Math.round(T.golive/T.total*100)+'%</strong> of all projects delivered live', onclick:()=>openDrawer('all','golive','All Go-Live Projects',currentMonthKey)},
+    {text:'West leads delivery rate at <strong>'+Math.round(DB.all['West'].golive/DB.all['West'].total*100)+'%</strong> — best pipeline conversion', onclick:()=>openDrawer('West','golive','Go Live — West',currentMonthKey)},
+    {text:'UAE at <strong>'+Math.round(DB.all['UAE'].golive/DB.all['UAE'].total*100)+'%</strong> delivery rate — highest per-project efficiency', onclick:()=>openDrawer('UAE','golive','Go Live — UAE',currentMonthKey)},
+    {text:'<strong>'+upcomingCount+'</strong> projects have due dates in the next 30 days — needs monitoring', onclick:null},
+    {text:'<strong>'+stuckCount+'</strong> projects are stuck 60+ days in active status — at risk', onclick:null},
+  ];
+  insights.forEach(ins=>{
+    const d=document.createElement('div');d.className='stmt';
+    if(ins.onclick){d.style.cursor='pointer';d.onclick=ins.onclick;d.title='Click to view details';}
+    d.innerHTML='<i class="ti ti-arrow-right stmt-icon"></i><span>'+ins.text+'</span>';
+    stmtList.appendChild(d);
+  });
+  wrap.appendChild(stmtList);
+
+  // ── Delivery Velocity ──
+  addSectionTitle(wrap,'Delivery velocity by BA');
+  const velWrap=document.createElement('div');velWrap.className='table-wrap';velWrap.style.marginBottom='1.5rem';
+  const velTable=document.createElement('table');
+  const vtHead=document.createElement('thead');
+  vtHead.innerHTML='<tr><th>BA</th><th class="num">Live projects</th><th class="num">Avg days to go-live</th><th>Speed</th></tr>';
+  velTable.appendChild(vtHead);
+  const vtBody=document.createElement('tbody');
+  activeBAs.sort((a,b)=>vel[a].avg-vel[b].avg).forEach(ba=>{
+    const avg=vel[ba].avg;
+    const spd=avg<=30?'Fast':avg<=60?'Moderate':'Slow';
+    const spdCol=avg<=30?'#10B981':avg<=60?'#F59E0B':'#EF4444';
+    const tr=document.createElement('tr');tr.className='clickable-row';
+    tr.onclick=()=>openDrawer('all','golive','Go-Live — '+ba,currentMonthKey,ba);
+    tr.title='Click to view '+ba+' go-live projects';
+    tr.innerHTML='<td><span class="region-badge"><span class="rdot" style="background:'+BA_COLORS[BAS.indexOf(ba)]+'">&nbsp;</span>'+ba+'</span></td>'+
+      '<td class="num"><span class="drill-num">'+vel[ba].count+'</span></td>'+
+      '<td class="num"><strong>'+avg+'</strong> days</td>'+
+      '<td><span class="sp" style="background:'+spdCol+'22;color:'+spdCol+'">'+spd+'</span></td>';
+    vtBody.appendChild(tr);
+  });
+  velTable.appendChild(vtBody);velWrap.appendChild(velTable);wrap.appendChild(velWrap);
+
+  // ── Expanding Clients ──
+  addSectionTitle(wrap,'Expanding client accounts (2+ use cases)');
+  const multiClients=portfolio.filter(c=>c.usecases>1).slice(0,15);
+  const cwrap=document.createElement('div');cwrap.className='table-wrap';cwrap.style.marginBottom='1.5rem';
+  const ct=document.createElement('table');
+  const cth=document.createElement('thead');
+  cth.innerHTML='<tr><th>Client</th><th class="num">Use cases</th><th class="num">Live</th><th class="num">Active</th><th>Regions</th><th>BAs</th></tr>';
+  ct.appendChild(cth);
+  const ctb=document.createElement('tbody');
+  multiClients.forEach(c=>{
+    const tr=document.createElement('tr');tr.className='clickable-row';
+    tr.onclick=()=>{
+      const rows=RAW.rows.filter(r=>r[CI.proj]===c.name);
+      drawerRows=rows;
+      document.getElementById('dTitle').textContent=c.name;
+      document.getElementById('dSub').textContent=c.usecases+' use cases · '+c.regions;
+      document.getElementById('dCount').textContent='Showing '+rows.length+' project'+(rows.length!==1?'s':'');
+      const tbody=document.getElementById('dBody');tbody.innerHTML='';
+      rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
+      document.getElementById('dOverlay').classList.add('open');
+      document.getElementById('drawer').classList.add('open');
+      document.body.style.overflow='hidden';
+    };
+    tr.innerHTML='<td><strong>'+c.name+'</strong></td>'+
+      '<td class="num" style="color:var(--blue);font-weight:600">'+c.usecases+'</td>'+
+      '<td class="num" style="color:#10B981;font-weight:600">'+c.live+'</td>'+
+      '<td class="num">'+c.active+'</td>'+
+      '<td style="font-size:12px;color:var(--text-sec)">'+c.regions+'</td>'+
+      '<td style="font-size:12px;color:var(--text-sec)">'+c.bas+'</td>';
+    ctb.appendChild(tr);
+  });
+  ct.appendChild(ctb);cwrap.appendChild(ct);wrap.appendChild(cwrap);
+
+  // ── Charts ──
+  const cGrid=document.createElement('div');cGrid.className='chart-grid';
+  const c1=document.createElement('div');c1.className='chart-card';
+  c1.innerHTML='<p class="section-title">Avg days to go-live by BA</p><div style="position:relative;width:100%;height:240px;"><canvas id="velChart"></canvas></div>';
+  const c2=document.createElement('div');c2.className='chart-card';
+  c2.innerHTML='<p class="section-title">Delivery rate by region (%)</p><div style="position:relative;width:100%;height:240px;"><canvas id="convChart"></canvas></div>';
+  cGrid.appendChild(c1);cGrid.appendChild(c2);wrap.appendChild(cGrid);
+  kill('velChart','convChart');
+  const sortedBAs=activeBAs.sort((a,b)=>vel[a].avg-vel[b].avg);
+  C.velChart=new Chart(document.getElementById('velChart'),{type:'bar',data:{
+    labels:sortedBAs,
+    datasets:[{label:'Avg days',data:sortedBAs.map(ba=>vel[ba].avg),backgroundColor:sortedBAs.map(ba=>vel[ba].avg<=30?'#10B981':vel[ba].avg<=60?'#F59E0B':'#EF4444')}]
+  },options:{...CHART_OPTS,plugins:{legend:{display:false}}}});
+  C.convChart=new Chart(document.getElementById('convChart'),{type:'bar',data:{
+    labels:REGIONS,
+    datasets:[{label:'Delivery rate',data:REGIONS.map(r=>Math.round(DB.all[r].golive/DB.all[r].total*100)),backgroundColor:REGIONS.map(r=>{const rt=Math.round(DB.all[r].golive/DB.all[r].total*100);return rt>=50?'#10B981':rt>=30?'#F59E0B':'#EF4444';})}]
+  },options:{...CHART_OPTS,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{max:100,grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>v+'%'}}}}});
+}
+  const vel=getVelocityData();
+  const portfolio=getClientPortfolio();
+  const T=DB.all['Total'];
+  const activeBAs=BAS.filter(ba=>vel[ba]&&vel[ba].count>0);
   const fastestBA=activeBAs.reduce((a,b)=>vel[a].avg<vel[b].avg?a:b,'');
   const busyBA=BAS.reduce((a,b)=>{
     const aRows=RAW.rows.filter(r=>normBA(r[CI.ba])===a&&['inprogress','uat'].includes(normStatus(r[CI.status]))).length;
@@ -1201,173 +1351,11 @@ function renderInsights(){
   },options:{...CHART_OPTS,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{max:100,ticks:{callback:v=>v+'%'}}}}});
 }
 
-/* ═══ AGEING TAB RENDER ═══ */
-function renderAgeing(){
-  const {buckets,stuck}=getAgeingData();
-  const upcoming=getUpcomingDue();
-  const wrap=document.getElementById('ageingContent');wrap.innerHTML='';
-
-  // Ageing buckets KPIs
-  const kpiDiv=document.createElement('div');
-  kpiDiv.innerHTML='<p class="section-title">Project ageing — active projects (In Progress + UAT)</p>';
-  const kGrid=document.createElement('div');kGrid.className='kpi-grid';kGrid.style.marginBottom='1.5rem';
-  [{l:'0–30 days',v:buckets.b30,c:'#10B981'},{l:'31–60 days',v:buckets.b60,c:'#F59E0B'},{l:'61–90 days',v:buckets.b90,c:'#EF9F27'},{l:'90+ days (critical)',v:buckets.b90p,c:'#EF4444'}].forEach(k=>{
-    const d=document.createElement('div');d.className='kpi';
-    d.innerHTML='<div class="kpi-label">'+k.l+'</div><div class="kpi-value" style="color:'+k.c+'">'+k.v+'</div>';
-    kGrid.appendChild(d);
-  });
-  kpiDiv.appendChild(kGrid);wrap.appendChild(kpiDiv);
-
-  // Stuck projects table
-  const stDiv=document.createElement('div');stDiv.className='section';
-  stDiv.innerHTML='<p class="section-title">Projects stuck 30+ days — action needed</p>';
-  const stWrap=document.createElement('div');stWrap.className='table-wrap';
-  const stTable=document.createElement('table');
-  const stHead=document.createElement('thead');
-  stHead.innerHTML='<tr><th>Project</th><th>BA</th><th>Region</th><th>Status</th><th class="num">Days active</th><th>Due date</th><th>Risk</th></tr>';
-  stTable.appendChild(stHead);
-  const stBody=document.createElement('tbody');
-  stuck.forEach(r=>{
-    const tr=document.createElement('tr');tr.style.cursor='pointer';
-    const risk=r.days>90?'Critical':r.days>60?'High':'Medium';
-    const riskCol=r.days>90?'#EF4444':r.days>60?'#F59E0B':'#854F0B';
-    tr.innerHTML='<td><strong>'+r.project+'</strong><div style="font-size:11px;color:var(--text-sec)">'+r.usecase.substring(0,50)+'</div></td>'+
-      '<td style="white-space:nowrap">'+r.ba+'</td>'+
-      '<td><span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[r.region]||'#8B9AB8')+'">&nbsp;</span>'+r.region+'</span></td>'+
-      '<td><span class="sp sp-ip">'+r.status+'</span></td>'+
-      '<td class="num" style="color:'+riskCol+';font-weight:700">'+r.days+'</td>'+
-      '<td style="font-size:12px;color:var(--text-sec)">'+(r.due||'—')+'</td>'+
-      '<td><span class="sp" style="background:'+riskCol+'22;color:'+riskCol+'">'+risk+'</span></td>';
-    stBody.appendChild(tr);
-  });
-  stTable.appendChild(stBody);stWrap.appendChild(stTable);stDiv.appendChild(stWrap);wrap.appendChild(stDiv);
-
-  // Upcoming due dates
-  const udDiv=document.createElement('div');udDiv.className='section';
-  udDiv.innerHTML='<p class="section-title">Due in next 30 days — '+upcoming.length+' projects</p>';
-  if(upcoming.length>0){
-    const udWrap=document.createElement('div');udWrap.className='table-wrap';
-    const udTable=document.createElement('table');
-    const udHead=document.createElement('thead');
-    udHead.innerHTML='<tr><th>Project</th><th>BA</th><th>Region</th><th>Status</th><th class="num">Days left</th><th>Due date</th></tr>';
-    udTable.appendChild(udHead);
-    const udBody=document.createElement('tbody');
-    upcoming.forEach(r=>{
-      const tr=document.createElement('tr');
-      const urgency=r.daysLeft<=3?'#EF4444':r.daysLeft<=7?'#F59E0B':'#10B981';
-      tr.innerHTML='<td><strong>'+r.project+'</strong></td>'+
-        '<td style="white-space:nowrap">'+r.ba+'</td>'+
-        '<td><span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[r.region]||'#8B9AB8')+'">&nbsp;</span>'+r.region+'</span></td>'+
-        '<td><span class="sp '+statusClass(r.status)+'">'+r.status+'</span></td>'+
-        '<td class="num" style="color:'+urgency+';font-weight:700">'+r.daysLeft+' days</td>'+
-        '<td style="font-size:12px;color:var(--text-sec)">'+r.due+'</td>';
-      udBody.appendChild(tr);
-    });
-    udTable.appendChild(udBody);udWrap.appendChild(udTable);udDiv.appendChild(udWrap);
-  } else {
-    udDiv.innerHTML+='<p style="color:var(--text-sec);font-size:13px;padding:16px 0;">No projects due in next 30 days.</p>';
-  }
-  wrap.appendChild(udDiv);
-
-  // Ageing chart
-  const chartDiv=document.createElement('div');chartDiv.className='chart-card';chartDiv.style.marginBottom='1.5rem';
-  chartDiv.innerHTML='<p class="section-title">Active projects by age bucket</p><div style="position:relative;width:100%;height:220px;"><canvas id="ageChart"></canvas></div>';
-  wrap.appendChild(chartDiv);
-  kill('ageChart');
-  C.ageChart=new Chart(document.getElementById('ageChart'),{type:'doughnut',data:{
-    labels:['0–30 days','31–60 days','61–90 days','90+ days'],
-    datasets:[{data:[buckets.b30,buckets.b60,buckets.b90,buckets.b90p],backgroundColor:['#10B981','#F59E0B','#EF9F27','#EF4444'],borderWidth:2,borderColor:'#fff'}]
-  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+/* ═══ HELPER ═══ */
+function addSectionTitle(parent, text){
+  const p=document.createElement('p');p.className='section-title';p.textContent=text;parent.appendChild(p);
 }
 
-/* ═══ PIPELINE TAB RENDER ═══ */
-function renderPipeline(){
-  const pipe=getPipelineData();
-  const T=DB.all['Total'];
-  const pipeVal=pipe.length*5*8000;
-  const wrap=document.getElementById('pipelineContent');wrap.innerHTML='';
-
-  // KPIs
-  const kDiv=document.createElement('div');
-  kDiv.innerHTML='<p class="section-title">Pipeline & scoping overview</p>';
-  const kGrid=document.createElement('div');kGrid.className='kpi-grid';kGrid.style.marginBottom='1.5rem';
-  [{l:'Scoping / pipeline',v:pipe.length,c:'#8B5CF6'},{l:'Est. pipeline value',v:fmtINR(pipeVal),c:'#8B5CF6'},{l:'Revenue delivered',v:fmtINR(revenue(T.mandays)),c:'#10B981'},{l:'Conversion rate',v:Math.round(T.golive/T.total*100)+'%',c:'#0057FF'}].forEach(k=>{
-    const d=document.createElement('div');d.className='kpi';
-    d.innerHTML='<div class="kpi-label">'+k.l+'</div><div class="kpi-value" style="color:'+k.c+'">'+k.v+'</div>';
-    kGrid.appendChild(d);
-  });
-  kDiv.appendChild(kGrid);wrap.appendChild(kDiv);
-
-  // Conversion by region
-  const convDiv=document.createElement('div');convDiv.className='section';
-  convDiv.innerHTML='<p class="section-title">Scoping to live conversion by region</p>';
-  const convWrap=document.createElement('div');convWrap.className='table-wrap';
-  const convTable=document.createElement('table');
-  const convHead=document.createElement('thead');
-  convHead.innerHTML='<tr><th>Region</th><th class="num">Total</th><th class="num">Live</th><th class="num">Scoping</th><th class="num">Conversion rate</th><th>Health</th></tr>';
-  convTable.appendChild(convHead);
-  const convBody=document.createElement('tbody');
-  REGIONS.forEach(r=>{
-    const d=DB.all[r];
-    const rate=Math.round(d.golive/d.total*100);
-    const health=rate>=50?'#10B981':rate>=30?'#F59E0B':'#EF4444';
-    const hlbl=rate>=50?'Strong':rate>=30?'Moderate':'Needs focus';
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td><span class="region-badge"><span class="rdot" style="background:'+RCOLORS[r]+'">&nbsp;</span>'+r+'</span></td>'+
-      '<td class="num">'+d.total+'</td>'+
-      '<td class="num" style="color:#10B981;font-weight:600">'+d.golive+'</td>'+
-      '<td class="num" style="color:#8B5CF6">'+d.scoping+'</td>'+
-      '<td class="num" style="color:'+health+';font-weight:700">'+rate+'%</td>'+
-      '<td><span class="sp" style="background:'+health+'22;color:'+health+'">'+hlbl+'</span></td>';
-    convBody.appendChild(tr);
-  });
-  convTable.appendChild(convBody);convWrap.appendChild(convTable);convDiv.appendChild(convWrap);wrap.appendChild(convDiv);
-
-  // Pipeline projects list
-  const pDiv=document.createElement('div');pDiv.className='section';
-  pDiv.innerHTML='<p class="section-title">All scoping / pipeline projects ('+pipe.length+')</p>';
-  const pWrap=document.createElement('div');pWrap.className='table-wrap';
-  const pTable=document.createElement('table');
-  const pHead=document.createElement('thead');
-  pHead.innerHTML='<tr><th>Project</th><th>BA</th><th>Region</th><th>Status</th><th>Est. value</th><th>Start date</th></tr>';
-  pTable.appendChild(pHead);
-  const pBody=document.createElement('tbody');
-  pipe.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td><strong>'+r.project+'</strong><div style="font-size:11px;color:var(--text-sec)">'+r.usecase.substring(0,55)+'</div></td>'+
-      '<td style="white-space:nowrap;font-size:12px">'+r.ba+'</td>'+
-      '<td><span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[r.region]||'#8B9AB8')+'">&nbsp;</span>'+r.region+'</span></td>'+
-      '<td><span class="sp sp-scoping">'+r.status+'</span></td>'+
-      '<td style="color:#8B5CF6;font-weight:500;font-size:12px">'+fmtINR(5*8000)+'</td>'+
-      '<td style="font-size:12px;color:var(--text-sec)">'+(r.start||'—')+'</td>';
-    pBody.appendChild(tr);
-  });
-  pTable.appendChild(pBody);pWrap.appendChild(pTable);pDiv.appendChild(pWrap);wrap.appendChild(pDiv);
-
-  // Pipeline by region chart
-  const cGrid=document.createElement('div');cGrid.className='chart-grid';cGrid.style.marginTop='0.5rem';
-  const c1=document.createElement('div');c1.className='chart-card';
-  c1.innerHTML='<p class="section-title">Pipeline vs delivered by region</p><div style="position:relative;width:100%;height:240px;"><canvas id="pipeChart1"></canvas></div>';
-  const c2=document.createElement('div');c2.className='chart-card';
-  c2.innerHTML='<p class="section-title">Pipeline by BA</p><div style="position:relative;width:100%;height:240px;"><canvas id="pipeChart2"></canvas></div>';
-  cGrid.appendChild(c1);cGrid.appendChild(c2);wrap.appendChild(cGrid);
-
-  kill('pipeChart1','pipeChart2');
-  C.pipeChart1=new Chart(document.getElementById('pipeChart1'),{type:'bar',data:{
-    labels:REGIONS,
-    datasets:[
-      {label:'Live',data:REGIONS.map(r=>DB.all[r].golive),backgroundColor:'#10B981'},
-      {label:'Scoping/Pipeline',data:REGIONS.map(r=>DB.all[r].scoping),backgroundColor:'#8B5CF6'},
-    ]
-  },options:{...CHART_OPTS,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:10}}}}});
-
-  const baPipe=BAS.map(ba=>pipe.filter(r=>normBA(r.ba)===ba).length);
-  const activeBAPipe=BAS.filter((_,i)=>baPipe[i]>0);
-  C.pipeChart2=new Chart(document.getElementById('pipeChart2'),{type:'bar',data:{
-    labels:activeBAPipe,
-    datasets:[{label:'Scoping projects',data:activeBAPipe.map(ba=>pipe.filter(r=>normBA(r.ba)===ba).length),backgroundColor:activeBAPipe.map(ba=>BA_COLORS[BAS.indexOf(ba)]||'#8B9AB8')}]
-  },options:{...CHART_OPTS,plugins:{legend:{display:false}}}});
-}
 
 /* ═══ UPDATED SWITCH TAB ═══ */
 function switchTab(tab){
