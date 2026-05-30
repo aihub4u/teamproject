@@ -331,9 +331,14 @@ tr:last-child td{border-bottom:none;}
         </div>
       </div>
       <div class="email-field">
-        <label>To (recipients)</label>
-        <input type="text" id="emailTo" placeholder="sonia@karix.com, raj@karix.com"/>
-        <small>Separate multiple addresses with commas</small>
+        <label>To</label>
+        <input type="text" id="emailTo" placeholder="sonia@karix.com"/>
+        <small>Primary recipient</small>
+      </div>
+      <div class="email-field">
+        <label>CC</label>
+        <input type="text" id="emailCC" placeholder="raj@karix.com, team@karix.com"/>
+        <small>Optional — separate multiple with commas</small>
       </div>
       <div class="email-field">
         <label>Subject</label>
@@ -1275,6 +1280,7 @@ function buildEmailHTML(note){
 async function sendReport(){
   const scriptUrl=document.getElementById('appsScriptUrl').value.trim();
   const to=document.getElementById('emailTo').value.trim();
+  const cc=document.getElementById('emailCC').value.trim();
   const subject=document.getElementById('emailSubject').value.trim();
   const note=document.getElementById('emailNote').value.trim();
   const statusEl=document.getElementById('emailStatus');
@@ -1307,7 +1313,7 @@ async function sendReport(){
 
     // Apps Script requires no-cors for cross-origin form posts
     // We use a hidden iframe trick to get the response
-    const payload={to,subject,htmlBody,
+    const payload={to,cc,subject,htmlBody,
       attachment:{filename:'BA_Project_Report_'+DB.lastUpdated.replace(/ /g,'_')+'.xlsx',
       data:wbBase64,mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}};
 
