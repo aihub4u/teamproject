@@ -1776,7 +1776,7 @@ async function sendReport(){
 
     // Apps Script requires no-cors for cross-origin form posts
     // We use a hidden iframe trick to get the response
-    const payload={to,cc,subject,htmlBody,
+    const payload={to,cc,subject,htmlBody,token:'1cc3c30f030980d0925871a235d91c75',
       attachment:{filename:'BA_Project_Report_'+DB.lastUpdated.replace(/ /g,'_')+'.xlsx',
       data:wbBase64,mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}};
 
@@ -1906,7 +1906,7 @@ async function loadData(){
   }
   showLoading('Loading dashboard data...','Fetching from Google Sheets');
   try{
-    const res=await fetch(url+'?action=data');
+    const res=await fetch(url+'?action=data&token=1cc3c30f030980d0925871a235d91c75');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const json=await res.json();
     if(json.status!=='ok') throw new Error(json.message||'API error');
