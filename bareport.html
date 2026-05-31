@@ -380,6 +380,7 @@ tr:last-child td{border-bottom:none;}
         <select id="emailTemplate" class="filter-select" style="width:100%;padding:9px 12px;font-size:13px;" onchange="previewTemplateHint()">
           <option value="classic">Classic — region table &amp; insights</option>
           <option value="executive">Executive — this week in numbers</option>
+          <option value="stylec">Style C — daily summary + region matrix</option>
         </select>
       </div>
       <div class="email-field">
@@ -1812,7 +1813,7 @@ async function sendReport(){
     const wbBase64=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
 
     const template=document.getElementById('emailTemplate').value;
-  const htmlBody=template==='executive'?buildExecutiveEmailHTML(note):buildEmailHTML(note);
+  const htmlBody=template==='executive'?buildExecutiveEmailHTML(note):template==='stylec'?buildStyleCEmailHTML(note):buildEmailHTML(note);
 
     // Use FormData — Apps Script handles it via e.parameter
     const form=new FormData();
@@ -2138,9 +2139,13 @@ async function loadData(){
 /* ═══ TEMPLATE HINT ═══ */
 function previewTemplateHint(){
   const t=document.getElementById('emailTemplate').value;
-  const hint=t==='executive'?'Executive: BA leaderboard, fastest region, expanding clients, action items — fully dynamic.':'Classic: region breakdown table, key insights, month-wise trend.';
+  const hints={
+    classic:'Classic: region breakdown table, key insights, month-wise trend.',
+    executive:'Executive: BA leaderboard, fastest region, expanding clients, action items.',
+    stylec:'Style C: daily summary + efficiency metrics + region × status matrix. Karix report style.'
+  };
   const el=document.getElementById('emailStatus');
-  el.className='email-status';el.textContent=hint;
+  el.className='email-status';el.textContent=hints[t]||'';
 }
 
 /* ═══ EXECUTIVE EMAIL TEMPLATE ═══ */
@@ -2323,6 +2328,172 @@ ${noteBlock}
 </table>
 </td></tr>
 <tr><td style="background:#F9FAFB;padding:14px 30px;border-top:0.5px solid #F1F5F9;text-align:center;"><div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Auto-generated from the Karix BA Team Analytics Dashboard<br><a href="https://aihub4u.github.io/teamproject/bareport.html" style="color:#0057FF;text-decoration:none;">aihub4u.github.io/teamproject/bareport.html</a> &middot; Karix &mdash; a Tanla Platforms company</div></td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+/* ═══ STYLE C EMAIL TEMPLATE ═══ */
+function buildStyleCEmailHTML(note){
+  const T=DB.all['Total'];
+  const d=DB.lastUpdated;
+  const MONTHS=getAllMonths();
+  const DASHBOARD_URL='https://aihub4u.github.io/teamproject/bareport.html';
+  const fmtINR2=v=>{if(v>=10000000)return'\u20b9'+Math.round(v/10000000*10)/10+'Cr';if(v>=100000)return'\u20b9'+Math.round(v/100000*10)/10+'L';if(v>=1000)return'\u20b9'+Math.round(v/1000)+'K';return'\u20b9'+v;};
+  const rev2=m=>m*8000;
+  const pct=n=>n+'%';
+  const RCOLS={'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
+
+  // Stuck & upcoming from RAW
+  const TODAY2=new Date('2026-05-29');
+  let stuck60=0,due14=0;
+  RAW.rows.forEach(row=>{
+    const st=normStatus(row[CI.status]);
+    if(['inprogress','uat'].includes(st)&&row[CI.start]){
+      const dd=new Date(row[CI.start]);if(!isNaN(dd)&&(TODAY2-dd)/86400000>60)stuck60++;
+    }
+    if(row[CI.due]){
+      const dd2=new Date(row[CI.due]);if(!isNaN(dd2)){
+        const dl=(dd2-TODAY2)/86400000;
+        if(dl>=0&&dl<=14&&!['golive','unknown'].includes(normStatus(row[CI.status])))due14++;
+      }
+    }
+  });
+
+  const deliveryRate=T.total?Math.round(T.golive/T.total*100):0;
+  const periodLabel=MONTHS.length?mLabel(MONTHS[0])+' \u2013 '+mLabel(MONTHS[MONTHS.length-1]):'Apr 2026 onwards';
+
+  const noteBlock=note?`
+  <tr><td colspan="2" style="padding:0 0 18px 0;">
+    <div style="background:#EFF6FF;border-left:3px solid #0057FF;padding:11px 14px;border-radius:0 7px 7px 0;">
+      <div style="font-size:10px;font-weight:600;color:#0057FF;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Note from Raj</div>
+      <div style="font-size:13px;color:#374151;line-height:1.6;">${note.replace(/\n/g,'<br>')}</div>
+    </div>
+  </td></tr>`:'';
+
+  // Region rows for the matrix
+  const regionRows=REGIONS.map(r=>{
+    const rd=DB.all[r];
+    const dash=v=>v===0?'<span style="color:#D1D5DB;">&#8212;</span>':v;
+    return`<tr>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;font-size:12px;font-weight:600;color:#111827;">
+        <span style="width:6px;height:6px;border-radius:50%;background:${RCOLS[r]};display:inline-block;margin-right:6px;vertical-align:middle;"></span>${r}
+      </td>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;font-size:12px;color:#16A34A;font-weight:600;">${rd.golive}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;font-size:12px;color:#D97706;font-weight:500;">${dash(rd.inprogress)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;font-size:12px;color:#2563EB;font-weight:500;">${dash(rd.uat)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;font-size:12px;color:#7C3AED;font-weight:500;">${dash(rd.scoping)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;font-size:12px;font-weight:700;">${rd.total}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;font-size:12px;color:#16A34A;font-weight:600;">${rd.mandays>0?rd.mandays:'<span style=\\"color:#D1D5DB;\\">&#8212;</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#E8ECF2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#E8ECF2;padding:24px 16px;"><tr><td>
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden;border:0.5px solid #D1D9E4;">
+
+<!-- HEADER -->
+<tr><td style="background:#07112A;padding:18px 24px;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td><div style="display:inline-block;"><div style="width:30px;height:30px;background:#0057FF;border-radius:6px;text-align:center;line-height:30px;font-weight:700;font-size:12px;color:#fff;display:inline-block;vertical-align:middle;">K</div><span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.02em;vertical-align:middle;margin-left:8px;">Karix</span><span style="font-size:10px;color:rgba(255,255,255,0.35);vertical-align:middle;margin-left:5px;">a Tanla company</span></div></td>
+    <td style="text-align:right;"><div style="background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:20px;padding:3px 9px;display:inline-block;"><span style="font-size:10px;color:#4ADE80;font-weight:500;">&#9679; Live data</span></div></td>
+  </tr></table>
+  <div style="margin-top:14px;">
+    <div style="font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.01em;">BA Team — Project Status &amp; Efficiency Report</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:5px;">${d} &nbsp;&middot;&nbsp; ${periodLabel} &nbsp;&middot;&nbsp; All regions</div>
+  </div>
+</td></tr>
+
+<!-- BODY -->
+<tr><td style="background:#fff;padding:22px 24px;">
+<table width="100%" cellpadding="0" cellspacing="0">
+
+${noteBlock}
+
+<!-- TWO-COLUMN SUMMARY -->
+<tr><td colspan="2" style="padding-bottom:18px;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr valign="top">
+
+    <!-- LEFT: Status summary -->
+    <td style="width:50%;padding-right:10px;">
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;">
+        <div style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Status summary</div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="font-size:12px;">
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Go live</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#16A34A;">${T.golive}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#EF9F27;display:inline-block;margin-right:6px;vertical-align:middle;"></span>In progress</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#D97706;">${T.inprogress}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#2563EB;display:inline-block;margin-right:6px;vertical-align:middle;"></span>UAT delivered</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#2563EB;">${T.uat}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#7C3AED;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Scoping</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#7C3AED;">${T.scoping}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#9CA3AF;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Yet to start</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:500;color:#6B7280;">${T.yts}</td></tr>
+          <tr><td style="padding:8px 0 4px;color:#111827;font-weight:700;border-top:1px solid #E5E7EB;">Total</td><td style="text-align:right;padding:8px 0 4px;font-weight:700;font-size:14px;border-top:1px solid #E5E7EB;">${T.total}</td></tr>
+        </table>
+      </div>
+    </td>
+
+    <!-- RIGHT: Efficiency -->
+    <td style="width:50%;padding-left:10px;">
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;">
+        <div style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Efficiency</div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="font-size:12px;">
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Delivery rate</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#16A34A;">${pct(deliveryRate)}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Mandays saved</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#16A34A;">${T.mandays}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Revenue impact</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#16A34A;">${fmtINR2(rev2(T.mandays))}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Stuck 60d+</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#DC2626;">${stuck60}</td></tr>
+          <tr><td style="padding:5px 0;border-bottom:0.5px solid #F1F5F9;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#EF9F27;display:inline-block;margin-right:6px;vertical-align:middle;"></span>Due in 14 days</td><td style="text-align:right;padding:5px 0;border-bottom:0.5px solid #F1F5F9;font-weight:600;color:#D97706;">${due14}</td></tr>
+          <tr><td style="padding:8px 0 4px;color:#111827;font-weight:700;border-top:1px solid #E5E7EB;">Twixor / Inhouse</td><td style="text-align:right;padding:8px 0 4px;font-weight:700;font-size:13px;border-top:1px solid #E5E7EB;">${T.twixor} / ${T.inhouse}</td></tr>
+        </table>
+      </div>
+    </td>
+
+  </tr></table>
+</td></tr>
+
+<!-- REGION × STATUS MATRIX -->
+<tr><td colspan="2" style="padding-bottom:18px;">
+  <div style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Region &times; status breakdown</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <thead>
+      <tr style="background:#F9FAFB;">
+        <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">Region</th>
+        <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:#16A34A;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">Go live</th>
+        <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:#D97706;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">In progress</th>
+        <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:#2563EB;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">UAT</th>
+        <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:#7C3AED;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">Scoping</th>
+        <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:#111827;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">Total</th>
+        <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:600;color:#16A34A;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #E5E7EB;">Mandays</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${regionRows}
+      <tr style="background:#F1F5F9;">
+        <td style="padding:9px 10px;font-size:12px;font-weight:700;color:#111827;border-top:1.5px solid #CBD5E1;">Grand Summary</td>
+        <td style="padding:9px 10px;text-align:right;font-size:12px;font-weight:700;color:#16A34A;border-top:1.5px solid #CBD5E1;">${T.golive}</td>
+        <td style="padding:9px 10px;text-align:right;font-size:12px;font-weight:700;color:#D97706;border-top:1.5px solid #CBD5E1;">${T.inprogress}</td>
+        <td style="padding:9px 10px;text-align:right;font-size:12px;font-weight:700;color:#2563EB;border-top:1.5px solid #CBD5E1;">${T.uat}</td>
+        <td style="padding:9px 10px;text-align:right;font-size:12px;font-weight:700;color:#7C3AED;border-top:1.5px solid #CBD5E1;">${T.scoping}</td>
+        <td style="padding:9px 10px;text-align:right;font-size:13px;font-weight:700;color:#111827;border-top:1.5px solid #CBD5E1;">${T.total}</td>
+        <td style="padding:9px 10px;text-align:right;font-size:12px;font-weight:700;color:#16A34A;border-top:1.5px solid #CBD5E1;">${T.mandays}</td>
+      </tr>
+    </tbody>
+  </table>
+</td></tr>
+
+<!-- CTA -->
+<tr><td colspan="2" style="padding-bottom:4px;">
+  <div style="background:#07112A;border-radius:8px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="color:rgba(255,255,255,0.7);font-size:12px;">View full interactive breakdown on dashboard</td>
+      <td style="text-align:right;"><a href="${DASHBOARD_URL}" style="background:#0057FF;color:#fff;text-decoration:none;border-radius:6px;padding:7px 14px;font-size:11px;font-weight:600;display:inline-block;white-space:nowrap;">Open dashboard &#8599;</a></td>
+    </tr></table>
+  </div>
+</td></tr>
+
+<tr><td colspan="2" style="padding-top:12px;text-align:center;">
+  <div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Raw data attached as Excel &nbsp;&middot;&nbsp; ${T.total} rows &nbsp;&middot;&nbsp; ${periodLabel}<br>Auto-generated from Karix BA Team Analytics &nbsp;&middot;&nbsp; <a href="${DASHBOARD_URL}" style="color:#0057FF;text-decoration:none;">aihub4u.github.io/teamproject/bareport.html</a></div>
+</td></tr>
+
+</table>
+</td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
