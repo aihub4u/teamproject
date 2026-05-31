@@ -316,7 +316,7 @@ tr:last-child td{border-bottom:none;}
   </a>
   <div class="topbar-right">
     <span class="topbar-pill" id="userPill"><i class="ti ti-user"></i> </span>
-    <button class="btn-top outline" onclick="openEmailModal()"><i class="ti ti-mail"></i> Send report</button>
+    <button class="btn-top outline" id="sendReportBtn" onclick="openEmailModal()" style="display:none"><i class="ti ti-mail"></i> Send report</button>
     <button class="btn-top outline" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
     <button class="btn-top outline" onclick="openChangePwd()" title="Change password"><i class="ti ti-key"></i></button>
     <button class="btn-top outline" onclick="doLogout()" title="Sign out"><i class="ti ti-logout"></i></button>
@@ -374,6 +374,13 @@ tr:last-child td{border-bottom:none;}
           <label>Apps Script Web App URL</label>
           <input type="url" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/..." oninput="saveScriptUrl()"/>
         </div>
+      </div>
+      <div class="email-field">
+        <label>Email template</label>
+        <select id="emailTemplate" class="filter-select" style="width:100%;padding:9px 12px;font-size:13px;" onchange="previewTemplateHint()">
+          <option value="classic">Classic — region table &amp; insights</option>
+          <option value="executive">Executive — this week in numbers</option>
+        </select>
       </div>
       <div class="email-field">
         <label>To</label>
@@ -1804,7 +1811,8 @@ async function sendReport(){
     XLSX.utils.book_append_sheet(wb,ws,'Project Report');
     const wbBase64=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
 
-    const htmlBody=buildEmailHTML(note);
+    const template=document.getElementById('emailTemplate').value;
+  const htmlBody=template==='executive'?buildExecutiveEmailHTML(note):buildEmailHTML(note);
 
     // Use FormData — Apps Script handles it via e.parameter
     const form=new FormData();
@@ -1949,6 +1957,8 @@ async function checkGate(){
       if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+data.username+(data.role?' &middot; '+data.role:'');
     const userPill=document.getElementById('userPill');
     if(userPill) userPill.innerHTML='<i class="ti ti-user"></i> '+data.username+(data.role?' &middot; '+data.role:'');
+    const srBtn=document.getElementById('sendReportBtn');
+    if(srBtn) srBtn.style.display=data.username.toLowerCase()==='rajaryan'?'flex':'none';
       loadData();
     } else {
       errEl.textContent=data.message||'Invalid username or password.';
@@ -1981,6 +1991,8 @@ function toggleGateEye(){
     if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
     const userPill2=document.getElementById('userPill');
     if(userPill2) userPill2.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
+    const srBtn2=document.getElementById('sendReportBtn');
+    if(srBtn2) srBtn2.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
     startInactivityTimer();
     loadData();
   } else {
@@ -2121,6 +2133,199 @@ async function loadData(){
   }catch(err){
     showLoadError(err.message+'. Check your Apps Script URL and Sheet ID.');
   }
+}
+
+/* ═══ TEMPLATE HINT ═══ */
+function previewTemplateHint(){
+  const t=document.getElementById('emailTemplate').value;
+  const hint=t==='executive'?'Executive: BA leaderboard, fastest region, expanding clients, action items — fully dynamic.':'Classic: region breakdown table, key insights, month-wise trend.';
+  const el=document.getElementById('emailStatus');
+  el.className='email-status';el.textContent=hint;
+}
+
+/* ═══ EXECUTIVE EMAIL TEMPLATE ═══ */
+function buildExecutiveEmailHTML(note){
+  const T=DB.all['Total'];
+  const d=DB.lastUpdated;
+  const MONTHS=getAllMonths();
+  const fmtINR2=v=>{if(v>=10000000)return'\u20b9'+Math.round(v/10000000*10)/10+'Cr';if(v>=100000)return'\u20b9'+Math.round(v/100000*10)/10+'L';if(v>=1000)return'\u20b9'+Math.round(v/1000)+'K';return'\u20b9'+v;};
+  const rev2=m=>m*8000;
+  const pct=n=>Math.round(n)+'%';
+  const RCOLS={'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
+
+  // Fastest growing region
+  let fastRegion='N/A',fastPct=0,fastFrom=0,fastTo=0;
+  if(MONTHS.length>=2){
+    const m1k=MONTHS[MONTHS.length-2],m2k=MONTHS[MONTHS.length-1];
+    REGIONS.forEach(r=>{
+      const f=DB.months[m1k].data[r].total,t2=DB.months[m2k].data[r].total;
+      if(!f)return;const g=Math.round((t2-f)/f*100);
+      if(g>fastPct){fastPct=g;fastRegion=r;fastFrom=f;fastTo=t2;}
+    });
+  }
+
+  // BA leaderboard
+  const baCounts={};BAS.forEach(ba=>{baCounts[ba]=0;});
+  RAW.rows.forEach(row=>{const ba=normBA(row[CI.ba]);if(baCounts[ba]!==undefined)baCounts[ba]++;});
+  const baRanked=BAS.map(ba=>({ba,n:baCounts[ba]})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n).slice(0,4);
+  const baMax=baRanked[0]?baRanked[0].n:1;
+  const medals=['&#127945;','&#129352;','&#129353;','4'];
+  const lbRows=baRanked.map((x,i)=>`<tr><td style="padding:5px 0;font-size:11px;width:20px;">${medals[i]}</td><td style="padding:5px 0;font-size:12px;color:#111827;flex:1;">${x.ba}</td><td style="padding:5px 0;width:70px;"><div style="background:#E5E7EB;border-radius:2px;height:3px;overflow:hidden;"><div style="width:${Math.round(x.n/baMax*100)}%;background:#7F77DD;height:3px;"></div></div></td><td style="padding:5px 0;font-size:11px;color:#6B7280;text-align:right;padding-left:6px;">${x.n}</td></tr>`).join('');
+
+  // Expanding clients
+  const clientMap={};
+  RAW.rows.forEach(row=>{const p=row[CI.proj];if(p){if(!clientMap[p])clientMap[p]=0;clientMap[p]++;}});
+  const expanding=Object.entries(clientMap).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]);
+  const chipHtml=expanding.slice(0,6).map(([name,n])=>`<span style="font-size:11px;padding:3px 9px;border-radius:20px;background:#EFF6FF;color:#1D4ED8;border:0.5px solid #BFDBFE;font-weight:500;margin:2px;display:inline-block;">${name}&nbsp;<strong>${n}</strong></span>`).join('')+(expanding.length>6?`<span style="font-size:11px;padding:3px 9px;border-radius:20px;background:#F9FAFB;color:#6B7280;border:0.5px solid #E5E7EB;margin:2px;display:inline-block;">+${expanding.length-6} more</span>`:'');
+
+  // Stuck & upcoming
+  const TODAY2=new Date('2026-05-29');
+  let stuck60=0,due14=0;
+  RAW.rows.forEach(row=>{
+    const st=normStatus(row[CI.status]);
+    if(['inprogress','uat'].includes(st)&&row[CI.start]){const dd=new Date(row[CI.start]);if(!isNaN(dd)&&(TODAY2-dd)/(86400000)>60)stuck60++;}
+    if(row[CI.due]){const dd2=new Date(row[CI.due]);if(!isNaN(dd2)){const daysLeft=(dd2-TODAY2)/86400000;if(daysLeft>=0&&daysLeft<=14&&!['golive','unknown'].includes(normStatus(row[CI.status])))due14++;}}
+  });
+  const pipeVal2=rev2(T.scoping*5);
+  const deliveryRate=T.total?Math.round(T.golive/T.total*100):0;
+  const periodLabel=MONTHS.length?mLabel(MONTHS[0])+' \u2013 '+mLabel(MONTHS[MONTHS.length-1]):'All months';
+  const momBadge=MONTHS.length>=2?`<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#D1FAE5;color:#065F46;font-weight:500;margin-left:4px;">&#8593; ${DB.months[MONTHS[MONTHS.length-1]].data.Total.golive} this mo</span>`:'';
+
+  // Region rows
+  const regionRows=REGIONS.map(r=>{
+    const rd=DB.all[r];const rt=rd.total?Math.round(rd.golive/rd.total*100):0;
+    const rCol=rt>=50?'#1D9E75':rt>=30?'#EF9F27':'#EF4444';
+    return`<tr><td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;font-size:12px;"><span style="width:6px;height:6px;border-radius:50%;background:${RCOLS[r]};display:inline-block;margin-right:5px;vertical-align:middle;"></span>${r}</td><td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:center;font-size:12px;">${rd.total}</td><td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:center;font-size:12px;color:#1D9E75;font-weight:600;">${rd.golive}</td><td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:center;font-size:12px;">${rd.inprogress}</td><td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:center;font-size:12px;">${rd.mandays}</td><td style="padding:8px 10px;border-bottom:1px solid #F9FAFB;text-align:right;"><span style="font-size:10px;padding:2px 7px;border-radius:10px;background:${rCol}22;color:${rCol};font-weight:600;">${rt}%</span></td></tr>`;
+  }).join('');
+
+  const noteBlock=note?`<tr><td style="padding-bottom:20px;"><div style="background:#EFF6FF;border-left:3px solid #0057FF;padding:12px 14px;border-radius:0 8px 8px 0;"><div style="font-size:10px;font-weight:600;color:#0057FF;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Note from Raj</div><div style="font-size:13px;color:#374151;line-height:1.6;">${note.replace(/\n/g,'<br>')}</div></div></td></tr>`:'';
+
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#E8ECF2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#E8ECF2;padding:28px 16px;"><tr><td>
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;margin:0 auto;border-radius:14px;overflow:hidden;border:0.5px solid #D1D9E4;">
+<tr><td style="background:#07112A;padding:26px 30px;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td><div style="display:inline-flex;align-items:center;"><div style="width:32px;height:32px;background:#0057FF;border-radius:7px;text-align:center;line-height:32px;font-weight:700;font-size:13px;color:#fff;display:inline-block;">K</div><span style="font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.02em;margin-left:8px;">Karix</span><span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:6px;">a Tanla company</span></div></td>
+    <td style="text-align:right;"><div style="background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:20px;padding:3px 10px;display:inline-block;"><span style="font-size:10px;color:#4ADE80;font-weight:500;">&#9679; Live data</span></div></td>
+  </tr></table>
+  <div style="font-size:21px;font-weight:700;color:#fff;letter-spacing:-0.02em;margin-top:18px;">BA Team Project Analytics</div>
+  <div style="margin-top:5px;"><span style="font-size:11px;color:rgba(255,255,255,0.38);margin-right:14px;">&#128197; ${d}</span><span style="font-size:11px;color:rgba(255,255,255,0.38);margin-right:14px;">&#128202; ${periodLabel}</span><span style="font-size:11px;color:rgba(255,255,255,0.38);">&#128101; 8 BAs &middot; 4 regions</span></div>
+</td></tr>
+<tr><td style="background:#fff;padding:26px 30px;">
+<table width="100%" cellpadding="0" cellspacing="0">
+${noteBlock}
+<tr><td style="padding-bottom:20px;">
+  <div style="font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.07em;padding-bottom:10px;border-bottom:0.5px solid #F1F5F9;margin-bottom:14px;">Performance summary</div>
+  <table width="100%" cellpadding="4" cellspacing="0">
+    <tr>
+      <td style="width:33%;"><div style="background:#F9FAFB;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:21px;font-weight:700;color:#0057FF;">${T.total}</div><div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">Total projects</div></div></td>
+      <td style="width:33%;"><div style="background:#F9FAFB;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:21px;font-weight:700;color:#1D9E75;">${T.golive}</div><div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">Go live</div>${momBadge}</div></td>
+      <td style="width:33%;"><div style="background:#F9FAFB;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:21px;font-weight:700;color:#EF9F27;">${T.inprogress}</div><div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">In progress</div></div></td>
+    </tr>
+    <tr>
+      <td><div style="background:#F9FAFB;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:21px;font-weight:700;color:#378ADD;">${T.uat}</div><div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">UAT</div></div></td>
+      <td><div style="background:#F9FAFB;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:21px;font-weight:700;color:#7F77DD;">${T.scoping}</div><div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">Pipeline</div></div></td>
+      <td><div style="background:#F9FAFB;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:21px;font-weight:700;color:#1D9E75;">${fmtINR2(rev2(T.mandays))}</div><div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">Revenue saved</div></div></td>
+    </tr>
+  </table>
+</td></tr>
+
+<tr><td style="padding-bottom:20px;">
+  <div style="font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.07em;padding-bottom:10px;border-bottom:0.5px solid #F1F5F9;margin-bottom:14px;">This week in numbers</div>
+  <table width="100%" cellpadding="4" cellspacing="0">
+    <tr valign="top">
+      <td style="width:50%;padding:4px;">
+        <div style="border:0.5px solid #E5E7EB;border-radius:10px;padding:14px;border-left:3px solid #1D9E75;">
+          <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#1D9E75;margin-bottom:7px;">&#8593; Fastest growing region</div>
+          <div style="font-size:24px;font-weight:700;color:#1D9E75;">+${fastPct}%</div>
+          <div style="font-size:11px;color:#6B7280;margin-top:3px;line-height:1.5;"><strong style="color:#111827;">${fastRegion}</strong> grew from ${fastFrom} to ${fastTo} ${MONTHS.length>=1?'in '+mLabel(MONTHS[MONTHS.length-1]):''}</div>
+          <div style="height:4px;background:#E5E7EB;border-radius:2px;margin:9px 0 4px;overflow:hidden;"><div style="width:${Math.min(fastPct,100)}%;background:#1D9E75;height:4px;border-radius:2px;"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#9CA3AF;"><span>${MONTHS.length>=2?mLabel(MONTHS[MONTHS.length-2]):'Prev'}: ${fastFrom}</span><span>${MONTHS.length>=1?mLabel(MONTHS[MONTHS.length-1]):'Curr'}: ${fastTo}</span></div>
+        </div>
+      </td>
+      <td style="width:50%;padding:4px;">
+        <div style="border:0.5px solid #E5E7EB;border-radius:10px;padding:14px;border-left:3px solid #7F77DD;">
+          <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#534AB7;margin-bottom:8px;">&#127942; BA leaderboard</div>
+          <table width="100%" cellpadding="0" cellspacing="0">${lbRows}</table>
+        </div>
+      </td>
+    </tr>
+    <tr><td colspan="2" style="padding:4px;">
+      <div style="border:0.5px solid #E5E7EB;border-radius:10px;padding:14px;border-left:3px solid #EF9F27;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#BA7517;margin-bottom:10px;">&#128200; Delivery momentum</div>
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="width:50%;vertical-align:top;padding-right:12px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr><td style="padding:5px 0;border-bottom:0.5px solid #F9FAFB;font-size:12px;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:5px;vertical-align:middle;"></span>Go live</td><td style="text-align:right;padding:5px 0;"><span style="font-weight:500;font-size:12px;">${T.golive}</span>${momBadge}</td></tr>
+              <tr><td style="padding:5px 0;border-bottom:0.5px solid #F9FAFB;font-size:12px;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#378ADD;display:inline-block;margin-right:5px;vertical-align:middle;"></span>UAT</td><td style="text-align:right;padding:5px 0;"><span style="font-weight:500;font-size:12px;">${T.uat}</span><span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#DBEAFE;color:#1E40AF;font-weight:500;margin-left:4px;">near done</span></td></tr>
+              <tr><td style="padding:5px 0;border-bottom:0.5px solid #F9FAFB;font-size:12px;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#EF9F27;display:inline-block;margin-right:5px;vertical-align:middle;"></span>In progress</td><td style="text-align:right;padding:5px 0;font-weight:500;font-size:12px;">${T.inprogress}</td></tr>
+              <tr><td style="padding:5px 0;font-size:12px;color:#374151;"><span style="width:5px;height:5px;border-radius:50%;background:#7F77DD;display:inline-block;margin-right:5px;vertical-align:middle;"></span>Pipeline</td><td style="text-align:right;padding:5px 0;"><span style="font-weight:500;font-size:12px;">${T.scoping}</span><span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#EDE9FE;color:#5B21B6;font-weight:500;margin-left:4px;">${fmtINR2(pipeVal2)} est.</span></td></tr>
+            </table>
+          </td>
+          <td style="width:25%;text-align:center;vertical-align:middle;">
+            <div style="width:64px;height:64px;border-radius:50%;border:2.5px solid #EF9F27;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;"><span style="font-size:17px;font-weight:700;color:#111827;line-height:1;">${pct(deliveryRate)}</span><span style="font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.04em;margin-top:1px;">delivered</span></div>
+            <div style="font-size:10px;color:#9CA3AF;margin-top:5px;">Team rate</div>
+          </td>
+          <td style="width:25%;text-align:center;vertical-align:middle;">
+            <div style="width:64px;height:64px;border-radius:50%;border:2.5px solid #1D9E75;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;"><span style="font-size:15px;font-weight:700;color:#111827;line-height:1;">${fmtINR2(rev2(T.mandays))}</span><span style="font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.04em;margin-top:1px;">saved</span></div>
+            <div style="font-size:10px;color:#9CA3AF;margin-top:5px;">Revenue</div>
+          </td>
+        </tr></table>
+      </div>
+    </td></tr>
+    <tr><td colspan="2" style="padding:4px;">
+      <div style="border:0.5px solid #E5E7EB;border-radius:10px;padding:14px;border-left:3px solid #185FA5;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#185FA5;margin-bottom:6px;">&#127981; Expanding client accounts</div>
+        <div style="font-size:11px;color:#6B7280;margin-bottom:8px;">Clients with 2+ active use cases &mdash; strongest upsell signal in the portfolio</div>
+        <div>${chipHtml}</div>
+      </div>
+    </td></tr>
+  </table>
+</td></tr>
+
+<tr><td style="padding-bottom:20px;">
+  <div style="font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.07em;padding-bottom:10px;border-bottom:0.5px solid #F1F5F9;margin-bottom:14px;">Needs attention</div>
+  <table width="100%" cellpadding="4" cellspacing="0"><tr>
+    <td style="width:33%;"><div style="background:#FEF2F2;border:0.5px solid #FECACA;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:700;color:#DC2626;">${stuck60}</div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#991B1B;">Stuck 60+ days</div><div style="font-size:10px;color:#9CA3AF;margin-top:2px;">Active, no progress</div></div></td>
+    <td style="width:33%;"><div style="background:#FFFBEB;border:0.5px solid #FDE68A;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:700;color:#D97706;">${due14}</div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#92400E;">Due in 14 days</div><div style="font-size:10px;color:#9CA3AF;margin-top:2px;">Needs follow-up</div></div></td>
+    <td style="width:33%;"><div style="background:#EFF6FF;border:0.5px solid #BFDBFE;border-radius:9px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:700;color:#2563EB;">${fmtINR2(pipeVal2)}</div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;color:#1E40AF;">Pipeline value</div><div style="font-size:10px;color:#9CA3AF;margin-top:2px;">${T.scoping} projects</div></div></td>
+  </tr></table>
+</td></tr>
+
+<tr><td style="padding-bottom:20px;">
+  <div style="font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.07em;padding-bottom:10px;border-bottom:0.5px solid #F1F5F9;margin-bottom:14px;">Region breakdown</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <thead><tr style="background:#F9FAFB;">
+      <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid #F1F5F9;">Region</th>
+      <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid #F1F5F9;">Projects</th>
+      <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid #F1F5F9;">Go live</th>
+      <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid #F1F5F9;">In progress</th>
+      <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid #F1F5F9;">Mandays</th>
+      <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:500;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid #F1F5F9;">Rate</th>
+    </tr></thead>
+    <tbody>${regionRows}
+      <tr style="background:#F9FAFB;"><td style="padding:8px 10px;font-size:12px;font-weight:600;"><strong>Total</strong></td><td style="padding:8px 10px;text-align:center;font-size:12px;font-weight:600;">${T.total}</td><td style="padding:8px 10px;text-align:center;font-size:12px;font-weight:600;color:#1D9E75;">${T.golive}</td><td style="padding:8px 10px;text-align:center;font-size:12px;font-weight:600;">${T.inprogress}</td><td style="padding:8px 10px;text-align:center;font-size:12px;font-weight:600;">${T.mandays}</td><td style="padding:8px 10px;text-align:right;"><span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#FEF3C7;color:#92400E;font-weight:600;">${pct(deliveryRate)}</span></td></tr>
+    </tbody>
+  </table>
+</td></tr>
+
+<tr><td style="padding-bottom:16px;">
+  <div style="background:#07112A;border-radius:9px;padding:14px 18px;">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px;">View full interactive dashboard</div><div style="color:rgba(255,255,255,0.6);font-size:11px;">Drill down by region, BA, month and project status</div></td>
+      <td style="text-align:right;"><a href="https://aihub4u.github.io/teamproject/bareport.html" style="background:#0057FF;color:#fff;text-decoration:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:600;display:inline-block;">Open dashboard &#8599;</a></td>
+    </tr></table>
+  </div>
+</td></tr>
+
+<tr><td style="text-align:center;padding-bottom:4px;"><div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Raw data attached as Excel &middot; ${T.total} rows &middot; Apr 2026 onwards</div></td></tr>
+</table>
+</td></tr>
+<tr><td style="background:#F9FAFB;padding:14px 30px;border-top:0.5px solid #F1F5F9;text-align:center;"><div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Auto-generated from the Karix BA Team Analytics Dashboard<br><a href="https://aihub4u.github.io/teamproject/bareport.html" style="color:#0057FF;text-decoration:none;">aihub4u.github.io/teamproject/bareport.html</a> &middot; Karix &mdash; a Tanla Platforms company</div></td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
 }
 
 /* INIT */
