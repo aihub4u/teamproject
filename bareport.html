@@ -232,6 +232,32 @@ tr:last-child td{border-bottom:none;}
 .loading-error{color:#FCA5A5;font-size:13px;text-align:center;max-width:320px;line-height:1.6;}
 .retry-btn{margin-top:8px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
 
+/* EDIT / CREATE PROJECT MODAL */
+.proj-form-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;padding:16px;}
+.proj-form-overlay.open{opacity:1;pointer-events:all;}
+.proj-form{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 48px rgba(7,17,42,0.22);transform:translateY(12px);transition:transform 0.25s;}
+.proj-form-overlay.open .proj-form{transform:translateY(0);}
+.proj-form-hdr{background:var(--navy);padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;}
+.proj-form-title{color:#fff;font-weight:600;font-size:15px;}
+.proj-form-close{background:rgba(255,255,255,0.1);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.proj-form-close:hover{background:rgba(255,255,255,0.2);}
+.proj-form-body{padding:20px;}
+.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pf-field{display:flex;flex-direction:column;gap:4px;}
+.pf-field.full{grid-column:1/-1;}
+.pf-label{font-size:10px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.05em;}
+.pf-label .req{color:#EF4444;}
+.pf-input,.pf-select,.pf-textarea{padding:8px 11px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);background:#fff;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+.pf-input:focus,.pf-select:focus,.pf-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light);}
+.pf-textarea{resize:vertical;min-height:64px;}
+.pf-input:disabled,.pf-select:disabled{background:var(--off-white);color:var(--text-muted);cursor:not-allowed;}
+.proj-form-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;position:sticky;bottom:0;background:#fff;border-radius:0 0 var(--radius-lg) var(--radius-lg);}
+.pf-status{font-size:12px;flex:1;}
+.pf-status.success{color:#059669;}
+.pf-status.error{color:#DC2626;}
+.btn-new-proj{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;transition:background 0.15s;}
+.btn-new-proj:hover{background:var(--blue-hover);}
+
 /* PASSWORD GATE */
 .gate-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
 .gate-box{background:#fff;border-radius:var(--radius-lg);padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 48px rgba(0,0,0,0.3);text-align:center;}
@@ -316,6 +342,7 @@ tr:last-child td{border-bottom:none;}
   </a>
   <div class="topbar-right">
     <span class="topbar-pill" id="userPill"><i class="ti ti-user"></i> </span>
+    <button class="btn-top outline" id="newProjBtn" onclick="openProjForm(null)" style="display:none"><i class="ti ti-plus"></i> New project</button>
     <button class="btn-top outline" id="sendReportBtn" onclick="openEmailModal()" style="display:none"><i class="ti ti-mail"></i> Send report</button>
     <button class="btn-top outline" onclick="downloadExcel()"><i class="ti ti-download"></i> Download raw data</button>
     <button class="btn-top outline" onclick="openChangePwd()" title="Change password"><i class="ti ti-key"></i></button>
@@ -443,6 +470,91 @@ tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- Edit / Create Project Modal -->
+<div class="proj-form-overlay" id="projFormOverlay" onclick="closeProjForm()">
+  <div class="proj-form" onclick="event.stopPropagation()">
+    <div class="proj-form-hdr">
+      <span class="proj-form-title" id="pfTitle">Edit Project</span>
+      <button class="proj-form-close" onclick="closeProjForm()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="proj-form-body">
+      <input type="hidden" id="pfOrigProject"/>
+      <input type="hidden" id="pfOrigBA"/>
+      <div class="pf-grid">
+        <div class="pf-field full">
+          <div class="pf-label">Project name <span class="req">*</span></div>
+          <input class="pf-input" id="pfProject" placeholder="Client / Project name"/>
+        </div>
+        <div class="pf-field full">
+          <div class="pf-label">Usecase / Description</div>
+          <input class="pf-input" id="pfUsecase" placeholder="Brief description of the use case"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Region <span class="req">*</span></div>
+          <select class="pf-select" id="pfRegion">
+            <option value="">Select region</option>
+            <option>North</option><option>South</option><option>West</option><option>UAE</option>
+          </select>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">BA <span class="req">*</span></div>
+          <select class="pf-select" id="pfBA">
+            <option value="">Select BA</option>
+            <option>Aniruddha</option><option>Ankit</option><option>Daimi Syed</option>
+            <option>Himanshu</option><option>Kiran</option><option>Megha</option>
+            <option>Raj</option><option>Somya</option>
+          </select>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Status <span class="req">*</span></div>
+          <select class="pf-select" id="pfStatus">
+            <option value="">Select status</option>
+            <option>Live</option><option>Hypercare</option><option>In Progress</option>
+            <option>Development</option><option>UAT</option><option>Yet to Start(Assigned)</option>
+            <option>Scoping</option><option>Pipeline</option><option>End of life</option>
+          </select>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Development type</div>
+          <select class="pf-select" id="pfDev">
+            <option value="">Select type</option>
+            <option>Twixor</option><option>Inhouse</option>
+          </select>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Start date</div>
+          <input class="pf-input" type="date" id="pfStart"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Due date / ETA</div>
+          <input class="pf-input" type="date" id="pfDue"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Progress %</div>
+          <input class="pf-input" id="pfProgress" placeholder="e.g. 80" type="number" min="0" max="100"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays saved</div>
+          <input class="pf-input" id="pfMandays" placeholder="e.g. 5" type="number" min="0"/>
+        </div>
+        <div class="pf-field full">
+          <div class="pf-label">Ongoing activities</div>
+          <textarea class="pf-textarea" id="pfOngoing" placeholder="What is currently being worked on..."></textarea>
+        </div>
+        <div class="pf-field full">
+          <div class="pf-label">Comments / remarks</div>
+          <textarea class="pf-textarea" id="pfComments" placeholder="Any blockers, dependencies or notes..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="proj-form-footer">
+      <span class="pf-status" id="pfStatus"></span>
+      <button class="btn-cancel" onclick="closeProjForm()">Cancel</button>
+      <button class="btn-send" id="pfSaveBtn" onclick="saveProjForm()"><i class="ti ti-device-floppy"></i> Save to sheet</button>
+    </div>
+  </div>
+</div>
+
 <!-- Project detail modal -->
 <div class="modal-overlay" id="projModalOverlay" onclick="closeProjModal()">
   <div class="modal" id="projModal" onclick="event.stopPropagation()">
@@ -455,6 +567,7 @@ tr:last-child td{border-bottom:none;}
     </div>
     <div class="modal-body" id="pmBody"></div>
     <div class="modal-footer">
+      <button class="btn-cancel" id="pmEditBtn" onclick="editFromModal()" style="display:none"><i class="ti ti-edit"></i> Edit</button>
       <button class="btn-modal-close" onclick="closeProjModal()">Close</button>
     </div>
   </div>
@@ -793,48 +906,7 @@ function renderActiveTags(){
 
 /* FILTERED TABLE */
 /* PROJECT DETAIL MODAL */
-function openProjModal(row){
-  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
-  document.getElementById('pmTitle').textContent=row[CI.proj]||'Project Detail';
-  document.getElementById('pmSub').textContent=(row[CI.ba]?'BA: '+row[CI.ba]+' \u00b7 ':'')+row[CI.reg];
-  const fields=[
-    {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
-    {label:'BA',value:row[CI.ba]||'\u2014'},
-    {label:'Status',value:row[CI.status]||'\u2014',pill:true},
-    {label:'Development',value:row[CI.dev]||'\u2014'},
-    {label:'Start Date',value:row[CI.start]||'\u2014'},
-    {label:'Due Date',value:row[CI.due]||'\u2014'},
-    {label:'Progress',value:pct},
-    {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
-    {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
-    {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
-    {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
-  ];
-  const body=document.getElementById('pmBody');body.innerHTML='';
-  const sec=document.createElement('div');sec.className='modal-section';
-  const st=document.createElement('div');st.className='modal-section-title';st.textContent='Project Details';sec.appendChild(st);
-  const grid=document.createElement('div');grid.className='modal-fields';
-  fields.forEach(f=>{
-    const div=document.createElement('div');div.className='modal-field'+(f.full?' full':'');
-    const lbl=document.createElement('div');lbl.className='modal-field-label';lbl.textContent=f.label;
-    const val=document.createElement('div');
-    if(f.pill&&f.value&&f.value!=='\u2014'){
-      val.className='modal-field-value';
-      const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
-    } else if(f.color){
-      val.className='modal-field-value';
-      const rb=document.createElement('span');rb.className='region-badge';
-      const dot=document.createElement('span');dot.className='rdot';dot.style.background=f.color;dot.innerHTML='&nbsp;';
-      rb.appendChild(dot);rb.appendChild(document.createTextNode(' '+f.value));val.appendChild(rb);
-    } else {
-      val.className='modal-field-value'+(f.full?' muted':'');val.textContent=f.value;
-    }
-    div.appendChild(lbl);div.appendChild(val);grid.appendChild(div);
-  });
-  sec.appendChild(grid);body.appendChild(sec);
-  document.getElementById('projModalOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
-}
+
 function closeProjModal(){
   document.getElementById('projModalOverlay').classList.remove('open');
   if(!document.getElementById('drawer').classList.contains('open'))
@@ -908,14 +980,14 @@ function renderRegionTable(data){
   REGIONS.forEach(r=>{
     const tr=document.createElement('tr');
     const td0=document.createElement('td');td0.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+RCOLORS[r]+'">&nbsp;</span>'+r+'</span>';tr.appendChild(td0);
-    [['all','Projects',data[r].total],['inprogress','In Progress',data[r].inprogress],['uat','UAT',data[r].uat],['golive','Go Live',data[r].golive],['yts','Yet to Start',data[r].yts],['scoping','Scoping',data[r].scoping],['twixor','Twixor',data[r].twixor],['inhouse','Inhouse',data[r].inhouse],['mandays','Mandays',data[r].mandays]].forEach(([f,l,v])=>tr.appendChild(drillCell(r,f,l,v)));
+    [['all','Projects',data[r].total],['inprogress','In Progress',data[r].inprogress],['uat','UAT',data[r].uat],['golive','Go Live',data[r].golive],['yts','Yet to Start',data[r].yts],['scoping','Scoping',data[r].scoping],['twixor','Twixor',data[r].twixor],['inhouse','Inhouse',data[r].inhouse],['mandays','Mandays',data[r].mandays]].forEach(([f,l,v])=>tr.appendChild(drillCellEx(r,f,l,v)));
     const _td1=document.createElement('td');_td1.className='num';_td1.style.color='#1D9E75';_td1.style.fontWeight='500';_td1.textContent=fmtINR(revenue(data[r].mandays));tr.appendChild(_td1);
     tbody.appendChild(tr);
   });
   const trT=document.createElement('tr');trT.className='total-row';
   const tdL=document.createElement('td');tdL.innerHTML='<strong>Total</strong>';trT.appendChild(tdL);
   const T=data['Total'];
-  [['all','Projects',T.total],['inprogress','In Progress',T.inprogress],['uat','UAT',T.uat],['golive','Go Live',T.golive],['yts','Yet to Start',T.yts],['scoping','Scoping',T.scoping],['twixor','Twixor',T.twixor],['inhouse','Inhouse',T.inhouse],['mandays','Mandays',T.mandays]].forEach(([f,l,v])=>trT.appendChild(drillCell('all',f,l,v)));
+  [['all','Projects',T.total],['inprogress','In Progress',T.inprogress],['uat','UAT',T.uat],['golive','Go Live',T.golive],['yts','Yet to Start',T.yts],['scoping','Scoping',T.scoping],['twixor','Twixor',T.twixor],['inhouse','Inhouse',T.inhouse],['mandays','Mandays',T.mandays]].forEach(([f,l,v])=>trT.appendChild(drillCellEx('all',f,l,v)));
   const _td2=document.createElement('td');_td2.className='num';_td2.style.color='#1D9E75';_td2.style.fontWeight='700';_td2.textContent=fmtINR(revenue(T.mandays));trT.appendChild(_td2);
   tbody.appendChild(trT);table.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(table);
 }
@@ -1960,6 +2032,8 @@ async function checkGate(){
     if(userPill) userPill.innerHTML='<i class="ti ti-user"></i> '+data.username+(data.role?' &middot; '+data.role:'');
     const srBtn=document.getElementById('sendReportBtn');
     if(srBtn) srBtn.style.display=data.username.toLowerCase()==='rajaryan'?'flex':'none';
+    const npBtn=document.getElementById('newProjBtn');
+    if(npBtn) npBtn.style.display='flex';
       loadData();
     } else {
       errEl.textContent=data.message||'Invalid username or password.';
@@ -1994,6 +2068,8 @@ function toggleGateEye(){
     if(userPill2) userPill2.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
     const srBtn2=document.getElementById('sendReportBtn');
     if(srBtn2) srBtn2.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
+    const npBtn2=document.getElementById('newProjBtn');
+    if(npBtn2) npBtn2.style.display='flex';
     startInactivityTimer();
     loadData();
   } else {
@@ -2497,6 +2573,205 @@ ${noteBlock}
 </table>
 </td></tr></table>
 </body></html>`;
+}
+
+/* ═══ MANDAYS DRILL-DOWN FIX ═══ */
+// Override drillCell to handle mandays as clickable
+function drillCellEx(region,field,lbl,val){
+  const td=document.createElement('td');td.className='num';
+  if(val===0){td.textContent=val;return td;}
+  const sp=document.createElement('span');sp.className='drill-num';sp.textContent=val;
+  if(field==='mandays'){
+    sp.onclick=()=>openDrawer(region,'all',lbl+' \u2014 Mandays saved ('+val+' days \u00b7 '+fmtINR(revenue(val))+')',currentMonthKey);
+  } else {
+    sp.onclick=()=>openDrawer(region,field,lbl+(region!=='all'?' \u2014 '+region:''),currentMonthKey);
+  }
+  td.appendChild(sp);return td;
+}
+
+/* ═══ EDIT / CREATE PROJECT FORM ═══ */
+let _editingRow=null; // holds RAW row being edited
+
+function openProjModal(row){
+  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
+  document.getElementById('pmTitle').textContent=row[CI.proj]||'Project Detail';
+  document.getElementById('pmSub').textContent=(row[CI.ba]?'BA: '+row[CI.ba]+' \u00b7 ':'')+row[CI.reg];
+
+  // Show Edit button only for logged-in user's own projects
+  const sess=getSession();
+  const editBtn=document.getElementById('pmEditBtn');
+  if(editBtn){
+    const myBA=sess?normBA(sess.username):'';
+    const projBA=normBA(row[CI.ba]);
+    editBtn.style.display=(myBA&&myBA===projBA)||sess?.role==='Admin'?'inline-flex':'none';
+    editBtn.onclick=()=>{closeProjModal();openProjForm(row);};
+  }
+
+  const fields=[
+    {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
+    {label:'BA',value:row[CI.ba]||'\u2014'},
+    {label:'Status',value:row[CI.status]||'\u2014',pill:true},
+    {label:'Development',value:row[CI.dev]||'\u2014'},
+    {label:'Start Date',value:row[CI.start]||'\u2014'},
+    {label:'Due Date',value:row[CI.due]||'\u2014'},
+    {label:'Progress',value:pct},
+    {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
+    {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
+    {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
+    {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
+  ];
+  const body=document.getElementById('pmBody');body.innerHTML='';
+  const sec=document.createElement('div');sec.className='modal-section';
+  const st=document.createElement('div');st.className='modal-section-title';st.textContent='Project Details';sec.appendChild(st);
+  const grid=document.createElement('div');grid.className='modal-fields';
+  fields.forEach(f=>{
+    const div=document.createElement('div');div.className='modal-field'+(f.full?' full':'');
+    const lbl=document.createElement('div');lbl.className='modal-field-label';lbl.textContent=f.label;
+    const val=document.createElement('div');
+    if(f.pill&&f.value&&f.value!=='\u2014'){
+      val.className='modal-field-value';
+      const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
+    } else if(f.color){
+      val.className='modal-field-value';
+      const rb=document.createElement('span');rb.className='region-badge';
+      const dot=document.createElement('span');dot.className='rdot';dot.style.background=f.color;dot.innerHTML='&nbsp;';
+      rb.appendChild(dot);rb.appendChild(document.createTextNode(' '+f.value));val.appendChild(rb);
+    } else {
+      val.className='modal-field-value'+(f.full?' muted':'');val.textContent=f.value;
+    }
+    div.appendChild(lbl);div.appendChild(val);grid.appendChild(div);
+  });
+  sec.appendChild(grid);body.appendChild(sec);
+  document.getElementById('projModalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function openProjForm(row){
+  _editingRow=row;
+  const isNew=!row;
+  document.getElementById('pfTitle').textContent=isNew?'New Project':'Edit Project';
+  document.getElementById('pfStatus').textContent='';
+  document.getElementById('pfStatus').className='pf-status';
+  document.getElementById('pfSaveBtn').disabled=false;
+  document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+
+  // Pre-fill form
+  const sess=getSession();
+  if(isNew){
+    document.getElementById('pfProject').value='';
+    document.getElementById('pfUsecase').value='';
+    document.getElementById('pfRegion').value='';
+    document.getElementById('pfBA').value=sess?normBA(sess.username):'';
+    document.getElementById('pfStatus').value='';
+    document.getElementById('pfDev').value='';
+    document.getElementById('pfStart').value=new Date().toISOString().slice(0,10);
+    document.getElementById('pfDue').value='';
+    document.getElementById('pfProgress').value='';
+    document.getElementById('pfMandays').value='';
+    document.getElementById('pfOngoing').value='';
+    document.getElementById('pfComments').value='';
+    document.getElementById('pfOrigProject').value='';
+    document.getElementById('pfOrigBA').value='';
+  } else {
+    document.getElementById('pfProject').value=row[CI.proj]||'';
+    document.getElementById('pfUsecase').value=row[CI.use]||'';
+    document.getElementById('pfRegion').value=row[CI.reg]||'';
+    document.getElementById('pfBA').value=normBA(row[CI.ba])||'';
+    document.getElementById('pfStatus').value=row[CI.status]||'';
+    document.getElementById('pfDev').value=row[CI.dev]||'';
+    // Convert dates to YYYY-MM-DD for input[type=date]
+    const toInputDate=v=>{if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return'';}};
+    document.getElementById('pfStart').value=toInputDate(row[CI.start]);
+    document.getElementById('pfDue').value=toInputDate(row[CI.due]);
+    const progVal=row[CI.prog]?String(row[CI.prog]).replace('%','').trim():'';
+    document.getElementById('pfProgress').value=progVal>1?progVal:progVal?Math.round(progVal*100):'';
+    document.getElementById('pfMandays').value=row[CI.mandays]||'';
+    document.getElementById('pfOngoing').value=row[CI.ongoing]||'';
+    document.getElementById('pfComments').value=row[CI.comments]||'';
+    document.getElementById('pfOrigProject').value=row[CI.proj]||'';
+    document.getElementById('pfOrigBA').value=row[CI.ba]||'';
+  }
+
+  document.getElementById('projFormOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('pfProject').focus(),100);
+}
+
+function closeProjForm(){
+  document.getElementById('projFormOverlay').classList.remove('open');
+  if(!document.getElementById('projModalOverlay').classList.contains('open')&&
+     !document.getElementById('drawer').classList.contains('open'))
+    document.body.style.overflow='';
+}
+
+async function saveProjForm(){
+  const project=document.getElementById('pfProject').value.trim();
+  const region=document.getElementById('pfRegion').value;
+  const ba=document.getElementById('pfBA').value;
+  const status=document.getElementById('pfStatus').value;
+  const statusEl=document.getElementById('pfStatus');
+  const btn=document.getElementById('pfSaveBtn');
+
+  if(!project){statusEl.className='pf-status error';statusEl.textContent='Project name is required.';return;}
+  if(!region){statusEl.className='pf-status error';statusEl.textContent='Region is required.';return;}
+  if(!ba){statusEl.className='pf-status error';statusEl.textContent='BA is required.';return;}
+  if(!status){statusEl.className='pf-status error';statusEl.textContent='Status is required.';return;}
+
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
+  statusEl.className='pf-status';statusEl.textContent='';
+
+  const prog=document.getElementById('pfProgress').value.trim();
+  const payload={
+    action:'saveProject',
+    token:sessionToken,
+    isNew:!_editingRow,
+    origProject:document.getElementById('pfOrigProject').value,
+    origBA:document.getElementById('pfOrigBA').value,
+    data:{
+      project,region,
+      usecase:document.getElementById('pfUsecase').value.trim(),
+      ba,
+      startDate:document.getElementById('pfStart').value,
+      dueDate:document.getElementById('pfDue').value,
+      status,
+      progress:prog?prog+'%':'',
+      development:document.getElementById('pfDev').value,
+      mandays:document.getElementById('pfMandays').value.trim(),
+      ongoing:document.getElementById('pfOngoing').value.trim(),
+      comments:document.getElementById('pfComments').value.trim(),
+    }
+  };
+
+  try{
+    const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const json=await res.json();
+    if(json.status==='ok'){
+      statusEl.className='pf-status success';
+      statusEl.innerHTML='<i class="ti ti-circle-check"></i> '+(payload.isNew?'Project created!':'Project updated!')+' Refreshing data...';
+      btn.innerHTML='<i class="ti ti-check"></i> Saved!';
+      // Update local RAW data optimistically
+      if(payload.isNew){
+        RAW.rows.push([project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments]);
+      } else {
+        const idx=RAW.rows.findIndex(r=>r[CI.proj]===payload.origProject&&r[CI.ba]===payload.origBA);
+        if(idx>=0) RAW.rows[idx]=[project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments];
+      }
+      setTimeout(()=>{
+        closeProjForm();
+        // Reload from sheet for accuracy
+        loadData();
+      },1500);
+    } else if(json.status==='unauthorized'){
+      clearSession();showGate('Session expired. Please sign in again.');
+    } else {
+      statusEl.className='pf-status error';statusEl.textContent=json.message||'Save failed.';
+      btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+    }
+  }catch(e){
+    statusEl.className='pf-status error';statusEl.textContent='Connection error: '+e.message;
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+  }
 }
 
 /* INIT */
