@@ -2803,33 +2803,24 @@ async function saveProjForm(){
   const region=document.getElementById('pfRegion').value;
   const ba=document.getElementById('pfBA').value;
   const status=document.getElementById('pfStatus').value;
-  const statusEl=document.getElementById('pfMsg');
+  const msgEl=document.getElementById('pfMsg');
   const btn=document.getElementById('pfSaveBtn');
 
-  if(!project){statusEl.className='pf-status error';statusEl.textContent='Project name is required.';return;}
-  if(!region){statusEl.className='pf-status error';statusEl.textContent='Region is required.';return;}
-  if(!ba){statusEl.className='pf-status error';statusEl.textContent='BA is required.';return;}
-  if(!status){statusEl.className='pf-status error';statusEl.textContent='Status is required.';return;}
+  if(!project){msgEl.className='pf-status error';msgEl.textContent='Project name is required.';return;}
+  if(!region){msgEl.className='pf-status error';msgEl.textContent='Region is required.';return;}
+  if(!ba){msgEl.className='pf-status error';msgEl.textContent='BA is required.';return;}
+  if(!status){msgEl.className='pf-status error';msgEl.textContent='Status is required.';return;}
 
-  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
-  statusEl.className='pf-status';statusEl.textContent='';
-
-  // Upload any pending files first
-  let newFileUrls=null;
-  const filesToUpload=_pendingFiles.filter(Boolean);
-  if(filesToUpload.length>0){
-    btn.innerHTML='<i class="ti ti-loader-2"></i> Uploading files...';
-    newFileUrls=await uploadPendingFiles(project, region, ba);
-  }
-
-  // Merge with existing attachment URLs
-  const existingUrls=_editingRow?(_editingRow[CI.screenshot]||''):'';
-  let allUrls=existingUrls;
-  if(newFileUrls){
-    allUrls=existingUrls?existingUrls+','+newFileUrls:newFileUrls;
-  }
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
+  msgEl.className='pf-status';msgEl.textContent='';
 
   const prog=document.getElementById('pfProgress').value.trim();
+  const SCRIPT_URL2=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+
+  // Keep existing attachment URLs
+  const existingUrls=_editingRow?(_editingRow[CI.screenshot]||''):'';
+
   const payload={
     action:'saveProject',
     token:sessionToken,
@@ -2848,44 +2839,60 @@ async function saveProjForm(){
       mandays:document.getElementById('pfMandays').value.trim(),
       ongoing:document.getElementById('pfOngoing').value.trim(),
       comments:document.getElementById('pfComments').value.trim(),
-      attachments:allUrls,
     }
   };
 
   try{
-    const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    // Step 1: Save project row first
+    const res=await fetch(SCRIPT_URL2,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
     const json=await res.json();
-    if(json.status==='ok'){
-      statusEl.className='pf-status success';
-      statusEl.innerHTML='<i class="ti ti-circle-check"></i> '+(payload.isNew?'Project created!':'Project updated!')+' Refreshing data...';
-      btn.innerHTML='<i class="ti ti-check"></i> Saved!';
-      // Upload any pending files
-      if(_pendingFiles.length>0){
-        statusEl.textContent='Uploading files to Drive...';
-        await uploadPendingFiles(project,region,ba);
-        statusEl.innerHTML='<i class="ti ti-circle-check"></i> Saved &amp; files uploaded!';
-      }
-      // Update local RAW data optimistically
-      if(payload.isNew){
-        RAW.rows.push([project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments,payload.data.attachments||'']);
-      } else {
-        const idx=RAW.rows.findIndex(r=>r[CI.proj]===payload.origProject&&r[CI.ba]===payload.origBA);
-        if(idx>=0) RAW.rows[idx]=[project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments,payload.data.attachments||''];
-      }
-      setTimeout(()=>{
-        closeProjForm();
-        // Reload from sheet for accuracy
-        loadData();
-      },1500);
-    } else if(json.status==='unauthorized'){
-      clearSession();showGate('Session expired. Please sign in again.');
-    } else {
-      statusEl.className='pf-status error';statusEl.textContent=json.message||'Save failed.';
+
+    if(json.status==='unauthorized'){clearSession();showGate('Session expired. Please sign in again.');return;}
+    if(json.status!=='ok'){
+      msgEl.className='pf-status error';msgEl.textContent=json.message||'Save failed.';
       btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+      return;
     }
+
+    // Step 2: Upload files if any (AFTER row exists in sheet)
+    const filesToUpload=_pendingFiles.slice();
+    let newUrls=[];
+    if(filesToUpload.length>0){
+      btn.innerHTML='<i class="ti ti-loader-2"></i> Uploading files...';
+      msgEl.textContent='Uploading '+filesToUpload.length+' file(s) to Drive...';
+      const uploadResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2);
+      uploadResults.forEach(function(r){
+        if(r.status==='ok'&&r.fileUrl) newUrls.push(r.fileUrl);
+        else if(r.error) console.warn('Upload error:',r.error);
+      });
+    }
+
+    // Step 3: Show success
+    const totalFiles=(existingUrls?existingUrls.split('\n').filter(Boolean).length:0)+newUrls.length;
+    msgEl.className='pf-status success';
+    msgEl.innerHTML='<i class="ti ti-circle-check"></i> '
+      +(payload.isNew?'Project created':'Project updated')
+      +(newUrls.length?' &amp; '+newUrls.length+' file(s) uploaded':'')+'! Refreshing...';
+    btn.innerHTML='<i class="ti ti-check"></i> Saved!';
+
+    // Step 4: Update local RAW optimistically
+    const allUrlStr=existingUrls?(existingUrls+(newUrls.length?'\n'+newUrls.join('\n'):'')):newUrls.join('\n');
+    const newRowData=[project,region,payload.data.usecase,ba,
+      payload.data.startDate,payload.data.dueDate,status,payload.data.progress,
+      payload.data.development,payload.data.mandays,payload.data.ongoing,
+      payload.data.comments,allUrlStr];
+
+    if(payload.isNew){
+      RAW.rows.push(newRowData);
+    } else {
+      const rowIdx=RAW.rows.findIndex(function(r){return r[CI.proj]===payload.origProject&&r[CI.ba]===payload.origBA;});
+      if(rowIdx>=0) RAW.rows[rowIdx]=newRowData;
+    }
+
+    setTimeout(function(){closeProjForm();loadData();},1500);
+
   }catch(e){
-    statusEl.className='pf-status error';statusEl.textContent='Connection error: '+e.message;
+    msgEl.className='pf-status error';msgEl.textContent='Connection error: '+e.message;
     btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
   }
 }
@@ -2936,31 +2943,42 @@ function handleFileSelect(evtOrInput){
   addPendingFiles(Array.from(files));
 }
 
-async function uploadPendingFiles(projectName, region, ba){
+async function uploadPendingFiles(projectName, region, ba, scriptUrl){
   if(!_pendingFiles.length) return [];
-  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  const url=scriptUrl||localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
   const results=[];
-  for(const file of _pendingFiles){
-    if(file.size>10*1024*1024){results.push({error:'File too large: '+file.name});continue;}
-    const b64=await new Promise((res,rej)=>{
-      const r=new FileReader();
-      r.onload=()=>res(r.result.split(',')[1]);
-      r.onerror=rej;
-      r.readAsDataURL(file);
-    });
-    const payload={action:'uploadFile',token:sessionToken,
-      fileName:file.name,fileData:b64,mimeType:file.type||'application/octet-stream',
-      project:projectName,region:region,ba:ba,
-      origProject:document.getElementById('pfOrigProject').value,
-      origBA:document.getElementById('pfOrigBA').value
-    };
+  const filesToProcess=_pendingFiles.slice(); // copy before clearing
+  _pendingFiles=[];
+  renderPendingFiles();
+
+  for(const file of filesToProcess){
+    if(file.size>20*1024*1024){results.push({error:'File too large (max 20MB): '+file.name});continue;}
     try{
+      const b64=await new Promise(function(res,rej){
+        const reader=new FileReader();
+        reader.onload=function(){res(reader.result.split(',')[1]);};
+        reader.onerror=rej;
+        reader.readAsDataURL(file);
+      });
+      const payload={
+        action:'uploadFile',
+        token:sessionToken,
+        fileName:file.name,
+        fileData:b64,
+        mimeType:file.type||'application/octet-stream',
+        project:projectName,
+        region:region,
+        ba:ba,
+        origProject:document.getElementById('pfOrigProject').value||projectName,
+        origBA:document.getElementById('pfOrigBA').value||ba
+      };
       const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
       const json=await res.json();
       results.push(json);
-    }catch(e){results.push({error:e.message});}
+    }catch(e){
+      results.push({status:'error',error:e.message,fileName:file.name});
+    }
   }
-  _pendingFiles=[];
   return results;
 }
 
