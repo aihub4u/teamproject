@@ -564,6 +564,7 @@ tr:last-child td{border-bottom:none;}
         </div>
         <div class="pf-field full">
           <div class="pf-label">Manday Screenshot <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0;">(optional — PDF, image or Excel)</span></div>
+          <div id="pfExistingFiles" style="margin-bottom:6px;"></div>
           <div class="file-drop-zone" id="pfDropZone" onclick="document.getElementById('pfFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleFileDrop(event)">
             <input type="file" id="pfFileInput" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFileSelect(event)"/>
             <div class="file-drop-text"><i class="ti ti-cloud-upload" style="font-size:22px;display:block;margin-bottom:6px;color:var(--blue)"></i><strong>Click to upload</strong> or drag and drop<br>PDF, Excel, PNG, JPG — up to 20MB each</div>
@@ -2712,18 +2713,21 @@ function openProjModal(row){
 function openProjForm(row){
   _editingRow=row;
   const isNew=!row;
+  const sess=getSession();
+
+  // Reset form header and buttons
   document.getElementById('pfTitle').textContent=isNew?'New Project':'Edit Project';
   document.getElementById('pfMsg').textContent='';
   document.getElementById('pfMsg').className='pf-status';
   document.getElementById('pfSaveBtn').disabled=false;
   document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
 
+  // Reset file state
   _pendingFiles=[];
-  document.getElementById('pfFileList').innerHTML='';
-  document.getElementById('pfExistingAttach').innerHTML='';
+  const fileList=document.getElementById('pfFileList');
+  if(fileList) fileList.innerHTML='';
 
-  // Pre-fill form
-  const sess=getSession();
+  // Fill form fields
   if(isNew){
     document.getElementById('pfProject').value='';
     document.getElementById('pfUsecase').value='';
@@ -2746,67 +2750,45 @@ function openProjForm(row){
     document.getElementById('pfBA').value=normBA(row[CI.ba])||'';
     document.getElementById('pfStatus').value=row[CI.status]||'';
     document.getElementById('pfDev').value=row[CI.dev]||'';
-    // Convert dates to YYYY-MM-DD for input[type=date]
-    const toInputDate=v=>{if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return'';}};
-    document.getElementById('pfStart').value=toInputDate(row[CI.start]);
-    document.getElementById('pfDue').value=toInputDate(row[CI.due]);
-    const progVal=row[CI.prog]?String(row[CI.prog]).replace('%','').trim():'';
-    document.getElementById('pfProgress').value=progVal>1?progVal:progVal?Math.round(progVal*100):'';
+    const toDate=function(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return'';}};
+    document.getElementById('pfStart').value=toDate(row[CI.start]);
+    document.getElementById('pfDue').value=toDate(row[CI.due]);
+    const progRaw=row[CI.prog]?String(row[CI.prog]).replace('%','').trim():'';
+    const progNum=parseFloat(progRaw);
+    document.getElementById('pfProgress').value=isNaN(progNum)?'':(progNum<=1?Math.round(progNum*100):Math.round(progNum));
     document.getElementById('pfMandays').value=row[CI.mandays]||'';
     document.getElementById('pfOngoing').value=row[CI.ongoing]||'';
     document.getElementById('pfComments').value=row[CI.comments]||'';
     document.getElementById('pfOrigProject').value=row[CI.proj]||'';
     document.getElementById('pfOrigBA').value=row[CI.ba]||'';
+
     // Show existing attachments
-    const existingFiles=row[CI.screenshot]||'';
-    const existingArea2=document.getElementById('pfExistingFiles');
-    if(existingArea2){
-      existingArea2.innerHTML='';
-      if(existingFiles){
-        const urls=existingFiles.split('\n').filter(Boolean);
-        urls.forEach(function(u,i){
+    const existingFilesDiv=document.getElementById('pfExistingFiles');
+    if(existingFilesDiv){
+      existingFilesDiv.innerHTML='';
+      const screenshots=row[CI.screenshot]||'';
+      if(screenshots){
+        screenshots.split('\n').filter(Boolean).forEach(function(u,i){
           const d=document.createElement('div');
           d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
-          d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB"></i>'
-            +'<a href="'+u+'" target="_blank" style="flex:1;color:#2563EB;text-decoration:none;">Attachment '+(i+1)+'</a>'
-            +'<a href="'+u+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;">View ↗</a>';
-          existingArea2.appendChild(d);
+          d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB;flex-shrink:0"></i>'
+            +'<span style="flex:1;color:#2563EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Attachment '+(i+1)+'</span>'
+            +'<a href="'+u+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
+          existingFilesDiv.appendChild(d);
         });
       }
     }
   }
 
-  // Show upload area (only for edit, not new — need row to exist first)
-  _pendingFiles=[];
-  const fileList=document.getElementById('pfFileList');
-  if(fileList) fileList.innerHTML='';
-  const dropZone=document.getElementById('pfDropZone');if(dropZone)dropZone.parentElement.style.display='block';
-
-  // Show existing screenshots
-  if(existingArea){
-    existingArea.innerHTML='';
-    if(!isNew&&row[CI.screenshot]){
-      const urls=row[CI.screenshot].split('\n').filter(Boolean);
-      urls.forEach((url,i)=>{
-        const d=document.createElement('div');
-        d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
-        d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB"></i>'
-          +'<a href="'+url+'" target="_blank" style="flex:1;color:#2563EB;text-decoration:none;">Attachment '+(i+1)+'</a>'
-          +'<a href="'+url+'" target="_blank" style="color:#2563EB;font-size:11px;">View ↗</a>';
-        existingArea.appendChild(d);
-      });
-    }
-  }
-
+  // Open the form
   document.getElementById('projFormOverlay').classList.add('open');
   document.body.style.overflow='hidden';
-  // Allow closing by clicking backdrop — but only attach AFTER the current event cycle
-  // to prevent the triggering click from immediately closing the form
+  // Attach backdrop click-to-close AFTER current event cycle settles
   setTimeout(function(){
     var ov=document.getElementById('projFormOverlay');
     ov.onclick=function(e){if(e.target===ov)closeProjForm();};
   },300);
-  setTimeout(()=>document.getElementById('pfProject').focus(),100);
+  setTimeout(function(){document.getElementById('pfProject').focus();},100);
 }
 
 function closeProjForm(){
