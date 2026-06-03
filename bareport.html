@@ -576,7 +576,7 @@ tr:last-child td{border-bottom:none;}
     <div class="proj-form-footer">
       <span class="pf-status" id="pfStatus"></span>
       <button class="btn-cancel" onclick="closeProjForm()">Cancel</button>
-      <button class="btn-send" id="pfSaveBtn" onclick="saveProjForm()"><i class="ti ti-device-floppy"></i> Save </button>
+      <button class="btn-send" id="pfSaveBtn" onclick="saveProjForm()"><i class="ti ti-device-floppy"></i> Save to sheet</button>
     </div>
   </div>
 </div>
@@ -2878,123 +2878,7 @@ function handleFileDrop(e){
   addPendingFiles(files);
 }
 
-function handleFileSelect(e){
-  const files=Array.from(e.target.files);
-  addPendingFiles(files);
-  e.target.value=''; // reset so same file can be re-selected
-}
 
-function addPendingFiles(files){
-  const MAX=20*1024*1024; // 20MB
-  files.forEach(f=>{
-    if(f.size>MAX){
-      alert(f.name+' is too large (max 20MB).');return;
-    }
-    _pendingFiles.push(f);
-    renderPendingFile(f, _pendingFiles.length-1);
-  });
-}
-
-function renderPendingFile(file, idx){
-  const list=document.getElementById('pfFileList');
-  const item=document.createElement('div');item.className='attach-item';item.id='pf-file-'+idx;
-  const ext=file.name.split('.').pop().toLowerCase();
-  const icon=ext==='pdf'?'ti-file-type-pdf':ext.match(/xls/)?'ti-file-type-xls':ext.match(/png|jpg|jpeg|gif|webp/)?'ti-photo':'ti-file';
-  item.innerHTML=`<i class="ti ${icon} attach-icon"></i><span class="attach-name" title="${file.name}">${file.name}</span><span style="font-size:10px;color:var(--text-muted);white-space:nowrap">${(file.size/1024).toFixed(0)}KB</span><button class="attach-del" onclick="removePendingFile(${idx})" title="Remove"><i class="ti ti-x"></i></button>`;
-  list.appendChild(item);
-}
-
-function removePendingFile(idx){
-  _pendingFiles[idx]=null;
-  const el=document.getElementById('pf-file-'+idx);
-  if(el) el.remove();
-}
-
-function renderExistingAttachments(attachStr){
-  const container=document.getElementById('pfExistingAttach');
-  if(!container) return;
-  container.innerHTML='';
-  if(!attachStr||!attachStr.trim()) return;
-  const links=attachStr.split(',').map(s=>s.trim()).filter(Boolean);
-  if(links.length===0) return;
-  const lbl=document.createElement('div');
-  lbl.style.cssText='font-size:10px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;';
-  lbl.textContent='Existing attachments';
-  container.appendChild(lbl);
-  links.forEach((link,i)=>{
-    const name=decodeURIComponent(link.split('/').pop().split('?')[0])||'Attachment '+(i+1);
-    const item=document.createElement('div');item.className='attach-item';
-    item.innerHTML=`<i class="ti ti-paperclip attach-icon"></i><span class="attach-name" title="${name}">${name}</span><a href="${link}" target="_blank" class="attach-link"><i class="ti ti-external-link"></i> View</a>`;
-    container.appendChild(item);
-  });
-}
-
-function showAttachmentsInModal(attachStr){
-  const section=document.getElementById('pmAttachSection');
-  const list=document.getElementById('pmAttachList');
-  if(!section||!list) return;
-  if(!attachStr||!attachStr.trim()){section.style.display='none';return;}
-  const links=attachStr.split(',').map(s=>s.trim()).filter(Boolean);
-  if(links.length===0){section.style.display='none';return;}
-  section.style.display='block';
-  list.innerHTML='';
-  links.forEach((link,i)=>{
-    const name=decodeURIComponent(link.split('/').pop().split('?')[0])||'Attachment '+(i+1);
-    const ext=name.split('.').pop().toLowerCase();
-    const icon=ext==='pdf'?'ti-file-type-pdf':ext.match(/xls/)?'ti-file-type-xls':ext.match(/png|jpg|jpeg|gif|webp/)?'ti-photo':'ti-paperclip';
-    const item=document.createElement('div');item.className='attach-item';
-    item.innerHTML=`<i class="ti ${icon} attach-icon"></i><span class="attach-name" title="${name}">${name}</span><a href="${link}" target="_blank" class="attach-link"><i class="ti ti-external-link"></i> View</a>`;
-    list.appendChild(item);
-  });
-}
-
-async function uploadPendingFiles(projectName, region, ba){
-  // Upload each pending file to Drive via Apps Script
-  // Returns comma-separated list of Drive URLs
-  const toUpload=_pendingFiles.filter(Boolean);
-  if(toUpload.length===0) return null;
-
-  const url=localStorage.getItem('karix_script_url')||SCRIPT_URL;
-  const urls=[];
-
-  for(let i=0;i<toUpload.length;i++){
-    const file=toUpload[i];
-    const statusEl=document.getElementById('pfStatus');
-    statusEl.className='pf-status';
-    statusEl.textContent=`Uploading ${i+1}/${toUpload.length}: ${file.name}...`;
-
-    const base64=await new Promise((res,rej)=>{
-      const reader=new FileReader();
-      reader.onload=e=>res(e.target.result.split(',')[1]);
-      reader.onerror=rej;
-      reader.readAsDataURL(file);
-    });
-
-    try{
-      const resp=await fetch(url,{
-        method:'POST',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({
-          action:'uploadFile',
-          token:sessionToken,
-          fileName:file.name,
-          mimeType:file.type||'application/octet-stream',
-          data:base64,
-          projectName,region,ba
-        })
-      });
-      const json=await resp.json();
-      if(json.status==='ok'&&json.fileUrl){
-        urls.push(json.fileUrl);
-      } else {
-        console.warn('Upload failed for '+file.name+':', json.message);
-      }
-    }catch(e){
-      console.warn('Upload error for '+file.name+':', e.message);
-    }
-  }
-  return urls.length>0?urls.join(','):null;
-}
 
 /* ═══ FILE UPLOAD ═══ */
 let _pendingFiles=[];
