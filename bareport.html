@@ -2862,8 +2862,12 @@ async function saveProjForm(){
       msgEl.textContent='Uploading '+filesToUpload.length+' file(s) to Drive...';
       const uploadResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2);
       uploadResults.forEach(function(r){
-        if(r.status==='ok'&&r.fileUrl) newUrls.push(r.fileUrl);
-        else if(r.error) console.warn('Upload error:',r.error);
+        if(r.status==='ok'&&r.fileUrl){
+          newUrls.push(r.fileUrl);
+          console.log('Upload OK:', r.fileName, '| Sheet:', r.sheetStatus, '| URL:', r.fileUrl);
+        } else {
+          console.error('Upload failed:', r.error||r.message, '| File:', r.fileName);
+        }
       });
     }
 
