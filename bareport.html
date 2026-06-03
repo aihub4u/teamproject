@@ -2672,15 +2672,9 @@ function openProjModal(row){
     if(f.pill&&f.value&&f.value!=='\u2014'){
       val.className='modal-field-value';
       const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
-    } else if(f.isFiles&&f.value&&f.value!=='\u2014'){
+    } else if(f.isFiles){
       val.className='modal-field-value';
-      const urls=f.value.split('\n').filter(Boolean);
-      urls.forEach((u,i)=>{
-        const a=document.createElement('a');
-        a.href=u;a.target='_blank';a.textContent='View attachment '+(i+1)+' \u2197';
-        a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
-        val.appendChild(a);
-      });
+      val.id='pmScreenshots'; // populated by IIFE after modal opens
     } else if(f.color){
       val.className='modal-field-value';
       const rb=document.createElement('span');rb.className='region-badge';
@@ -2694,8 +2688,25 @@ function openProjModal(row){
   sec.appendChild(grid);body.appendChild(sec);
   document.getElementById('projModalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
-  // Show attachments
-  showAttachmentsInModal(row[CI.attach]||'');
+  // Show attachments in modal
+  (function(){
+    const screenshots=row[CI.screenshot]||'';
+    const existingDiv=document.getElementById('pmScreenshots');
+    if(!existingDiv) return;
+    existingDiv.innerHTML='';
+    if(screenshots){
+      const urls=screenshots.split('\n').filter(Boolean);
+      urls.forEach(function(u,i){
+        const a=document.createElement('a');
+        a.href=u;a.target='_blank';
+        a.textContent='View attachment '+(i+1)+' \u2197';
+        a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
+        existingDiv.appendChild(a);
+      });
+    } else {
+      existingDiv.textContent='\u2014';
+    }
+  })();
 }
 
 function openProjForm(row){
@@ -2747,7 +2758,22 @@ function openProjForm(row){
     document.getElementById('pfOrigProject').value=row[CI.proj]||'';
     document.getElementById('pfOrigBA').value=row[CI.ba]||'';
     // Show existing attachments
-    renderExistingAttachments(row[CI.attach]||'');
+    const existingFiles=row[CI.screenshot]||'';
+    const existingArea2=document.getElementById('pfExistingFiles');
+    if(existingArea2){
+      existingArea2.innerHTML='';
+      if(existingFiles){
+        const urls=existingFiles.split('\n').filter(Boolean);
+        urls.forEach(function(u,i){
+          const d=document.createElement('div');
+          d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
+          d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB"></i>'
+            +'<a href="'+u+'" target="_blank" style="flex:1;color:#2563EB;text-decoration:none;">Attachment '+(i+1)+'</a>'
+            +'<a href="'+u+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;">View ↗</a>';
+          existingArea2.appendChild(d);
+        });
+      }
+    }
   }
 
   // Show upload area (only for edit, not new — need row to exist first)
@@ -2817,7 +2843,7 @@ async function saveProjForm(){
   }
 
   // Merge with existing attachment URLs
-  const existingUrls=_editingRow?(_editingRow[CI.attach]||''):'';
+  const existingUrls=_editingRow?(_editingRow[CI.screenshot]||''):'';
   let allUrls=existingUrls;
   if(newFileUrls){
     allUrls=existingUrls?existingUrls+','+newFileUrls:newFileUrls;
@@ -2897,6 +2923,23 @@ function handleFileDrop(e){
 
 
 /* ═══ FILE UPLOAD ═══ */
+function toInputDate(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}}
+
+function addPendingFiles(files){
+  if(!files||!files.length) return;
+  _pendingFiles=_pendingFiles.concat(Array.from(files));
+  const list=document.getElementById('pfFileList');
+  if(!list) return;
+  list.innerHTML='';
+  _pendingFiles.forEach(function(f,i){
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;';
+    row.innerHTML='<i class="ti ti-file" style="color:var(--blue)"></i><span style="flex:1;color:var(--text)">'+f.name+'</span>'
+      +'<span style="color:var(--text-muted)">'+(f.size/1024).toFixed(0)+'KB</span>'
+      +'<button onclick="javascript:_pendingFiles.splice('+i+',1);this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;">&times;</button>';
+    list.appendChild(row);
+  });
+}
 
 function handleFileSelect(input){
   const list=document.getElementById('pfFileList');
