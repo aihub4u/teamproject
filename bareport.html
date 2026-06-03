@@ -488,7 +488,7 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <!-- Edit / Create Project Modal -->
-<div class="proj-form-overlay" id="projFormOverlay" onclick="closeProjForm()">
+<div class="proj-form-overlay" id="projFormOverlay">
   <div class="proj-form" onclick="event.stopPropagation()">
     <div class="proj-form-hdr">
       <span class="proj-form-title" id="pfTitle">Edit Project</span>
@@ -2776,6 +2776,12 @@ function openProjForm(row){
 
   document.getElementById('projFormOverlay').classList.add('open');
   document.body.style.overflow='hidden';
+  // Allow closing by clicking backdrop — but only attach AFTER the current event cycle
+  // to prevent the triggering click from immediately closing the form
+  setTimeout(function(){
+    var ov=document.getElementById('projFormOverlay');
+    ov.onclick=function(e){if(e.target===ov)closeProjForm();};
+  },300);
   setTimeout(()=>document.getElementById('pfProject').focus(),100);
 }
 
