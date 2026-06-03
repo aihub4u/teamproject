@@ -574,7 +574,7 @@ tr:last-child td{border-bottom:none;}
       </div>
     </div>
     <div class="proj-form-footer">
-      <span class="pf-status" id="pfStatus"></span>
+      <span class="pf-status" id="pfMsg"></span>
       <button class="btn-cancel" onclick="closeProjForm()">Cancel</button>
       <button class="btn-send" id="pfSaveBtn" onclick="saveProjForm()"><i class="ti ti-device-floppy"></i> Save to sheet</button>
     </div>
@@ -2631,10 +2631,20 @@ function openProjModal(row){
   const sess=getSession();
   const editBtn=document.getElementById('pmEditBtn');
   if(editBtn){
-    const myBA=sess?normBA(sess.username):'';
-    const projBA=normBA(row[CI.ba]);
-    editBtn.style.display=(myBA&&myBA===projBA)||sess?.role==='Admin'?'inline-flex':'none';
-    editBtn.onclick=()=>{closeProjModal();openProjForm(row);};
+    const sess=getSession();
+    let canEdit=false;
+    if(sess){
+      // Admin can edit any project
+      if(sess.role==='Admin') canEdit=true;
+      // BA can edit their own projects
+      else {
+        const myBA=normBA(sess.username);
+        const projBA=normBA(row[CI.ba]);
+        canEdit=(myBA&&projBA&&myBA.toLowerCase()===projBA.toLowerCase());
+      }
+    }
+    editBtn.style.display=canEdit?'inline-flex':'none';
+    editBtn.onclick=function(){closeProjModal();setTimeout(function(){openProjForm(row);},150);};
   }
 
   const fields=[
@@ -2692,8 +2702,8 @@ function openProjForm(row){
   _editingRow=row;
   const isNew=!row;
   document.getElementById('pfTitle').textContent=isNew?'New Project':'Edit Project';
-  document.getElementById('pfStatus').textContent='';
-  document.getElementById('pfStatus').className='pf-status';
+  document.getElementById('pfMsg').textContent='';
+  document.getElementById('pfMsg').className='pf-status';
   document.getElementById('pfSaveBtn').disabled=false;
   document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
 
@@ -2781,7 +2791,7 @@ async function saveProjForm(){
   const region=document.getElementById('pfRegion').value;
   const ba=document.getElementById('pfBA').value;
   const status=document.getElementById('pfStatus').value;
-  const statusEl=document.getElementById('pfStatus');
+  const statusEl=document.getElementById('pfMsg');
   const btn=document.getElementById('pfSaveBtn');
 
   if(!project){statusEl.className='pf-status error';statusEl.textContent='Project name is required.';return;}
