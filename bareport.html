@@ -232,6 +232,23 @@ tr:last-child td{border-bottom:none;}
 .loading-error{color:#FCA5A5;font-size:13px;text-align:center;max-width:320px;line-height:1.6;}
 .retry-btn{margin-top:8px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
 
+/* ATTACHMENTS */
+.attach-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.attach-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;font-size:12px;}
+.attach-icon{color:var(--blue);font-size:16px;flex-shrink:0;}
+.attach-name{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.attach-link{color:var(--blue);text-decoration:none;font-size:11px;font-weight:500;white-space:nowrap;}
+.attach-link:hover{text-decoration:underline;}
+.attach-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0;line-height:1;}
+.attach-del:hover{color:#EF4444;}
+.file-drop-zone{border:2px dashed var(--border-strong);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+.file-drop-zone:hover,.file-drop-zone.drag-over{border-color:var(--blue);background:var(--blue-light);}
+.file-drop-zone input{display:none;}
+.file-drop-text{font-size:12px;color:var(--text-sec);line-height:1.6;}
+.file-drop-text strong{color:var(--blue);cursor:pointer;}
+.attach-uploading{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;padding:4px 0;}
+.attach-progress{display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:var(--off-white);border-radius:8px;font-size:11px;color:var(--text-sec);}
+
 /* EDIT / CREATE PROJECT MODAL */
 .proj-form-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;padding:16px;}
 .proj-form-overlay.open{opacity:1;pointer-events:all;}
@@ -545,12 +562,21 @@ tr:last-child td{border-bottom:none;}
           <div class="pf-label">Comments / remarks</div>
           <textarea class="pf-textarea" id="pfComments" placeholder="Any blockers, dependencies or notes..."></textarea>
         </div>
+        <div class="pf-field full">
+          <div class="pf-label">Manday Screenshot <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0;">(optional — PDF, image or Excel)</span></div>
+          <div class="file-drop-zone" id="pfDropZone" onclick="document.getElementById('pfFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleFileDrop(event)">
+            <input type="file" id="pfFileInput" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFileSelect(event)"/>
+            <div class="file-drop-text"><i class="ti ti-cloud-upload" style="font-size:22px;display:block;margin-bottom:6px;color:var(--blue)"></i><strong>Click to upload</strong> or drag and drop<br>PDF, Excel, PNG, JPG — up to 20MB each</div>
+          </div>
+          <div id="pfFileList" class="attach-list" style="margin-top:8px;"></div>
+          <div id="pfExistingAttach" class="attach-list"></div>
+        </div>
       </div>
     </div>
     <div class="proj-form-footer">
-      <span class="pf-status" id="pfStatusMsg"></span>
+      <span class="pf-status" id="pfStatus"></span>
       <button class="btn-cancel" onclick="closeProjForm()">Cancel</button>
-      <button class="btn-send" id="pfSaveBtn" onclick="saveProjForm()"><i class="ti ti-device-floppy"></i> Save to sheet</button>
+      <button class="btn-send" id="pfSaveBtn" onclick="saveProjForm()"><i class="ti ti-device-floppy"></i> Save </button>
     </div>
   </div>
 </div>
@@ -566,6 +592,10 @@ tr:last-child td{border-bottom:none;}
       <button class="modal-close" onclick="closeProjModal()" aria-label="Close"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body" id="pmBody"></div>
+    <div id="pmAttachSection" style="display:none;padding:0 20px 16px;">
+      <div class="modal-section-title" style="margin-bottom:8px;">Manday Screenshots</div>
+      <div id="pmAttachList" class="attach-list"></div>
+    </div>
     <div class="modal-footer">
       <button class="btn-cancel" id="pmEditBtn" onclick="editFromModal()" style="display:none"><i class="ti ti-edit"></i> Edit</button>
       <button class="btn-modal-close" onclick="closeProjModal()">Close</button>
@@ -799,7 +829,7 @@ const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11};
+const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11,screenshot:12};
 
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
@@ -2619,6 +2649,7 @@ function openProjModal(row){
     {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
     {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
     {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
+    {label:'Manday Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
   ];
   const body=document.getElementById('pmBody');body.innerHTML='';
   const sec=document.createElement('div');sec.className='modal-section';
@@ -2631,6 +2662,15 @@ function openProjModal(row){
     if(f.pill&&f.value&&f.value!=='\u2014'){
       val.className='modal-field-value';
       const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
+    } else if(f.isFiles&&f.value&&f.value!=='\u2014'){
+      val.className='modal-field-value';
+      const urls=f.value.split('\n').filter(Boolean);
+      urls.forEach((u,i)=>{
+        const a=document.createElement('a');
+        a.href=u;a.target='_blank';a.textContent='View attachment '+(i+1)+' \u2197';
+        a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
+        val.appendChild(a);
+      });
     } else if(f.color){
       val.className='modal-field-value';
       const rb=document.createElement('span');rb.className='region-badge';
@@ -2644,16 +2684,22 @@ function openProjModal(row){
   sec.appendChild(grid);body.appendChild(sec);
   document.getElementById('projModalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
+  // Show attachments
+  showAttachmentsInModal(row[CI.attach]||'');
 }
 
 function openProjForm(row){
   _editingRow=row;
   const isNew=!row;
   document.getElementById('pfTitle').textContent=isNew?'New Project':'Edit Project';
-  document.getElementById('pfStatusMsg').textContent='';
-  document.getElementById('pfStatusMsg').className='pf-status';
+  document.getElementById('pfStatus').textContent='';
+  document.getElementById('pfStatus').className='pf-status';
   document.getElementById('pfSaveBtn').disabled=false;
   document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+
+  _pendingFiles=[];
+  document.getElementById('pfFileList').innerHTML='';
+  document.getElementById('pfExistingAttach').innerHTML='';
 
   // Pre-fill form
   const sess=getSession();
@@ -2690,6 +2736,32 @@ function openProjForm(row){
     document.getElementById('pfComments').value=row[CI.comments]||'';
     document.getElementById('pfOrigProject').value=row[CI.proj]||'';
     document.getElementById('pfOrigBA').value=row[CI.ba]||'';
+    // Show existing attachments
+    renderExistingAttachments(row[CI.attach]||'');
+  }
+
+  // Show upload area (only for edit, not new — need row to exist first)
+  _pendingFiles=[];
+  const uploadArea=document.getElementById('pfUploadArea');
+  const existingArea=document.getElementById('pfExistingFiles');
+  const fileList=document.getElementById('pfFileList');
+  if(fileList) fileList.innerHTML='';
+  if(uploadArea) uploadArea.style.display=isNew?'none':'block';
+
+  // Show existing screenshots
+  if(existingArea){
+    existingArea.innerHTML='';
+    if(!isNew&&row[CI.screenshot]){
+      const urls=row[CI.screenshot].split('\n').filter(Boolean);
+      urls.forEach((url,i)=>{
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
+        d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB"></i>'
+          +'<a href="'+url+'" target="_blank" style="flex:1;color:#2563EB;text-decoration:none;">Attachment '+(i+1)+'</a>'
+          +'<a href="'+url+'" target="_blank" style="color:#2563EB;font-size:11px;">View ↗</a>';
+        existingArea.appendChild(d);
+      });
+    }
   }
 
   document.getElementById('projFormOverlay').classList.add('open');
@@ -2709,7 +2781,7 @@ async function saveProjForm(){
   const region=document.getElementById('pfRegion').value;
   const ba=document.getElementById('pfBA').value;
   const status=document.getElementById('pfStatus').value;
-  const statusEl=document.getElementById('pfStatusMsg');
+  const statusEl=document.getElementById('pfStatus');
   const btn=document.getElementById('pfSaveBtn');
 
   if(!project){statusEl.className='pf-status error';statusEl.textContent='Project name is required.';return;}
@@ -2719,6 +2791,21 @@ async function saveProjForm(){
 
   btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
   statusEl.className='pf-status';statusEl.textContent='';
+
+  // Upload any pending files first
+  let newFileUrls=null;
+  const filesToUpload=_pendingFiles.filter(Boolean);
+  if(filesToUpload.length>0){
+    btn.innerHTML='<i class="ti ti-loader-2"></i> Uploading files...';
+    newFileUrls=await uploadPendingFiles(project, region, ba);
+  }
+
+  // Merge with existing attachment URLs
+  const existingUrls=_editingRow?(_editingRow[CI.attach]||''):'';
+  let allUrls=existingUrls;
+  if(newFileUrls){
+    allUrls=existingUrls?existingUrls+','+newFileUrls:newFileUrls;
+  }
 
   const prog=document.getElementById('pfProgress').value.trim();
   const payload={
@@ -2739,6 +2826,7 @@ async function saveProjForm(){
       mandays:document.getElementById('pfMandays').value.trim(),
       ongoing:document.getElementById('pfOngoing').value.trim(),
       comments:document.getElementById('pfComments').value.trim(),
+      attachments:allUrls,
     }
   };
 
@@ -2750,12 +2838,18 @@ async function saveProjForm(){
       statusEl.className='pf-status success';
       statusEl.innerHTML='<i class="ti ti-circle-check"></i> '+(payload.isNew?'Project created!':'Project updated!')+' Refreshing data...';
       btn.innerHTML='<i class="ti ti-check"></i> Saved!';
+      // Upload any pending files
+      if(_pendingFiles.length>0){
+        statusEl.textContent='Uploading files to Drive...';
+        await uploadPendingFiles(project,region,ba);
+        statusEl.innerHTML='<i class="ti ti-circle-check"></i> Saved &amp; files uploaded!';
+      }
       // Update local RAW data optimistically
       if(payload.isNew){
-        RAW.rows.push([project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments]);
+        RAW.rows.push([project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments,payload.data.attachments||'']);
       } else {
         const idx=RAW.rows.findIndex(r=>r[CI.proj]===payload.origProject&&r[CI.ba]===payload.origBA);
-        if(idx>=0) RAW.rows[idx]=[project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments];
+        if(idx>=0) RAW.rows[idx]=[project,region,payload.data.usecase,ba,payload.data.startDate,payload.data.dueDate,status,payload.data.progress,payload.data.development,payload.data.mandays,payload.data.ongoing,payload.data.comments,payload.data.attachments||''];
       }
       setTimeout(()=>{
         closeProjForm();
@@ -2774,7 +2868,180 @@ async function saveProjForm(){
   }
 }
 
-/* INIT */
+/* ═══ ATTACHMENT / FILE UPLOAD ═══ */
+let _pendingFiles=[]; // files queued for upload with the save
+
+function handleFileDrop(e){
+  e.preventDefault();
+  document.getElementById('pfDropZone').classList.remove('drag-over');
+  const files=Array.from(e.dataTransfer.files);
+  addPendingFiles(files);
+}
+
+function handleFileSelect(e){
+  const files=Array.from(e.target.files);
+  addPendingFiles(files);
+  e.target.value=''; // reset so same file can be re-selected
+}
+
+function addPendingFiles(files){
+  const MAX=20*1024*1024; // 20MB
+  files.forEach(f=>{
+    if(f.size>MAX){
+      alert(f.name+' is too large (max 20MB).');return;
+    }
+    _pendingFiles.push(f);
+    renderPendingFile(f, _pendingFiles.length-1);
+  });
+}
+
+function renderPendingFile(file, idx){
+  const list=document.getElementById('pfFileList');
+  const item=document.createElement('div');item.className='attach-item';item.id='pf-file-'+idx;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const icon=ext==='pdf'?'ti-file-type-pdf':ext.match(/xls/)?'ti-file-type-xls':ext.match(/png|jpg|jpeg|gif|webp/)?'ti-photo':'ti-file';
+  item.innerHTML=`<i class="ti ${icon} attach-icon"></i><span class="attach-name" title="${file.name}">${file.name}</span><span style="font-size:10px;color:var(--text-muted);white-space:nowrap">${(file.size/1024).toFixed(0)}KB</span><button class="attach-del" onclick="removePendingFile(${idx})" title="Remove"><i class="ti ti-x"></i></button>`;
+  list.appendChild(item);
+}
+
+function removePendingFile(idx){
+  _pendingFiles[idx]=null;
+  const el=document.getElementById('pf-file-'+idx);
+  if(el) el.remove();
+}
+
+function renderExistingAttachments(attachStr){
+  const container=document.getElementById('pfExistingAttach');
+  if(!container) return;
+  container.innerHTML='';
+  if(!attachStr||!attachStr.trim()) return;
+  const links=attachStr.split(',').map(s=>s.trim()).filter(Boolean);
+  if(links.length===0) return;
+  const lbl=document.createElement('div');
+  lbl.style.cssText='font-size:10px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;';
+  lbl.textContent='Existing attachments';
+  container.appendChild(lbl);
+  links.forEach((link,i)=>{
+    const name=decodeURIComponent(link.split('/').pop().split('?')[0])||'Attachment '+(i+1);
+    const item=document.createElement('div');item.className='attach-item';
+    item.innerHTML=`<i class="ti ti-paperclip attach-icon"></i><span class="attach-name" title="${name}">${name}</span><a href="${link}" target="_blank" class="attach-link"><i class="ti ti-external-link"></i> View</a>`;
+    container.appendChild(item);
+  });
+}
+
+function showAttachmentsInModal(attachStr){
+  const section=document.getElementById('pmAttachSection');
+  const list=document.getElementById('pmAttachList');
+  if(!section||!list) return;
+  if(!attachStr||!attachStr.trim()){section.style.display='none';return;}
+  const links=attachStr.split(',').map(s=>s.trim()).filter(Boolean);
+  if(links.length===0){section.style.display='none';return;}
+  section.style.display='block';
+  list.innerHTML='';
+  links.forEach((link,i)=>{
+    const name=decodeURIComponent(link.split('/').pop().split('?')[0])||'Attachment '+(i+1);
+    const ext=name.split('.').pop().toLowerCase();
+    const icon=ext==='pdf'?'ti-file-type-pdf':ext.match(/xls/)?'ti-file-type-xls':ext.match(/png|jpg|jpeg|gif|webp/)?'ti-photo':'ti-paperclip';
+    const item=document.createElement('div');item.className='attach-item';
+    item.innerHTML=`<i class="ti ${icon} attach-icon"></i><span class="attach-name" title="${name}">${name}</span><a href="${link}" target="_blank" class="attach-link"><i class="ti ti-external-link"></i> View</a>`;
+    list.appendChild(item);
+  });
+}
+
+async function uploadPendingFiles(projectName, region, ba){
+  // Upload each pending file to Drive via Apps Script
+  // Returns comma-separated list of Drive URLs
+  const toUpload=_pendingFiles.filter(Boolean);
+  if(toUpload.length===0) return null;
+
+  const url=localStorage.getItem('karix_script_url')||SCRIPT_URL;
+  const urls=[];
+
+  for(let i=0;i<toUpload.length;i++){
+    const file=toUpload[i];
+    const statusEl=document.getElementById('pfStatus');
+    statusEl.className='pf-status';
+    statusEl.textContent=`Uploading ${i+1}/${toUpload.length}: ${file.name}...`;
+
+    const base64=await new Promise((res,rej)=>{
+      const reader=new FileReader();
+      reader.onload=e=>res(e.target.result.split(',')[1]);
+      reader.onerror=rej;
+      reader.readAsDataURL(file);
+    });
+
+    try{
+      const resp=await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({
+          action:'uploadFile',
+          token:sessionToken,
+          fileName:file.name,
+          mimeType:file.type||'application/octet-stream',
+          data:base64,
+          projectName,region,ba
+        })
+      });
+      const json=await resp.json();
+      if(json.status==='ok'&&json.fileUrl){
+        urls.push(json.fileUrl);
+      } else {
+        console.warn('Upload failed for '+file.name+':', json.message);
+      }
+    }catch(e){
+      console.warn('Upload error for '+file.name+':', e.message);
+    }
+  }
+  return urls.length>0?urls.join(','):null;
+}
+
+/* ═══ FILE UPLOAD ═══ */
+let _pendingFiles=[];
+
+function handleFileSelect(input){
+  const list=document.getElementById('pfFileList');
+  list.innerHTML='';
+  _pendingFiles=Array.from(input.files);
+  _pendingFiles.forEach((f,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;';
+    row.innerHTML='<i class="ti ti-file" style="color:var(--blue)"></i><span style="flex:1;color:var(--text)">'
+      +f.name+'</span><span style="color:var(--text-muted)">'+(f.size/1024).toFixed(0)+'KB</span>'
+      +'<button onclick="_pendingFiles.splice('+i+',1);this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;">×</button>';
+    list.appendChild(row);
+  });
+}
+
+async function uploadPendingFiles(projectName, region, ba){
+  if(!_pendingFiles.length) return [];
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  const results=[];
+  for(const file of _pendingFiles){
+    if(file.size>10*1024*1024){results.push({error:'File too large: '+file.name});continue;}
+    const b64=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+    const payload={action:'uploadFile',token:sessionToken,
+      fileName:file.name,fileData:b64,mimeType:file.type||'application/octet-stream',
+      project:projectName,region:region,ba:ba,
+      origProject:document.getElementById('pfOrigProject').value,
+      origBA:document.getElementById('pfOrigBA').value
+    };
+    try{
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+      const json=await res.json();
+      results.push(json);
+    }catch(e){results.push({error:e.message});}
+  }
+  _pendingFiles=[];
+  return results;
+}
+
+/* ═══ INIT ═══ */
 // Don't render until data is loaded — loadData() does it
 // Called after password gate opens
 
