@@ -2778,11 +2778,9 @@ function openProjForm(row){
 
   // Show upload area (only for edit, not new — need row to exist first)
   _pendingFiles=[];
-  const uploadArea=document.getElementById('pfUploadArea');
-  const existingArea=document.getElementById('pfExistingFiles');
   const fileList=document.getElementById('pfFileList');
   if(fileList) fileList.innerHTML='';
-  if(uploadArea) uploadArea.style.display=isNew?'none':'block';
+  const dropZone=document.getElementById('pfDropZone');if(dropZone)dropZone.parentElement.style.display='block';
 
   // Show existing screenshots
   if(existingArea){
@@ -2928,31 +2926,32 @@ function toInputDate(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'
 function addPendingFiles(files){
   if(!files||!files.length) return;
   _pendingFiles=_pendingFiles.concat(Array.from(files));
+  renderPendingFiles();
+}
+
+function renderPendingFiles(){
   const list=document.getElementById('pfFileList');
   if(!list) return;
   list.innerHTML='';
   _pendingFiles.forEach(function(f,i){
-    const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;';
-    row.innerHTML='<i class="ti ti-file" style="color:var(--blue)"></i><span style="flex:1;color:var(--text)">'+f.name+'</span>'
-      +'<span style="color:var(--text-muted)">'+(f.size/1024).toFixed(0)+'KB</span>'
-      +'<button onclick="javascript:_pendingFiles.splice('+i+',1);this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;">&times;</button>';
-    list.appendChild(row);
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;border:1px solid var(--border);';
+    const icon=document.createElement('i');icon.className='ti ti-file';icon.style.color='var(--blue)';icon.style.flexShrink='0';
+    const name=document.createElement('span');name.style.cssText='flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';name.textContent=f.name;
+    const size=document.createElement('span');size.style.cssText='color:var(--text-muted);white-space:nowrap;';size.textContent=(f.size/1024).toFixed(0)+'KB';
+    const btn=document.createElement('button');
+    btn.style.cssText='background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;line-height:1;flex-shrink:0;';
+    btn.innerHTML='&times;';
+    btn.onclick=function(){_pendingFiles.splice(i,1);renderPendingFiles();};
+    d.appendChild(icon);d.appendChild(name);d.appendChild(size);d.appendChild(btn);
+    list.appendChild(d);
   });
 }
 
-function handleFileSelect(input){
-  const list=document.getElementById('pfFileList');
-  list.innerHTML='';
-  _pendingFiles=Array.from(input.files);
-  _pendingFiles.forEach((f,i)=>{
-    const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;';
-    row.innerHTML='<i class="ti ti-file" style="color:var(--blue)"></i><span style="flex:1;color:var(--text)">'
-      +f.name+'</span><span style="color:var(--text-muted)">'+(f.size/1024).toFixed(0)+'KB</span>'
-      +'<button onclick="_pendingFiles.splice('+i+',1);this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;">×</button>';
-    list.appendChild(row);
-  });
+function handleFileSelect(evtOrInput){
+  const files=evtOrInput&&evtOrInput.target?evtOrInput.target.files:evtOrInput?evtOrInput.files:null;
+  if(!files||!files.length)return;
+  addPendingFiles(Array.from(files));
 }
 
 async function uploadPendingFiles(projectName, region, ba){
