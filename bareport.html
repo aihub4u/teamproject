@@ -250,9 +250,9 @@ tr:last-child td{border-bottom:none;}
 .attach-progress{display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:var(--off-white);border-radius:8px;font-size:11px;color:var(--text-sec);}
 
 /* EDIT / CREATE PROJECT MODAL */
-.proj-form-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;padding:16px;}
+.proj-form-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,17,42,0.6);z-index:1000;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
 .proj-form-overlay.open{opacity:1;pointer-events:all;}
-.proj-form{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 48px rgba(7,17,42,0.22);transform:translateY(12px);transition:transform 0.25s;}
+.proj-form{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:580px;box-shadow:0 8px 48px rgba(7,17,42,0.3);transform:translateY(12px);transition:transform 0.25s;margin:auto;}
 .proj-form-overlay.open .proj-form{transform:translateY(0);}
 .proj-form-hdr{background:var(--navy);padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;}
 .proj-form-title{color:#fff;font-weight:600;font-size:15px;}
