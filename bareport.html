@@ -2083,59 +2083,328 @@ function toggleGateEye(){
 }
 
 // Check existing session on page load
-(function(){
-  const s=getSession();
-  if(s){
-    sessionToken=s.token;
-    document.getElementById('gateOverlay').style.display='none';
-    document.getElementById('mainTopbar').style.display='flex';
+
+async function loadData(){
+  if(!sessionToken){showGate('Session expired. Please sign in again.');return;}
+  showLoading('Loading dashboard data...','Fetching from Google Sheets');
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  try{
+    const res=await fetch(url+'?action=data&token='+encodeURIComponent(sessionToken),{redirect:'follow'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const txt=await res.text();
+    let json;
+    try{json=JSON.parse(txt);}catch(pe){throw new Error('JSON parse error: '+pe.message);}
+    if(json.status==='unauthorized'){clearSession();showGate('Session expired.');return;}
+    if(json.status!=='ok') throw new Error(json.message||'API error');
+    DB=json.db; RAW=json.raw;
+    const meta=document.querySelector('.page-hdr p');
+    if(meta) meta.textContent=DB.totalRows+' projects · Apr 2026 onwards · Last updated '+DB.lastUpdated;
+    // Build month chips dynamically
+    const monthBar=document.querySelector('.month-bar');
+    if(monthBar){
+      monthBar.innerHTML='<span class="filter-label-sm">Month:</span>';
+      const a=document.createElement('button');a.className='chip active';a.dataset.key='all';a.textContent='All';a.onclick=()=>selectMonth('all');monthBar.appendChild(a);
+      Object.keys(DB.months).sort().forEach(k=>{
+        const b=document.createElement('button');b.className='chip';b.dataset.key=k;
+        const[y,m]=k.split('-');b.textContent=(MON[m]||m)+' '+y;b.onclick=()=>selectMonth(k);monthBar.appendChild(b);
+      });
+      const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';monthBar.appendChild(pill);
+    }
+    // Show page and activate overview tab
     document.getElementById('mainPage').style.display='block';
-    const pill=document.querySelector('.topbar-pill');
-    if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
-    const userPill2=document.getElementById('userPill');
-    if(userPill2) userPill2.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
-    const srBtn2=document.getElementById('sendReportBtn');
-    if(srBtn2) srBtn2.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
-    const npBtn2=document.getElementById('newProjBtn');
-    if(npBtn2) npBtn2.style.display='flex';
-    startInactivityTimer();
-    loadData();
-  } else {
-    setTimeout(()=>document.getElementById('gateUser').focus(),100);
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-overview'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='overview'));
+    hideLoading();
+    try{renderMonthTable();}catch(e){console.error('renderMonthTable',e);}
+    try{renderTrendCharts();}catch(e){console.error('renderTrendCharts',e);}
+    try{selectMonth('all');}catch(e){console.error('selectMonth',e);}
+  }catch(err){
+    console.error('loadData error:',err);
+    hideLoading();
+    document.getElementById('mainPage').style.display='block';
+    const g=document.getElementById('kpiGrid');
+    if(g) g.innerHTML='<div style="grid-column:1/-1;padding:32px;text-align:center;background:#FEE2E2;border-radius:8px;color:#DC2626;"><strong>Error loading data</strong><br><span style="font-size:12px;">'+err.message+'</span><br><br><button onclick="loadData()" style="margin-top:8px;background:#0057FF;color:#fff;border:none;border-radius:6px;padding:8px 18px;cursor:pointer;">Retry</button></div>';
   }
-})();
-
-/* ═══ DATA LOADING FROM GOOGLE SHEETS ═══ */
-function showLoading(text, sub){
-  const ov=document.getElementById('loadingOverlay');
-  ov.classList.remove('hidden');
-  document.getElementById('loadingText').textContent=text||'Loading...';
-    document.getElementById('loadingError').classList.add('hidden');
-  document.getElementById('retryBtn').classList.add('hidden');
-}
-function hideLoading(){
-  document.getElementById('loadingOverlay').classList.add('hidden');
-}
-function showLoadError(msg){
-  document.getElementById('loadingText').textContent='Failed to load data';
-  document.getElementById('loadingSpinner').style.display='none';
-  const err=document.getElementById('loadingError');
-  err.textContent=msg;err.classList.remove('hidden');
-  document.getElementById('retryBtn').classList.remove('hidden');
 }
 
-/* ═══ LOGOUT ═══ */
-function doLogout(){
-  if(!confirm('Sign out of the dashboard?')) return;
-  // Tell server to invalidate session (best effort)
-  const HARDCODED_URL='https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  const url=localStorage.getItem('karix_script_url')||HARDCODED_URL;
-  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logout',token:sessionToken})}).catch(()=>{});
-  clearSession();
-  showGate('You have been signed out.');
+
+let _pendingFiles=[];
+
+
+function downloadRawData(){
+  if(!RAW||!RAW.rows) return;
+  const rows=[RAW.cols||[]].concat(RAW.rows);
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb,ws,'BA Report');
+  XLSX.writeFile(wb,'Karix_BA_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
-/* ═══ CHANGE PASSWORD ═══ */
+async function saveProjForm(){
+  const project=document.getElementById('pfProject').value.trim();
+  const region=document.getElementById('pfRegion').value;
+  const ba=document.getElementById('pfBA').value;
+  const status=document.getElementById('pfStatus').value;
+  const msgEl=document.getElementById('pfMsg');
+  const btn=document.getElementById('pfSaveBtn');
+
+  if(!project){msgEl.className='pf-status error';msgEl.textContent='Project name is required.';return;}
+  if(!region){msgEl.className='pf-status error';msgEl.textContent='Region is required.';return;}
+  if(!ba){msgEl.className='pf-status error';msgEl.textContent='BA is required.';return;}
+  if(!status){msgEl.className='pf-status error';msgEl.textContent='Status is required.';return;}
+
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
+  msgEl.className='pf-status';msgEl.textContent='';
+
+  const prog=document.getElementById('pfProgress').value.trim();
+  const SCRIPT_URL2=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+
+  // Keep existing attachment URLs
+  const existingUrls=_editingRow?(_editingRow[CI.screenshot]||''):'';
+
+  const payload={
+    action:'saveProject',
+    token:sessionToken,
+    isNew:!_editingRow,
+    origProject:document.getElementById('pfOrigProject').value,
+    origBA:document.getElementById('pfOrigBA').value,
+    data:{
+      project,region,
+      usecase:document.getElementById('pfUsecase').value.trim(),
+      ba,
+      startDate:document.getElementById('pfStart').value,
+      dueDate:document.getElementById('pfDue').value,
+      status,
+      progress:document.getElementById('pfProgress').value.trim()?document.getElementById('pfProgress').value.trim()+'%':'',
+      development:document.getElementById('pfDev').value,
+      mandays:document.getElementById('pfMandays').value.trim(),
+      ongoing:document.getElementById('pfOngoing').value.trim(),
+      comments:document.getElementById('pfComments').value.trim(),
+    }
+  };
+
+  try{
+    // Step 1: Save project row first
+    const res=await fetch(SCRIPT_URL2,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const json=await res.json();
+
+    if(json.status==='unauthorized'){clearSession();showGate('Session expired. Please sign in again.');return;}
+    if(json.status!=='ok'){
+      msgEl.className='pf-status error';msgEl.textContent=json.message||'Save failed.';
+      btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+      return;
+    }
+
+    // Step 2: Upload files if any (AFTER row exists in sheet)
+    const filesToUpload=_pendingFiles.slice();
+    let newUrls=[];
+    if(filesToUpload.length>0){
+      btn.innerHTML='<i class="ti ti-loader-2"></i> Uploading files...';
+      msgEl.textContent='Uploading '+filesToUpload.length+' file(s) to Drive...';
+      const uploadResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2);
+      uploadResults.forEach(function(r){
+        if(r.status==='ok'&&r.fileUrl){
+          newUrls.push(r.fileUrl);
+          console.log('Upload OK:', r.fileName, '| Sheet:', r.sheetStatus, '| URL:', r.fileUrl);
+        } else {
+          console.error('Upload failed:', r.error||r.message, '| File:', r.fileName);
+        }
+      });
+    }
+
+    // Step 3: Show success
+    const totalFiles=(existingUrls?existingUrls.split('\n').filter(Boolean).length:0)+newUrls.length;
+    msgEl.className='pf-status success';
+    msgEl.innerHTML='<i class="ti ti-circle-check"></i> '
+      +(payload.isNew?'Project created':'Project updated')
+      +(newUrls.length?' &amp; '+newUrls.length+' file(s) uploaded':'')+'! Refreshing...';
+    btn.innerHTML='<i class="ti ti-check"></i> Saved!';
+
+    // Step 4: Update local RAW optimistically
+    const allUrlStr=existingUrls?(existingUrls+(newUrls.length?'\n'+newUrls.join('\n'):'')):newUrls.join('\n');
+    const newRowData=[project,region,payload.data.usecase,ba,
+      payload.data.startDate,payload.data.dueDate,status,payload.data.progress,
+      payload.data.development,payload.data.mandays,payload.data.ongoing,
+      payload.data.comments,allUrlStr];
+
+    if(payload.isNew){
+      RAW.rows.push(newRowData);
+    } else {
+      const rowIdx=RAW.rows.findIndex(function(r){return r[CI.proj]===payload.origProject&&r[CI.ba]===payload.origBA;});
+      if(rowIdx>=0) RAW.rows[rowIdx]=newRowData;
+    }
+
+    setTimeout(function(){closeProjForm();loadData();},1500);
+
+  }catch(e){
+    msgEl.className='pf-status error';msgEl.textContent='Connection error: '+e.message;
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+  }
+}
+
+function openProjForm(row){
+  _editingRow=row;
+  const isNew=!row;
+  const sess=getSession();
+
+  document.getElementById('pfTitle').textContent=isNew?'New Project':'Edit Project';
+  document.getElementById('pfMsg').textContent='';
+  document.getElementById('pfMsg').className='pf-status';
+  document.getElementById('pfSaveBtn').disabled=false;
+  document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
+
+  _pendingFiles=[];
+  const fileList=document.getElementById('pfFileList');
+  if(fileList) fileList.innerHTML='';
+
+  const toDate=function(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}};
+  const progVal=function(v){if(!v)return'';const n=parseFloat(String(v).replace('%','').trim());return isNaN(n)?'':(n<=1?Math.round(n*100):Math.round(n));};
+  const cl=function(v){return(v===null||v===undefined||String(v).trim()==='null'||String(v).trim()==='undefined')?'':String(v).trim();};
+
+  if(isNew){
+    document.getElementById('pfProject').value='';
+    document.getElementById('pfUsecase').value='';
+    document.getElementById('pfRegion').value='';
+    document.getElementById('pfBA').value=sess?normBA(sess.username):'';
+    document.getElementById('pfStatus').value='';
+    document.getElementById('pfDev').value='';
+    document.getElementById('pfStart').value=new Date().toISOString().slice(0,10);
+    document.getElementById('pfDue').value='';
+    document.getElementById('pfProgress').value='';
+    document.getElementById('pfMandays').value='';
+    document.getElementById('pfOngoing').value='';
+    document.getElementById('pfComments').value='';
+    document.getElementById('pfOrigProject').value='';
+    document.getElementById('pfOrigBA').value='';
+  } else {
+    document.getElementById('pfProject').value=cl(row[CI.proj]);
+    document.getElementById('pfUsecase').value=cl(row[CI.use]);
+    document.getElementById('pfRegion').value=cl(row[CI.reg]);
+    document.getElementById('pfBA').value=normBA(row[CI.ba])||'';
+    document.getElementById('pfStatus').value=cl(row[CI.status]);
+    document.getElementById('pfDev').value=cl(row[CI.dev]);
+    document.getElementById('pfStart').value=toDate(row[CI.start]);
+    document.getElementById('pfDue').value=toDate(row[CI.due]);
+    document.getElementById('pfProgress').value=progVal(row[CI.prog]);
+    document.getElementById('pfMandays').value=cl(row[CI.mandays]);
+    document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
+    document.getElementById('pfComments').value=cl(row[CI.comments]);
+    document.getElementById('pfOrigProject').value=cl(row[CI.proj]);
+    document.getElementById('pfOrigBA').value=cl(row[CI.ba]);
+
+    const existingFilesDiv=document.getElementById('pfExistingFiles');
+    if(existingFilesDiv){
+      existingFilesDiv.innerHTML='';
+      const screenshots=cl(row[CI.screenshot]);
+      if(screenshots){
+        screenshots.split('\n').filter(Boolean).forEach(function(u,i){
+          const d=document.createElement('div');
+          d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
+          d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB;flex-shrink:0"></i>'
+            +'<span style="flex:1;color:#2563EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Attachment '+(i+1)+'</span>'
+            +'<a href="'+u+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
+          existingFilesDiv.appendChild(d);
+        });
+      }
+    }
+  }
+
+  document.getElementById('projFormOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(function(){
+    var ov=document.getElementById('projFormOverlay');
+    ov.onclick=function(e){if(e.target===ov)closeProjForm();};
+  },300);
+  setTimeout(function(){document.getElementById('pfProject').focus();},100);
+}
+
+function closeProjForm(){
+  document.getElementById('projFormOverlay').classList.remove('open');
+  if(!document.getElementById('projModalOverlay').classList.contains('open')&&
+     !document.getElementById('drawer').classList.contains('open'))
+    document.body.style.overflow='';
+}
+
+function handleFileSelect(evtOrInput){
+  const files=evtOrInput&&evtOrInput.target?evtOrInput.target.files:evtOrInput?evtOrInput.files:null;
+  if(!files||!files.length)return;
+  addPendingFiles(Array.from(files));
+}
+
+function handleFileDrop(e){
+  e.preventDefault();
+  document.getElementById('pfDropZone').classList.remove('drag-over');
+  const files=Array.from(e.dataTransfer.files);
+  addPendingFiles(files);
+}
+
+function addPendingFiles(files){
+  if(!files||!files.length) return;
+  _pendingFiles=_pendingFiles.concat(Array.from(files));
+  renderPendingFiles();
+}
+
+function renderPendingFiles(){
+  const list=document.getElementById('pfFileList');
+  if(!list) return;
+  list.innerHTML='';
+  _pendingFiles.forEach(function(f,i){
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;border:1px solid var(--border);';
+    const icon=document.createElement('i');icon.className='ti ti-file';icon.style.color='var(--blue)';icon.style.flexShrink='0';
+    const name=document.createElement('span');name.style.cssText='flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';name.textContent=f.name;
+    const size=document.createElement('span');size.style.cssText='color:var(--text-muted);white-space:nowrap;';size.textContent=(f.size/1024).toFixed(0)+'KB';
+    const btn=document.createElement('button');
+    btn.style.cssText='background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;line-height:1;flex-shrink:0;';
+    btn.innerHTML='&times;';
+    btn.onclick=function(){_pendingFiles.splice(i,1);renderPendingFiles();};
+    d.appendChild(icon);d.appendChild(name);d.appendChild(size);d.appendChild(btn);
+    list.appendChild(d);
+  });
+}
+
+function toInputDate(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}}
+
+async function uploadPendingFiles(projectName, region, ba, scriptUrl){
+  if(!_pendingFiles.length) return [];
+  const url=scriptUrl||localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  const results=[];
+  const filesToProcess=_pendingFiles.slice(); // copy before clearing
+  _pendingFiles=[];
+  renderPendingFiles();
+
+  for(const file of filesToProcess){
+    if(file.size>20*1024*1024){results.push({error:'File too large (max 20MB): '+file.name});continue;}
+    try{
+      const b64=await new Promise(function(res,rej){
+        const reader=new FileReader();
+        reader.onload=function(){res(reader.result.split(',')[1]);};
+        reader.onerror=rej;
+        reader.readAsDataURL(file);
+      });
+      const payload={
+        action:'uploadFile',
+        token:sessionToken,
+        fileName:file.name,
+        fileData:b64,
+        mimeType:file.type||'application/octet-stream',
+        project:projectName,
+        region:region,
+        ba:ba,
+        origProject:document.getElementById('pfOrigProject').value||projectName,
+        origBA:document.getElementById('pfOrigBA').value||ba
+      };
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+      const json=await res.json();
+      results.push(json);
+    }catch(e){
+      results.push({status:'error',error:e.message,fileName:file.name});
+    }
+  }
+  return results;
+}
+
 function openChangePwd(){
   document.getElementById('cpCurrent').value='';
   document.getElementById('cpNew').value='';
@@ -2198,8 +2467,93 @@ async function submitChangePwd(){
   }
 }
 
+function openProjModal(row){
+  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
+  document.getElementById('pmTitle').textContent=row[CI.proj]||'Project Detail';
+  document.getElementById('pmSub').textContent=(row[CI.ba]?'BA: '+row[CI.ba]+' \u00b7 ':'')+row[CI.reg];
 
-/* ═══ TEMPLATE HINT ═══ */
+  // Show Edit button only for logged-in user's own projects
+  const sess=getSession();
+  const editBtn=document.getElementById('pmEditBtn');
+  if(editBtn){
+    const sess=getSession();
+    let canEdit=false;
+    if(sess){
+      // Admin can edit any project
+      if(sess.role==='Admin') canEdit=true;
+      // BA can edit their own projects
+      else {
+        const myBA=normBA(sess.username);
+        const projBA=normBA(row[CI.ba]);
+        canEdit=(myBA&&projBA&&myBA.toLowerCase()===projBA.toLowerCase());
+      }
+    }
+    editBtn.style.display=canEdit?'inline-flex':'none';
+    editBtn.onclick=function(){closeProjModal();setTimeout(function(){openProjForm(row);},150);};
+  }
+
+  const fields=[
+    {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
+    {label:'BA',value:row[CI.ba]||'\u2014'},
+    {label:'Status',value:row[CI.status]||'\u2014',pill:true},
+    {label:'Development',value:row[CI.dev]||'\u2014'},
+    {label:'Start Date',value:row[CI.start]||'\u2014'},
+    {label:'Due Date',value:row[CI.due]||'\u2014'},
+    {label:'Progress',value:pct},
+    {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
+    {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
+    {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
+    {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
+    {label:'Manday Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
+  ];
+  const body=document.getElementById('pmBody');body.innerHTML='';
+  const sec=document.createElement('div');sec.className='modal-section';
+  const st=document.createElement('div');st.className='modal-section-title';st.textContent='Project Details';sec.appendChild(st);
+  const grid=document.createElement('div');grid.className='modal-fields';
+  fields.forEach(f=>{
+    const div=document.createElement('div');div.className='modal-field'+(f.full?' full':'');
+    const lbl=document.createElement('div');lbl.className='modal-field-label';lbl.textContent=f.label;
+    const val=document.createElement('div');
+    if(f.pill&&f.value&&f.value!=='\u2014'){
+      val.className='modal-field-value';
+      const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
+    } else if(f.isFiles){
+      val.className='modal-field-value';
+      val.id='pmScreenshots'; // populated by IIFE after modal opens
+    } else if(f.color){
+      val.className='modal-field-value';
+      const rb=document.createElement('span');rb.className='region-badge';
+      const dot=document.createElement('span');dot.className='rdot';dot.style.background=f.color;dot.innerHTML='&nbsp;';
+      rb.appendChild(dot);rb.appendChild(document.createTextNode(' '+f.value));val.appendChild(rb);
+    } else {
+      val.className='modal-field-value'+(f.full?' muted':'');val.textContent=f.value;
+    }
+    div.appendChild(lbl);div.appendChild(val);grid.appendChild(div);
+  });
+  sec.appendChild(grid);body.appendChild(sec);
+  document.getElementById('projModalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  // Show attachments in modal
+  (function(){
+    const screenshots=row[CI.screenshot]||'';
+    const existingDiv=document.getElementById('pmScreenshots');
+    if(!existingDiv) return;
+    existingDiv.innerHTML='';
+    if(screenshots){
+      const urls=screenshots.split('\n').filter(Boolean);
+      urls.forEach(function(u,i){
+        const a=document.createElement('a');
+        a.href=u;a.target='_blank';
+        a.textContent='View attachment '+(i+1)+' \u2197';
+        a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
+        existingDiv.appendChild(a);
+      });
+    } else {
+      existingDiv.textContent='\u2014';
+    }
+  })();
+}
+
 function previewTemplateHint(){
   const t=document.getElementById('emailTemplate').value;
   const hints={
@@ -2211,7 +2565,26 @@ function previewTemplateHint(){
   el.className='email-status';el.textContent=hints[t]||'';
 }
 
-/* ═══ EXECUTIVE EMAIL TEMPLATE ═══ */
+function showLoading(text, sub){
+  const ov=document.getElementById('loadingOverlay');
+  ov.classList.remove('hidden');
+  document.getElementById('loadingText').textContent=text||'Loading...';
+    document.getElementById('loadingError').classList.add('hidden');
+  document.getElementById('retryBtn').classList.add('hidden');
+}
+
+function hideLoading(){
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
+function showLoadError(msg){
+  document.getElementById('loadingText').textContent='Failed to load data';
+  document.getElementById('loadingSpinner').style.display='none';
+  const err=document.getElementById('loadingError');
+  err.textContent=msg;err.classList.remove('hidden');
+  document.getElementById('retryBtn').classList.remove('hidden');
+}
+
 function buildExecutiveEmailHTML(note){
   const T=DB.all['Total'];
   const d=DB.lastUpdated;
@@ -2396,7 +2769,6 @@ ${noteBlock}
 </body></html>`;
 }
 
-/* ═══ STYLE C EMAIL TEMPLATE ═══ */
 function buildStyleCEmailHTML(note){
   const T=DB.all['Total'];
   const d=DB.lastUpdated;
@@ -2562,8 +2934,6 @@ ${noteBlock}
 </body></html>`;
 }
 
-/* ═══ MANDAYS DRILL-DOWN FIX ═══ */
-// Override drillCell to handle mandays as clickable
 function drillCellEx(region,field,lbl,val){
   const td=document.createElement('td');td.className='num';
   if(val===0){td.textContent=val;return td;}
@@ -2576,429 +2946,6 @@ function drillCellEx(region,field,lbl,val){
   td.appendChild(sp);return td;
 }
 
-/* ═══ EDIT / CREATE PROJECT FORM ═══ */
-let _editingRow=null; // holds RAW row being edited
-
-function openProjModal(row){
-  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
-  document.getElementById('pmTitle').textContent=row[CI.proj]||'Project Detail';
-  document.getElementById('pmSub').textContent=(row[CI.ba]?'BA: '+row[CI.ba]+' \u00b7 ':'')+row[CI.reg];
-
-  // Show Edit button only for logged-in user's own projects
-  const sess=getSession();
-  const editBtn=document.getElementById('pmEditBtn');
-  if(editBtn){
-    const sess=getSession();
-    let canEdit=false;
-    if(sess){
-      // Admin can edit any project
-      if(sess.role==='Admin') canEdit=true;
-      // BA can edit their own projects
-      else {
-        const myBA=normBA(sess.username);
-        const projBA=normBA(row[CI.ba]);
-        canEdit=(myBA&&projBA&&myBA.toLowerCase()===projBA.toLowerCase());
-      }
-    }
-    editBtn.style.display=canEdit?'inline-flex':'none';
-    editBtn.onclick=function(){closeProjModal();setTimeout(function(){openProjForm(row);},150);};
-  }
-
-  const fields=[
-    {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
-    {label:'BA',value:row[CI.ba]||'\u2014'},
-    {label:'Status',value:row[CI.status]||'\u2014',pill:true},
-    {label:'Development',value:row[CI.dev]||'\u2014'},
-    {label:'Start Date',value:row[CI.start]||'\u2014'},
-    {label:'Due Date',value:row[CI.due]||'\u2014'},
-    {label:'Progress',value:pct},
-    {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
-    {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
-    {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
-    {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
-    {label:'Manday Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
-  ];
-  const body=document.getElementById('pmBody');body.innerHTML='';
-  const sec=document.createElement('div');sec.className='modal-section';
-  const st=document.createElement('div');st.className='modal-section-title';st.textContent='Project Details';sec.appendChild(st);
-  const grid=document.createElement('div');grid.className='modal-fields';
-  fields.forEach(f=>{
-    const div=document.createElement('div');div.className='modal-field'+(f.full?' full':'');
-    const lbl=document.createElement('div');lbl.className='modal-field-label';lbl.textContent=f.label;
-    const val=document.createElement('div');
-    if(f.pill&&f.value&&f.value!=='\u2014'){
-      val.className='modal-field-value';
-      const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
-    } else if(f.isFiles){
-      val.className='modal-field-value';
-      val.id='pmScreenshots'; // populated by IIFE after modal opens
-    } else if(f.color){
-      val.className='modal-field-value';
-      const rb=document.createElement('span');rb.className='region-badge';
-      const dot=document.createElement('span');dot.className='rdot';dot.style.background=f.color;dot.innerHTML='&nbsp;';
-      rb.appendChild(dot);rb.appendChild(document.createTextNode(' '+f.value));val.appendChild(rb);
-    } else {
-      val.className='modal-field-value'+(f.full?' muted':'');val.textContent=f.value;
-    }
-    div.appendChild(lbl);div.appendChild(val);grid.appendChild(div);
-  });
-  sec.appendChild(grid);body.appendChild(sec);
-  document.getElementById('projModalOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
-  // Show attachments in modal
-  (function(){
-    const screenshots=row[CI.screenshot]||'';
-    const existingDiv=document.getElementById('pmScreenshots');
-    if(!existingDiv) return;
-    existingDiv.innerHTML='';
-    if(screenshots){
-      const urls=screenshots.split('\n').filter(Boolean);
-      urls.forEach(function(u,i){
-        const a=document.createElement('a');
-        a.href=u;a.target='_blank';
-        a.textContent='View attachment '+(i+1)+' \u2197';
-        a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
-        existingDiv.appendChild(a);
-      });
-    } else {
-      existingDiv.textContent='\u2014';
-    }
-  })();
-}
-
-function openProjForm(row){
-  _editingRow=row;
-  const isNew=!row;
-  const sess=getSession();
-
-  document.getElementById('pfTitle').textContent=isNew?'New Project':'Edit Project';
-  document.getElementById('pfMsg').textContent='';
-  document.getElementById('pfMsg').className='pf-status';
-  document.getElementById('pfSaveBtn').disabled=false;
-  document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
-
-  _pendingFiles=[];
-  const fileList=document.getElementById('pfFileList');
-  if(fileList) fileList.innerHTML='';
-
-  const toDate=function(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}};
-  const progVal=function(v){if(!v)return'';const n=parseFloat(String(v).replace('%','').trim());return isNaN(n)?'':(n<=1?Math.round(n*100):Math.round(n));};
-  const cl=function(v){return(v===null||v===undefined||String(v).trim()==='null'||String(v).trim()==='undefined')?'':String(v).trim();};
-
-  if(isNew){
-    document.getElementById('pfProject').value='';
-    document.getElementById('pfUsecase').value='';
-    document.getElementById('pfRegion').value='';
-    document.getElementById('pfBA').value=sess?normBA(sess.username):'';
-    document.getElementById('pfStatus').value='';
-    document.getElementById('pfDev').value='';
-    document.getElementById('pfStart').value=new Date().toISOString().slice(0,10);
-    document.getElementById('pfDue').value='';
-    document.getElementById('pfProgress').value='';
-    document.getElementById('pfMandays').value='';
-    document.getElementById('pfOngoing').value='';
-    document.getElementById('pfComments').value='';
-    document.getElementById('pfOrigProject').value='';
-    document.getElementById('pfOrigBA').value='';
-  } else {
-    document.getElementById('pfProject').value=cl(row[CI.proj]);
-    document.getElementById('pfUsecase').value=cl(row[CI.use]);
-    document.getElementById('pfRegion').value=cl(row[CI.reg]);
-    document.getElementById('pfBA').value=normBA(row[CI.ba])||'';
-    document.getElementById('pfStatus').value=cl(row[CI.status]);
-    document.getElementById('pfDev').value=cl(row[CI.dev]);
-    document.getElementById('pfStart').value=toDate(row[CI.start]);
-    document.getElementById('pfDue').value=toDate(row[CI.due]);
-    document.getElementById('pfProgress').value=progVal(row[CI.prog]);
-    document.getElementById('pfMandays').value=cl(row[CI.mandays]);
-    document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
-    document.getElementById('pfComments').value=cl(row[CI.comments]);
-    document.getElementById('pfOrigProject').value=cl(row[CI.proj]);
-    document.getElementById('pfOrigBA').value=cl(row[CI.ba]);
-
-    const existingFilesDiv=document.getElementById('pfExistingFiles');
-    if(existingFilesDiv){
-      existingFilesDiv.innerHTML='';
-      const screenshots=cl(row[CI.screenshot]);
-      if(screenshots){
-        screenshots.split('\n').filter(Boolean).forEach(function(u,i){
-          const d=document.createElement('div');
-          d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
-          d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB;flex-shrink:0"></i>'
-            +'<span style="flex:1;color:#2563EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Attachment '+(i+1)+'</span>'
-            +'<a href="'+u+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
-          existingFilesDiv.appendChild(d);
-        });
-      }
-    }
-  }
-
-  document.getElementById('projFormOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
-  setTimeout(function(){
-    var ov=document.getElementById('projFormOverlay');
-    ov.onclick=function(e){if(e.target===ov)closeProjForm();};
-  },300);
-  setTimeout(function(){document.getElementById('pfProject').focus();},100);
-}
-
-function closeProjForm(){
-  document.getElementById('projFormOverlay').classList.remove('open');
-  if(!document.getElementById('projModalOverlay').classList.contains('open')&&
-     !document.getElementById('drawer').classList.contains('open'))
-    document.body.style.overflow='';
-}
-
-async function saveProjForm(){
-  const project=document.getElementById('pfProject').value.trim();
-  const region=document.getElementById('pfRegion').value;
-  const ba=document.getElementById('pfBA').value;
-  const status=document.getElementById('pfStatus').value;
-  const msgEl=document.getElementById('pfMsg');
-  const btn=document.getElementById('pfSaveBtn');
-
-  if(!project){msgEl.className='pf-status error';msgEl.textContent='Project name is required.';return;}
-  if(!region){msgEl.className='pf-status error';msgEl.textContent='Region is required.';return;}
-  if(!ba){msgEl.className='pf-status error';msgEl.textContent='BA is required.';return;}
-  if(!status){msgEl.className='pf-status error';msgEl.textContent='Status is required.';return;}
-
-  btn.disabled=true;
-  btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
-  msgEl.className='pf-status';msgEl.textContent='';
-
-  const prog=document.getElementById('pfProgress').value.trim();
-  const SCRIPT_URL2=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-
-  // Keep existing attachment URLs
-  const existingUrls=_editingRow?(_editingRow[CI.screenshot]||''):'';
-
-  const payload={
-    action:'saveProject',
-    token:sessionToken,
-    isNew:!_editingRow,
-    origProject:document.getElementById('pfOrigProject').value,
-    origBA:document.getElementById('pfOrigBA').value,
-    data:{
-      project,region,
-      usecase:document.getElementById('pfUsecase').value.trim(),
-      ba,
-      startDate:document.getElementById('pfStart').value,
-      dueDate:document.getElementById('pfDue').value,
-      status,
-      progress:document.getElementById('pfProgress').value.trim()?document.getElementById('pfProgress').value.trim()+'%':'',
-      development:document.getElementById('pfDev').value,
-      mandays:document.getElementById('pfMandays').value.trim(),
-      ongoing:document.getElementById('pfOngoing').value.trim(),
-      comments:document.getElementById('pfComments').value.trim(),
-    }
-  };
-
-  try{
-    // Step 1: Save project row first
-    const res=await fetch(SCRIPT_URL2,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
-    const json=await res.json();
-
-    if(json.status==='unauthorized'){clearSession();showGate('Session expired. Please sign in again.');return;}
-    if(json.status!=='ok'){
-      msgEl.className='pf-status error';msgEl.textContent=json.message||'Save failed.';
-      btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
-      return;
-    }
-
-    // Step 2: Upload files if any (AFTER row exists in sheet)
-    const filesToUpload=_pendingFiles.slice();
-    let newUrls=[];
-    if(filesToUpload.length>0){
-      btn.innerHTML='<i class="ti ti-loader-2"></i> Uploading files...';
-      msgEl.textContent='Uploading '+filesToUpload.length+' file(s) to Drive...';
-      const uploadResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2);
-      uploadResults.forEach(function(r){
-        if(r.status==='ok'&&r.fileUrl){
-          newUrls.push(r.fileUrl);
-          console.log('Upload OK:', r.fileName, '| Sheet:', r.sheetStatus, '| URL:', r.fileUrl);
-        } else {
-          console.error('Upload failed:', r.error||r.message, '| File:', r.fileName);
-        }
-      });
-    }
-
-    // Step 3: Show success
-    const totalFiles=(existingUrls?existingUrls.split('\n').filter(Boolean).length:0)+newUrls.length;
-    msgEl.className='pf-status success';
-    msgEl.innerHTML='<i class="ti ti-circle-check"></i> '
-      +(payload.isNew?'Project created':'Project updated')
-      +(newUrls.length?' &amp; '+newUrls.length+' file(s) uploaded':'')+'! Refreshing...';
-    btn.innerHTML='<i class="ti ti-check"></i> Saved!';
-
-    // Step 4: Update local RAW optimistically
-    const allUrlStr=existingUrls?(existingUrls+(newUrls.length?'\n'+newUrls.join('\n'):'')):newUrls.join('\n');
-    const newRowData=[project,region,payload.data.usecase,ba,
-      payload.data.startDate,payload.data.dueDate,status,payload.data.progress,
-      payload.data.development,payload.data.mandays,payload.data.ongoing,
-      payload.data.comments,allUrlStr];
-
-    if(payload.isNew){
-      RAW.rows.push(newRowData);
-    } else {
-      const rowIdx=RAW.rows.findIndex(function(r){return r[CI.proj]===payload.origProject&&r[CI.ba]===payload.origBA;});
-      if(rowIdx>=0) RAW.rows[rowIdx]=newRowData;
-    }
-
-    setTimeout(function(){closeProjForm();loadData();},1500);
-
-  }catch(e){
-    msgEl.className='pf-status error';msgEl.textContent='Connection error: '+e.message;
-    btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
-  }
-}
-
-/* ═══ ATTACHMENT / FILE UPLOAD ═══ */
-let _pendingFiles=[]; // files queued for upload with the save
-
-function handleFileDrop(e){
-  e.preventDefault();
-  document.getElementById('pfDropZone').classList.remove('drag-over');
-  const files=Array.from(e.dataTransfer.files);
-  addPendingFiles(files);
-}
-
-
-
-/* ═══ FILE UPLOAD ═══ */
-function toInputDate(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}}
-
-function addPendingFiles(files){
-  if(!files||!files.length) return;
-  _pendingFiles=_pendingFiles.concat(Array.from(files));
-  renderPendingFiles();
-}
-
-function renderPendingFiles(){
-  const list=document.getElementById('pfFileList');
-  if(!list) return;
-  list.innerHTML='';
-  _pendingFiles.forEach(function(f,i){
-    const d=document.createElement('div');
-    d.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;border:1px solid var(--border);';
-    const icon=document.createElement('i');icon.className='ti ti-file';icon.style.color='var(--blue)';icon.style.flexShrink='0';
-    const name=document.createElement('span');name.style.cssText='flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';name.textContent=f.name;
-    const size=document.createElement('span');size.style.cssText='color:var(--text-muted);white-space:nowrap;';size.textContent=(f.size/1024).toFixed(0)+'KB';
-    const btn=document.createElement('button');
-    btn.style.cssText='background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;line-height:1;flex-shrink:0;';
-    btn.innerHTML='&times;';
-    btn.onclick=function(){_pendingFiles.splice(i,1);renderPendingFiles();};
-    d.appendChild(icon);d.appendChild(name);d.appendChild(size);d.appendChild(btn);
-    list.appendChild(d);
-  });
-}
-
-function handleFileSelect(evtOrInput){
-  const files=evtOrInput&&evtOrInput.target?evtOrInput.target.files:evtOrInput?evtOrInput.files:null;
-  if(!files||!files.length)return;
-  addPendingFiles(Array.from(files));
-}
-
-async function uploadPendingFiles(projectName, region, ba, scriptUrl){
-  if(!_pendingFiles.length) return [];
-  const url=scriptUrl||localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  const results=[];
-  const filesToProcess=_pendingFiles.slice(); // copy before clearing
-  _pendingFiles=[];
-  renderPendingFiles();
-
-  for(const file of filesToProcess){
-    if(file.size>20*1024*1024){results.push({error:'File too large (max 20MB): '+file.name});continue;}
-    try{
-      const b64=await new Promise(function(res,rej){
-        const reader=new FileReader();
-        reader.onload=function(){res(reader.result.split(',')[1]);};
-        reader.onerror=rej;
-        reader.readAsDataURL(file);
-      });
-      const payload={
-        action:'uploadFile',
-        token:sessionToken,
-        fileName:file.name,
-        fileData:b64,
-        mimeType:file.type||'application/octet-stream',
-        project:projectName,
-        region:region,
-        ba:ba,
-        origProject:document.getElementById('pfOrigProject').value||projectName,
-        origBA:document.getElementById('pfOrigBA').value||ba
-      };
-      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
-      const json=await res.json();
-      results.push(json);
-    }catch(e){
-      results.push({status:'error',error:e.message,fileName:file.name});
-    }
-  }
-  return results;
-}
-
-/* ═══ LOAD DATA ═══ */
-async function loadData(){
-  if(!sessionToken){showGate('Session expired. Please sign in again.');return;}
-  showLoading('Loading dashboard data...','Fetching from Google Sheets');
-  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  try{
-    const res=await fetch(url+'?action=data&token='+encodeURIComponent(sessionToken),{redirect:'follow'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    let json;
-    try{json=JSON.parse(text);}catch(e){throw new Error('Parse error: '+e.message);}
-    if(json.status==='unauthorized'){clearSession();showGate('Session expired.');return;}
-    if(json.status!=='ok') throw new Error(json.message||'API error');
-    DB=json.db; RAW=json.raw;
-    // Update page meta
-    const meta=document.querySelector('.page-hdr p');
-    if(meta) meta.textContent=DB.totalRows+' projects · Apr 2026 onwards · Last updated '+DB.lastUpdated;
-    // Build month chips
-    const monthBar=document.querySelector('.month-bar');
-    if(monthBar){
-      monthBar.innerHTML='<span class="filter-label-sm">Month:</span>';
-      const allBtn=document.createElement('button');
-      allBtn.className='chip active';allBtn.dataset.key='all';allBtn.textContent='All';
-      allBtn.onclick=function(){selectMonth('all');};
-      monthBar.appendChild(allBtn);
-      Object.keys(DB.months).sort().forEach(function(k){
-        const btn=document.createElement('button');btn.className='chip';btn.dataset.key=k;
-        const parts=k.split('-');
-        const mon={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
-        btn.textContent=(mon[parts[1]]||parts[1])+' '+parts[0];
-        btn.onclick=function(){selectMonth(k);};
-        monthBar.appendChild(btn);
-      });
-      const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';
-      monthBar.appendChild(pill);
-    }
-    // Show page
-    document.getElementById('mainPage').style.display='block';
-    // Activate overview tab
-    document.querySelectorAll('.tab-panel').forEach(function(p){
-      p.classList.toggle('active',p.id==='panel-overview');
-    });
-    document.querySelectorAll('.tab').forEach(function(t){
-      t.classList.toggle('active',t.dataset.tab==='overview');
-    });
-    hideLoading();
-    // Render
-    try{renderMonthTable();}catch(e){console.error('renderMonthTable',e);}
-    try{renderTrendCharts();}catch(e){console.error('renderTrendCharts',e);}
-    try{selectMonth('all');}catch(e){console.error('selectMonth',e);}
-  }catch(err){
-    console.error('loadData error:',err);
-    hideLoading();
-    document.getElementById('mainPage').style.display='block';
-    const pg=document.getElementById('kpiGrid');
-    if(pg){pg.innerHTML='<div style="grid-column:1/-1;padding:32px;text-align:center;color:#DC2626;border-radius:8px;background:#FEE2E2;">'
-      +'<strong>Failed to load data</strong><br><span style="font-size:12px;">'+err.message+'</span>'
-      +'<br><br><button onclick="loadData()" style="background:#0057FF;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;">Retry</button></div>';}
-  }
-}
-
-/* ═══ SESSION RESTORE ON PAGE LOAD ═══ */
 (function(){
   const s=getSession();
   if(s){
@@ -3007,19 +2954,16 @@ async function loadData(){
     document.getElementById('mainTopbar').style.display='flex';
     const pill=document.querySelector('.topbar-pill');
     if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
-    const userPill=document.getElementById('userPill');
-    if(userPill) userPill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
-    const srBtn=document.getElementById('sendReportBtn');
-    if(srBtn) srBtn.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
-    const npBtn=document.getElementById('newProjBtn');
-    if(npBtn) npBtn.style.display='flex';
+    const up=document.getElementById('userPill');
+    if(up) up.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
+    const sr=document.getElementById('sendReportBtn');
+    if(sr) sr.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
+    const np=document.getElementById('newProjBtn');
+    if(np) np.style.display='flex';
     startInactivityTimer();
     loadData();
   } else {
-    setTimeout(function(){
-      const u=document.getElementById('gateUser');
-      if(u) u.focus();
-    },100);
+    setTimeout(()=>{const u=document.getElementById('gateUser');if(u)u.focus();},100);
   }
 })();
 </script>
