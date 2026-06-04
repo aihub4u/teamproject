@@ -250,10 +250,9 @@ tr:last-child td{border-bottom:none;}
 .attach-progress{display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:var(--off-white);border-radius:8px;font-size:11px;color:var(--text-sec);}
 
 /* EDIT / CREATE PROJECT MODAL */
-.proj-form-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,17,42,0.6);z-index:1000;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
-.proj-form-overlay.open{opacity:1;pointer-events:all;}
-.proj-form{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:580px;box-shadow:0 8px 48px rgba(7,17,42,0.3);transform:translateY(12px);transition:transform 0.25s;margin:auto;}
-.proj-form-overlay.open .proj-form{transform:translateY(0);}
+.proj-form-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(7,17,42,0.65);z-index:9999;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.proj-form-overlay.open{display:flex;}
+.proj-form{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:580px;box-shadow:0 8px 48px rgba(7,17,42,0.3);margin:auto;}
 .proj-form-hdr{background:var(--navy);padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;}
 .proj-form-title{color:#fff;font-weight:600;font-size:15px;}
 .proj-form-close{background:rgba(255,255,255,0.1);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
@@ -369,7 +368,7 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <!-- Loading overlay -->
-<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-overlay hidden" id="loadingOverlay">
   <div class="logo-mark" style="width:44px;height:44px;font-size:18px;margin-bottom:4px;">K</div>
   <div class="loading-spinner" id="loadingSpinner"></div>
   <div class="loading-text" id="loadingText">Loading dashboard data...</div>
