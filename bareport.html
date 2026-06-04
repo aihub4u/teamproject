@@ -499,12 +499,12 @@ tr:last-child td{border-bottom:none;}
       <input type="hidden" id="pfOrigBA"/>
       <div class="pf-grid">
         <div class="pf-field full">
-          <div class="pf-label">Account name <span class="req">*</span></div>
-          <input class="pf-input" id="pfProject" placeholder="Client / Account name"/>
+          <div class="pf-label">Project name <span class="req">*</span></div>
+          <input class="pf-input" id="pfProject" placeholder="Client / Project name"/>
         </div>
-        <div class="pf-field">
-          <div class="pf-label">WABA number</div>
-          <input class="pf-input" id="pfWaba" placeholder="e.g. 91XXXXXXXXXX"/>
+        <div class="pf-field full">
+          <div class="pf-label">Usecase / Description</div>
+          <input class="pf-input" id="pfUsecase" placeholder="Brief description of the use case"/>
         </div>
         <div class="pf-field">
           <div class="pf-label">Region <span class="req">*</span></div>
@@ -514,43 +514,28 @@ tr:last-child td{border-bottom:none;}
           </select>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Request type</div>
-          <select class="pf-select" id="pfReqtype">
-            <option value="">Select type</option>
-            <option>WhatsApp</option><option>RCS</option><option>Voice</option>
-            <option>AI</option><option>AdstoChat</option><option>Payments</option>
-            <option>WA flows</option>
-          </select>
-        </div>
-        <div class="pf-field">
           <div class="pf-label">BA <span class="req">*</span></div>
           <select class="pf-select" id="pfBA">
             <option value="">Select BA</option>
-            <option>Aniruddha</option><option>Ankit</option><option>Daimi</option>
+            <option>Aniruddha</option><option>Ankit</option><option>Daimi Syed</option>
             <option>Himanshu</option><option>Kiran</option><option>Megha</option>
-            <option>Raj Bhartiya</option><option>Raj Bhatt</option><option>Somya</option>
+            <option>Raj</option><option>Somya</option>
           </select>
         </div>
         <div class="pf-field">
           <div class="pf-label">Status <span class="req">*</span></div>
           <select class="pf-select" id="pfStatus">
             <option value="">Select status</option>
-            <option>Scoping</option><option>In Progress</option><option>UAT</option>
-            <option>Hypercare</option><option>Live</option><option>Hold</option>
+            <option>Live</option><option>Hypercare</option><option>In Progress</option>
+            <option>Development</option><option>UAT</option><option>Yet to Start(Assigned)</option>
+            <option>Scoping</option><option>Pipeline</option><option>Hold</option><option>End of life</option>
           </select>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Development team</div>
+          <div class="pf-label">Development type</div>
           <select class="pf-select" id="pfDev">
-            <option value="">Select</option>
-            <option>Twixor</option><option>Inhouse</option><option>Both</option>
-          </select>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">If Inhouse/Both — Dev name</div>
-          <select class="pf-select" id="pfInhouse">
-            <option value="">Select dev</option>
-            <option>Sajid</option><option>Naveen</option><option>Aditya</option>
+            <option value="">Select type</option>
+            <option>Twixor</option><option>Inhouse</option><option>Inhouse Dev</option>
           </select>
         </div>
         <div class="pf-field">
@@ -558,59 +543,27 @@ tr:last-child td{border-bottom:none;}
           <input class="pf-input" type="date" id="pfStart"/>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Due date</div>
+          <div class="pf-label">Due date / ETA</div>
           <input class="pf-input" type="date" id="pfDue"/>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Live date</div>
-          <input class="pf-input" type="date" id="pfLivedate"/>
+          <div class="pf-label">Progress %</div>
+          <input class="pf-input" id="pfProgress" placeholder="e.g. 80" type="number" min="0" max="100"/>
         </div>
         <div class="pf-field">
           <div class="pf-label">Mandays saved</div>
           <input class="pf-input" id="pfMandays" placeholder="e.g. 5" type="number" min="0"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">Mandays to Twixor</div>
-          <input class="pf-input" id="pfMandaystwixor" placeholder="e.g. 3" type="number" min="0"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">Mandays from client</div>
-          <input class="pf-input" id="pfMandaysclient" placeholder="e.g. 2" type="number" min="0"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">Effort est. by Twixor</div>
-          <input class="pf-input" id="pfEfforttwixor" placeholder="e.g. 4" type="number" min="0"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">Mandays waived by sales</div>
-          <input class="pf-input" id="pfMandayswaived" placeholder="e.g. 1" type="number" min="0"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">Presales name</div>
-          <input class="pf-input" id="pfPresales" placeholder="Presales person"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">CSM name</div>
-          <input class="pf-input" id="pfCsm" placeholder="CSM person"/>
-        </div>
-        <div class="pf-field">
-          <div class="pf-label">Sales name</div>
-          <input class="pf-input" id="pfSales" placeholder="Sales person"/>
-        </div>
-        <div class="pf-field full">
-          <div class="pf-label">Usecase</div>
-          <input class="pf-input" id="pfUsecase" placeholder="Brief description of the use case"/>
         </div>
         <div class="pf-field full">
           <div class="pf-label">Ongoing activities</div>
           <textarea class="pf-textarea" id="pfOngoing" placeholder="What is currently being worked on..."></textarea>
         </div>
         <div class="pf-field full">
-          <div class="pf-label">Comments / description</div>
+          <div class="pf-label">Comments / remarks</div>
           <textarea class="pf-textarea" id="pfComments" placeholder="Any blockers, dependencies or notes..."></textarea>
         </div>
         <div class="pf-field full">
-          <div class="pf-label">Manday ERP Screenshot <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional</span></div>
+          <div class="pf-label">Manday Screenshot <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional</span></div>
           <div id="pfExistingFiles" style="margin-bottom:6px;"></div>
           <div class="file-drop-zone" id="pfDropZone" onclick="document.getElementById('pfFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleFileDrop(event)">
             <input type="file" id="pfFileInput" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFileSelect(event)"/>
@@ -875,7 +828,7 @@ const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-const CI={proj:0,waba:1,reg:2,reqtype:3,use:4,ba:5,start:6,due:7,livedate:8,status:9,dev:10,inhouse:11,efforttwixor:12,mandaystwixor:13,mandaysclient:14,mandays:15,mandayswaived:16,presales:17,csm:18,sales:19,ongoing:20,comments:21,screenshot:22,volume:23,prog:24};
+const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11,screenshot:12};
 
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
@@ -2697,24 +2650,15 @@ function openProjModal(row){
     {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
     {label:'BA',value:row[CI.ba]||'\u2014'},
     {label:'Status',value:row[CI.status]||'\u2014',pill:true},
-    {label:'Request Type',value:row[CI.reqtype]||'\u2014'},
-    {label:'Development Team',value:row[CI.dev]||'\u2014'},
-    {label:'If Inhouse/Both',value:row[CI.inhouse]||'\u2014'},
+    {label:'Development',value:row[CI.dev]||'\u2014'},
     {label:'Start Date',value:row[CI.start]||'\u2014'},
     {label:'Due Date',value:row[CI.due]||'\u2014'},
-    {label:'Live Date',value:row[CI.livedate]||'\u2014'},
+    {label:'Progress',value:pct},
     {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
-    {label:'Mandays to Twixor',value:row[CI.mandaystwixor]||'\u2014'},
-    {label:'Mandays from Client',value:row[CI.mandaysclient]||'\u2014'},
-    {label:'Mandays Waived',value:row[CI.mandayswaived]||'\u2014'},
-    {label:'Presales',value:row[CI.presales]||'\u2014'},
-    {label:'CSM',value:row[CI.csm]||'\u2014'},
-    {label:'Sales',value:row[CI.sales]||'\u2014'},
-    {label:'WABA Number',value:row[CI.waba]||'\u2014'},
     {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
     {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
     {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
-    {label:'Manday ERP Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
+    {label:'Manday Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
   ];
   const body=document.getElementById('pmBody');body.innerHTML='';
   const sec=document.createElement('div');sec.className='modal-section';
@@ -2784,43 +2728,36 @@ function openProjForm(row){
   const cl=function(v){return(v===null||v===undefined||String(v).trim()==='null'||String(v).trim()==='undefined')?'':String(v).trim();};
 
   if(isNew){
-    ['pfProject','pfWaba','pfUsecase','pfPresales','pfCsm','pfSales'].forEach(function(id){document.getElementById(id).value='';});
-    ['pfRegion','pfReqtype','pfDev','pfInhouse','pfStatus'].forEach(function(id){document.getElementById(id).value='';});
-    ['pfMandays','pfMandaystwixor','pfMandaysclient','pfEfforttwixor','pfMandayswaived'].forEach(function(id){document.getElementById(id).value='';});
-    ['pfOngoing','pfComments'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('pfProject').value='';
+    document.getElementById('pfUsecase').value='';
+    document.getElementById('pfRegion').value='';
     document.getElementById('pfBA').value=sess?normBA(sess.username):'';
+    document.getElementById('pfStatus').value='';
+    document.getElementById('pfDev').value='';
     document.getElementById('pfStart').value=new Date().toISOString().slice(0,10);
     document.getElementById('pfDue').value='';
-    document.getElementById('pfLivedate').value='';
+    document.getElementById('pfProgress').value='';
+    document.getElementById('pfMandays').value='';
+    document.getElementById('pfOngoing').value='';
+    document.getElementById('pfComments').value='';
     document.getElementById('pfOrigProject').value='';
     document.getElementById('pfOrigBA').value='';
   } else {
     document.getElementById('pfProject').value=cl(row[CI.proj]);
-    document.getElementById('pfWaba').value=cl(row[CI.waba]);
-    document.getElementById('pfRegion').value=cl(row[CI.reg]);
-    document.getElementById('pfReqtype').value=cl(row[CI.reqtype]);
     document.getElementById('pfUsecase').value=cl(row[CI.use]);
+    document.getElementById('pfRegion').value=cl(row[CI.reg]);
     document.getElementById('pfBA').value=normBA(row[CI.ba])||'';
     document.getElementById('pfStatus').value=cl(row[CI.status]);
     document.getElementById('pfDev').value=cl(row[CI.dev]);
-    document.getElementById('pfInhouse').value=cl(row[CI.inhouse]);
     document.getElementById('pfStart').value=toDate(row[CI.start]);
     document.getElementById('pfDue').value=toDate(row[CI.due]);
-    document.getElementById('pfLivedate').value=toDate(row[CI.livedate]);
+    document.getElementById('pfProgress').value=progVal(row[CI.prog]);
     document.getElementById('pfMandays').value=cl(row[CI.mandays]);
-    document.getElementById('pfMandaystwixor').value=cl(row[CI.mandaystwixor]);
-    document.getElementById('pfMandaysclient').value=cl(row[CI.mandaysclient]);
-    document.getElementById('pfEfforttwixor').value=cl(row[CI.efforttwixor]);
-    document.getElementById('pfMandayswaived').value=cl(row[CI.mandayswaived]);
-    document.getElementById('pfPresales').value=cl(row[CI.presales]);
-    document.getElementById('pfCsm').value=cl(row[CI.csm]);
-    document.getElementById('pfSales').value=cl(row[CI.sales]);
     document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
     document.getElementById('pfComments').value=cl(row[CI.comments]);
     document.getElementById('pfOrigProject').value=cl(row[CI.proj]);
     document.getElementById('pfOrigBA').value=cl(row[CI.ba]);
 
-    // Show existing attachments
     const existingFilesDiv=document.getElementById('pfExistingFiles');
     if(existingFilesDiv){
       existingFilesDiv.innerHTML='';
@@ -2884,23 +2821,15 @@ async function saveProjForm(){
     origProject:document.getElementById('pfOrigProject').value,
     origBA:document.getElementById('pfOrigBA').value,
     data:{
-      project,region,ba,status,
-      waba:document.getElementById('pfWaba').value.trim(),
-      reqtype:document.getElementById('pfReqtype').value,
+      project,region,
       usecase:document.getElementById('pfUsecase').value.trim(),
+      ba,
       startDate:document.getElementById('pfStart').value,
       dueDate:document.getElementById('pfDue').value,
-      liveDate:document.getElementById('pfLivedate').value,
+      status,
+      progress:document.getElementById('pfProgress').value.trim()?document.getElementById('pfProgress').value.trim()+'%':'',
       development:document.getElementById('pfDev').value,
-      inhouse:document.getElementById('pfInhouse').value,
-      efforttwixor:document.getElementById('pfEfforttwixor').value.trim(),
-      mandaystwixor:document.getElementById('pfMandaystwixor').value.trim(),
-      mandaysclient:document.getElementById('pfMandaysclient').value.trim(),
       mandays:document.getElementById('pfMandays').value.trim(),
-      mandayswaived:document.getElementById('pfMandayswaived').value.trim(),
-      presales:document.getElementById('pfPresales').value.trim(),
-      csm:document.getElementById('pfCsm').value.trim(),
-      sales:document.getElementById('pfSales').value.trim(),
       ongoing:document.getElementById('pfOngoing').value.trim(),
       comments:document.getElementById('pfComments').value.trim(),
     }
