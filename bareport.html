@@ -1635,10 +1635,10 @@ function switchTab(tab){
 function selectMonth(key){
   currentMonthKey=key;
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
-  document.getElementById('infoPill').textContent=getCount(key)+' of '+DB.totalRows+' rows — '+mLabel(key);
+  const pill=document.getElementById('infoPill');
+  if(pill) pill.textContent=getCount(key)+' of '+DB.totalRows+' rows \u2014 '+mLabel(key);
   const data=getData(key);
   renderKPI(data);renderRegionTable(data);renderRegionCharts(data);
-  // If BA tab is active, refresh it with new month
   const baTab=document.getElementById('panel-ba');
   if(baTab&&baTab.classList.contains('active'))renderBASection();
 }
@@ -2282,7 +2282,6 @@ async function loadData(){
       const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';
       monthBar.appendChild(pill);
     }
-    hideLoading();
     hideLoading();renderMonthTable();renderTrendCharts();selectMonth('all');
   }catch(err){
     showLoadError(err.message+'. Check your Apps Script URL and Sheet ID.');
