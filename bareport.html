@@ -2198,79 +2198,6 @@ async function submitChangePwd(){
   }
 }
 
-async function loadData(){
-  const HARDCODED_URL='https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  const stored=localStorage.getItem('karix_script_url');
-  const url=stored||HARDCODED_URL;
-  const urlInput=document.getElementById('appsScriptUrl');
-  if(urlInput&&!urlInput.value.trim()) urlInput.value=url;
-
-  if(!sessionToken){showGate('Session expired. Please sign in again.');return;}
-  showLoading('Loading dashboard data...','Fetching from Google Sheets');
-  try{
-    // Use AbortController for timeout
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),30000);
-    let res;
-    try{
-      res=await fetch(url+'?action=data&token='+encodeURIComponent(sessionToken),{
-        signal:controller.signal,
-        redirect:'follow'
-      });
-    }finally{clearTimeout(timer);}
-
-    if(!res.ok) throw new Error('HTTP '+res.status);
-
-    // Use text() + JSON.parse() - more robust than res.json() for large payloads
-    const text=await res.text();
-    let json;
-    try{json=JSON.parse(text);}
-    catch(pe){throw new Error('JSON parse failed: '+pe.message+' | Response start: '+text.substring(0,100));}
-
-    if(json.status==='unauthorized'){clearSession();showGate('Session expired. Please sign in again.');return;}
-    if(json.status!=='ok') throw new Error(json.message||'API error');
-    DB=json.db; RAW=json.raw;
-    const meta=document.querySelector('.page-hdr p');
-    if(meta) meta.textContent=DB.totalRows+' projects \u00b7 Apr 2026 onwards \u00b7 Last updated '+DB.lastUpdated;
-    const months=Object.keys(DB.months).sort();
-    const monthBar=document.querySelector('.month-bar');
-    if(monthBar){
-      monthBar.innerHTML='<span class="filter-label-sm">Month:</span>';
-      const allChip=document.createElement('button');
-      allChip.className='chip active';allChip.dataset.key='all';
-      allChip.textContent='All';allChip.onclick=()=>selectMonth('all');
-      monthBar.appendChild(allChip);
-      months.forEach(k=>{
-        const chip=document.createElement('button');chip.className='chip';chip.dataset.key=k;
-        const [y,m]=k.split('-');
-        const MON2={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
-        chip.textContent=(MON2[m]||m)+' '+y;chip.onclick=()=>selectMonth(k);
-        monthBar.appendChild(chip);
-      });
-      const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';
-      monthBar.appendChild(pill);
-    }
-    hideLoading();
-    // Force correct state
-    document.getElementById('mainPage').style.display='block';
-    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-overview');});
-    document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab==='overview');});
-    const _errs=[];
-    try{renderMonthTable();}catch(e){_errs.push('renderMonthTable: '+e.message);}
-    try{renderTrendCharts();}catch(e){_errs.push('renderTrendCharts: '+e.message);}
-    try{selectMonth('all');}catch(e){_errs.push('selectMonth: '+e.message);}
-    if(_errs.length){
-      const pg2=document.getElementById('panel-overview');
-      if(pg2){const ed=document.createElement('div');ed.style.cssText='padding:40px;text-align:center;color:#DC2626;';ed.innerHTML='<div style="font-size:16px;font-weight:600;margin-bottom:8px;">Render error</div><div style="font-size:12px;color:#6B7280;">'+_errs.join('<br>')+'</div><button onclick="loadData()" style="margin-top:16px;background:#0057FF;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;cursor:pointer;">Retry</button>';pg2.insertBefore(ed,pg2.firstChild);}
-    }
-  }catch(err){
-    hideLoading();
-    const msg=err.name==='AbortError'?'Request timed out after 30s. Apps Script may be slow — please retry.':err.message;
-    const pg=document.getElementById('panel-overview');
-    if(pg){pg.innerHTML='<div style="padding:40px;text-align:center;color:#DC2626;"><div style="font-size:24px;margin-bottom:12px;">&#9888;</div><div style="font-size:16px;font-weight:600;margin-bottom:8px;">Failed to load data</div><div style="font-size:13px;color:#6B7280;max-width:480px;margin:0 auto;">'+msg+'</div><button onclick="loadData()" style="margin-top:20px;background:#0057FF;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;cursor:pointer;">&#8635; Retry</button></div>';}
-    showLoadError(msg);
-  }
-}
 
 /* ═══ TEMPLATE HINT ═══ */
 function previewTemplateHint(){
@@ -3010,10 +2937,91 @@ async function uploadPendingFiles(projectName, region, ba, scriptUrl){
   return results;
 }
 
-/* ═══ INIT ═══ */
-// Don't render until data is loaded — loadData() does it
-// Called after password gate opens
+/* ═══ LOAD DATA ═══ */
+async function loadData(){
+  if(!sessionToken){showGate('Session expired. Please sign in again.');return;}
+  showLoading('Loading dashboard data...','Fetching from Google Sheets');
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  try{
+    const res=await fetch(url+'?action=data&token='+encodeURIComponent(sessionToken),{redirect:'follow'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    let json;
+    try{json=JSON.parse(text);}catch(e){throw new Error('Parse error: '+e.message);}
+    if(json.status==='unauthorized'){clearSession();showGate('Session expired.');return;}
+    if(json.status!=='ok') throw new Error(json.message||'API error');
+    DB=json.db; RAW=json.raw;
+    // Update page meta
+    const meta=document.querySelector('.page-hdr p');
+    if(meta) meta.textContent=DB.totalRows+' projects · Apr 2026 onwards · Last updated '+DB.lastUpdated;
+    // Build month chips
+    const monthBar=document.querySelector('.month-bar');
+    if(monthBar){
+      monthBar.innerHTML='<span class="filter-label-sm">Month:</span>';
+      const allBtn=document.createElement('button');
+      allBtn.className='chip active';allBtn.dataset.key='all';allBtn.textContent='All';
+      allBtn.onclick=function(){selectMonth('all');};
+      monthBar.appendChild(allBtn);
+      Object.keys(DB.months).sort().forEach(function(k){
+        const btn=document.createElement('button');btn.className='chip';btn.dataset.key=k;
+        const parts=k.split('-');
+        const mon={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+        btn.textContent=(mon[parts[1]]||parts[1])+' '+parts[0];
+        btn.onclick=function(){selectMonth(k);};
+        monthBar.appendChild(btn);
+      });
+      const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';
+      monthBar.appendChild(pill);
+    }
+    // Show page
+    document.getElementById('mainPage').style.display='block';
+    // Activate overview tab
+    document.querySelectorAll('.tab-panel').forEach(function(p){
+      p.classList.toggle('active',p.id==='panel-overview');
+    });
+    document.querySelectorAll('.tab').forEach(function(t){
+      t.classList.toggle('active',t.dataset.tab==='overview');
+    });
+    hideLoading();
+    // Render
+    try{renderMonthTable();}catch(e){console.error('renderMonthTable',e);}
+    try{renderTrendCharts();}catch(e){console.error('renderTrendCharts',e);}
+    try{selectMonth('all');}catch(e){console.error('selectMonth',e);}
+  }catch(err){
+    console.error('loadData error:',err);
+    hideLoading();
+    document.getElementById('mainPage').style.display='block';
+    const pg=document.getElementById('kpiGrid');
+    if(pg){pg.innerHTML='<div style="grid-column:1/-1;padding:32px;text-align:center;color:#DC2626;border-radius:8px;background:#FEE2E2;">'
+      +'<strong>Failed to load data</strong><br><span style="font-size:12px;">'+err.message+'</span>'
+      +'<br><br><button onclick="loadData()" style="background:#0057FF;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;">Retry</button></div>';}
+  }
+}
 
+/* ═══ SESSION RESTORE ON PAGE LOAD ═══ */
+(function(){
+  const s=getSession();
+  if(s){
+    sessionToken=s.token;
+    document.getElementById('gateOverlay').style.display='none';
+    document.getElementById('mainTopbar').style.display='flex';
+    const pill=document.querySelector('.topbar-pill');
+    if(pill) pill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
+    const userPill=document.getElementById('userPill');
+    if(userPill) userPill.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
+    const srBtn=document.getElementById('sendReportBtn');
+    if(srBtn) srBtn.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
+    const npBtn=document.getElementById('newProjBtn');
+    if(npBtn) npBtn.style.display='flex';
+    startInactivityTimer();
+    loadData();
+  } else {
+    setTimeout(function(){
+      const u=document.getElementById('gateUser');
+      if(u) u.focus();
+    },100);
+  }
+})();
 </script>
 </body>
 </html>
