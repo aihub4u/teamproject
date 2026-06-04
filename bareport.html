@@ -893,11 +893,11 @@ let activeFilters={};
 function normStatus(s){
   if(!s)return'unknown';
   const sl=String(s).trim().toLowerCase();
-  if(['live','hypercare','livebot'].includes(sl))return'golive';
-  if(sl==='uat')return'uat';
-  if(['in progress','development','in-progress','in progress '].includes(sl))return'inprogress';
-  if(sl.includes('yet to start'))return'yts';
-  if(['pipeline','scoping','feasibility'].some(k=>sl.includes(k)))return'scoping';
+  if(sl.indexOf('live')>-1||sl.indexOf('hypercare')>-1||sl.indexOf('end of life')>-1)return'golive';
+  if(sl.indexOf('uat')>-1)return'uat';
+  if(sl.indexOf('in progress')>-1||sl==='development'||sl.indexOf('in-progress')>-1)return'inprogress';
+  if(sl.indexOf('hold')>-1||sl.indexOf('yet to start')>-1||sl.indexOf('assigned')>-1)return'yts';
+  if(sl.indexOf('pipeline')>-1||sl.indexOf('scoping')>-1||sl.indexOf('feasibility')>-1)return'scoping';
   return'unknown';
 }
 function normDev(s){
@@ -1635,7 +1635,7 @@ function switchTab(tab){
 function selectMonth(key){
   currentMonthKey=key;
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
-  document.getElementById('infoPill').textContent=getCount(key)+' of '+DB.totalRows+' rows \u2014 '+mLabel(key);
+  document.getElementById('infoPill').textContent=getCount(key)+' of '+DB.totalRows+' rows — '+mLabel(key);
   const data=getData(key);
   renderKPI(data);renderRegionTable(data);renderRegionCharts(data);
   // If BA tab is active, refresh it with new month
@@ -2283,9 +2283,7 @@ async function loadData(){
       monthBar.appendChild(pill);
     }
     hideLoading();
-    try{renderMonthTable();}catch(e){console.error('renderMonthTable error:',e);}
-    try{renderTrendCharts();}catch(e){console.error('renderTrendCharts error:',e);}
-    try{selectMonth('all');}catch(e){console.error('selectMonth error:',e);}
+    hideLoading();renderMonthTable();renderTrendCharts();selectMonth('all');
   }catch(err){
     showLoadError(err.message+'. Check your Apps Script URL and Sheet ID.');
   }
