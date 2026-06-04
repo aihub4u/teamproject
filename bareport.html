@@ -2282,7 +2282,10 @@ async function loadData(){
       const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';
       monthBar.appendChild(pill);
     }
-    hideLoading();renderMonthTable();renderTrendCharts();selectMonth('all');
+    hideLoading();
+    try{renderMonthTable();}catch(e){console.error('renderMonthTable error:',e);}
+    try{renderTrendCharts();}catch(e){console.error('renderTrendCharts error:',e);}
+    try{selectMonth('all');}catch(e){console.error('selectMonth error:',e);}
   }catch(err){
     showLoadError(err.message+'. Check your Apps Script URL and Sheet ID.');
   }
