@@ -2251,6 +2251,10 @@ async function loadData(){
       monthBar.appendChild(pill);
     }
     hideLoading();
+    // Force correct state
+    document.getElementById('mainPage').style.display='block';
+    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-overview');});
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab==='overview');});
     const _errs=[];
     try{renderMonthTable();}catch(e){_errs.push('renderMonthTable: '+e.message);}
     try{renderTrendCharts();}catch(e){_errs.push('renderTrendCharts: '+e.message);}
