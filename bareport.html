@@ -395,7 +395,7 @@ tr:last-child td{border-bottom:none;}
       <thead>
         <tr>
           <th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Usecase</th><th>Status</th>
-          <th>Dev</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing</th>
+          <th>Dev Team</th><th>Start</th><th>Due</th><th>Mandays</th><th>Ongoing</th>
         </tr>
       </thead>
       <tbody id="dBody"></tbody>
@@ -523,7 +523,7 @@ tr:last-child td{border-bottom:none;}
         </div>
         <div class="pf-field">
           <div class="pf-label">Status <span class="req">*</span></div>
-          <select class="pf-select" id="pfStatus">
+          <select class="pf-select" id="pfStatus" onchange="onPfStatusChange()">
             <option value="">Select status</option>
             <option>Live</option><option>Hypercare</option><option>In Progress</option>
             <option>Development</option><option>UAT</option><option>Yet to Start(Assigned)</option>
@@ -542,12 +542,12 @@ tr:last-child td{border-bottom:none;}
           <input class="pf-input" type="date" id="pfStart"/>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Due date / ETA</div>
+          <div class="pf-label">Due date / ETA <span id="pfDueStar" class="req">*</span></div>
           <input class="pf-input" type="date" id="pfDue"/>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Progress %</div>
-          <input class="pf-input" id="pfProgress" placeholder="e.g. 80" type="number" min="0" max="100"/>
+          <div class="pf-label">Live date <span id="pfLiveStar" class="req" style="display:none">*</span></div>
+          <input class="pf-input" type="date" id="pfLivedate"/>
         </div>
         <div class="pf-field">
           <div class="pf-label">Mandays saved</div>
@@ -562,7 +562,7 @@ tr:last-child td{border-bottom:none;}
           <textarea class="pf-textarea" id="pfComments" placeholder="Any blockers, dependencies or notes..."></textarea>
         </div>
         <div class="pf-field full">
-          <div class="pf-label">Manday Screenshot <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional</span></div>
+          <div class="pf-label">Manday Screenshot <span id="pfScreenshotStar" class="req" style="display:none">*</span> <span id="pfScreenshotOptional" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional</span></div>
           <div id="pfExistingFiles" style="margin-bottom:6px;"></div>
           <div class="file-drop-zone" id="pfDropZone" onclick="document.getElementById('pfFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleFileDrop(event)">
             <input type="file" id="pfFileInput" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFileSelect(event)"/>
@@ -956,7 +956,6 @@ function makeRow(row,i){
   const td6=document.createElement('td');td6.style.cssText='white-space:nowrap;font-size:12px';td6.textContent=row[CI.dev]||'\u2014';tr.appendChild(td6);
   const td7=document.createElement('td');td7.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td7.textContent=row[CI.start]||'\u2014';tr.appendChild(td7);
   const td8=document.createElement('td');td8.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td8.textContent=row[CI.due]||'\u2014';tr.appendChild(td8);
-  const td9=document.createElement('td');td9.style.whiteSpace='nowrap';td9.textContent=pct;tr.appendChild(td9);
   const td10=document.createElement('td');td10.style.cssText='white-space:nowrap;font-size:12px';td10.textContent=row[CI.mandays]||'\u2014';tr.appendChild(td10);
   const td11=document.createElement('td');td11.style.cssText='white-space:normal;min-width:140px;font-size:11px;color:var(--text-sec)';td11.textContent=row[CI.ongoing]||'\u2014';tr.appendChild(td11);
   return tr;
@@ -968,7 +967,7 @@ function renderFilteredTable(rows){
   sec.style.display='block';
   const table=document.createElement('table');
   const thead=document.createElement('thead');
-  thead.innerHTML='<tr><th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Usecase</th><th>Status</th><th>Dev</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing</th></tr>';
+  thead.innerHTML='<tr><th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Usecase</th><th>Status</th><th>Dev Team</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing</th></tr>';
   table.appendChild(thead);
   const tbody=document.createElement('tbody');
   rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
@@ -2083,6 +2082,24 @@ function toggleGateEye(){
   else{inp.type='password';icon.className='ti ti-eye';}
 }
 
+/* ═══ FORM DYNAMIC VALIDATION ═══ */
+function onPfStatusChange(){
+  const status=(document.getElementById('pfStatus').value||'').toLowerCase();
+  const isPipeline=status.indexOf('pipeline')>-1||status.indexOf('scoping')>-1;
+  const isLive=status.indexOf('live')>-1||status.indexOf('hypercare')>-1;
+  const isInProgress=status.indexOf('in progress')>-1||status==='development';
+  const dueStar=document.getElementById('pfDueStar');
+  if(dueStar) dueStar.style.display=isPipeline?'none':'inline';
+  const liveStar=document.getElementById('pfLiveStar');
+  if(liveStar) liveStar.style.display=isLive?'inline':'none';
+  const scrStar=document.getElementById('pfScreenshotStar');
+  const scrOpt=document.getElementById('pfScreenshotOptional');
+  if(scrStar) scrStar.style.display=isInProgress?'inline':'none';
+  if(scrOpt) scrOpt.style.display=isInProgress?'none':'inline';
+  const liveDateInput=document.getElementById('pfLivedate');
+  if(liveDateInput) liveDateInput.style.borderColor=isLive?'var(--blue)':'';
+}
+
 // Check existing session on page load
 
 async function loadData(){
@@ -2154,6 +2171,25 @@ async function saveProjForm(){
   if(!ba){msgEl.className='pf-status error';msgEl.textContent='BA is required.';return;}
   if(!status){msgEl.className='pf-status error';msgEl.textContent='Status is required.';return;}
 
+  // 4. Due date mandatory unless status is Pipeline/Scoping
+  const statusL=status.toLowerCase();
+  const isPipeline=statusL.indexOf('pipeline')>-1||statusL.indexOf('scoping')>-1;
+  const isLiveStatus=statusL.indexOf('live')>-1||statusL.indexOf('hypercare')>-1;
+  const isInProgress=statusL.indexOf('in progress')>-1||statusL==='development';
+  const dueVal=document.getElementById('pfDue').value;
+  if(!isPipeline&&!dueVal){msgEl.className='pf-status error';msgEl.textContent='Due date is required (unless status is Pipeline/Scoping).';return;}
+
+  // 5. Live date mandatory if status is Live or Hypercare
+  const liveDateVal=document.getElementById('pfLivedate').value;
+  if(isLiveStatus&&!liveDateVal){msgEl.className='pf-status error';msgEl.textContent='Live date is required when status is Live or Hypercare.';return;}
+
+  // 6. Manday Screenshot mandatory if status is In Progress
+  if(isInProgress){
+    const hasExisting=_editingRow&&(_editingRow[CI.screenshot]||'').trim().length>0;
+    const hasPending=_pendingFiles&&_pendingFiles.length>0;
+    if(!hasExisting&&!hasPending){msgEl.className='pf-status error';msgEl.textContent='Manday screenshot is required when status is In Progress.';return;}
+  }
+
   btn.disabled=true;
   btn.innerHTML='<i class="ti ti-loader-2"></i> Saving...';
   msgEl.className='pf-status';msgEl.textContent='';
@@ -2176,6 +2212,7 @@ async function saveProjForm(){
       ba,
       startDate:document.getElementById('pfStart').value,
       dueDate:document.getElementById('pfDue').value,
+      liveDate:document.getElementById('pfLivedate').value,
       status,
       progress:document.getElementById('pfProgress').value.trim()?document.getElementById('pfProgress').value.trim()+'%':'',
       development:document.getElementById('pfDev').value,
@@ -2272,7 +2309,7 @@ function openProjForm(row){
     document.getElementById('pfDev').value='';
     document.getElementById('pfStart').value=new Date().toISOString().slice(0,10);
     document.getElementById('pfDue').value='';
-    document.getElementById('pfProgress').value='';
+    document.getElementById('pfLivedate').value='';
     document.getElementById('pfMandays').value='';
     document.getElementById('pfOngoing').value='';
     document.getElementById('pfComments').value='';
@@ -2287,7 +2324,7 @@ function openProjForm(row){
     document.getElementById('pfDev').value=cl(row[CI.dev]);
     document.getElementById('pfStart').value=toDate(row[CI.start]);
     document.getElementById('pfDue').value=toDate(row[CI.due]);
-    document.getElementById('pfProgress').value=progVal(row[CI.prog]);
+    document.getElementById('pfLivedate').value=toDate(row[CI.livedate])||'';
     document.getElementById('pfMandays').value=cl(row[CI.mandays]);
     document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
     document.getElementById('pfComments').value=cl(row[CI.comments]);
@@ -2313,6 +2350,8 @@ function openProjForm(row){
 
   document.getElementById('projFormOverlay').classList.add('open');
   document.body.style.overflow='hidden';
+  // Set dynamic field indicators based on current status
+  onPfStatusChange();
   setTimeout(function(){
     var ov=document.getElementById('projFormOverlay');
     ov.onclick=function(e){if(e.target===ov)closeProjForm();};
@@ -2497,10 +2536,11 @@ function openProjModal(row){
     {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
     {label:'BA',value:row[CI.ba]||'\u2014'},
     {label:'Status',value:row[CI.status]||'\u2014',pill:true},
-    {label:'Development',value:row[CI.dev]||'\u2014'},
+    {label:'Development Team',value:row[CI.dev]||'\u2014'},
     {label:'Start Date',value:row[CI.start]||'\u2014'},
     {label:'Due Date',value:row[CI.due]||'\u2014'},
-    {label:'Progress',value:pct},
+    {label:'Live Date',value:row[CI.livedate]||'\u2014'},
+
     {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
     {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
     {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
