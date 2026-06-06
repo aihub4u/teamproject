@@ -394,8 +394,8 @@ tr:last-child td{border-bottom:none;}
     <table class="dtable">
       <thead>
         <tr>
-          <th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Usecase</th><th>Status</th>
-          <th>Dev Team</th><th>Start</th><th>Due</th><th>Mandays</th><th>Ongoing</th>
+          <th>#</th><th>Project</th><th>Region</th><th>BA</th><th>WABA</th><th>Usecase</th><th>Status</th>
+          <th>Dev Team</th><th>Start</th><th>Due</th><th>Live</th><th>Mandays</th><th>Ongoing</th>
         </tr>
       </thead>
       <tbody id="dBody"></tbody>
@@ -497,13 +497,17 @@ tr:last-child td{border-bottom:none;}
       <input type="hidden" id="pfOrigProject"/>
       <input type="hidden" id="pfOrigBA"/>
       <div class="pf-grid">
+
+        <!-- ROW 1: Project name -->
         <div class="pf-field full">
-          <div class="pf-label">Project name <span class="req">*</span></div>
-          <input class="pf-input" id="pfProject" placeholder="Client / Project name"/>
+          <div class="pf-label">Project / Account name <span class="req">*</span></div>
+          <input class="pf-input" id="pfProject" placeholder="Client / Account name"/>
         </div>
-        <div class="pf-field full">
-          <div class="pf-label">Usecase / Description</div>
-          <input class="pf-input" id="pfUsecase" placeholder="Brief description of the use case"/>
+
+        <!-- ROW 2: WABA + Region -->
+        <div class="pf-field">
+          <div class="pf-label">WABA number <span class="req">*</span></div>
+          <input class="pf-input" id="pfWaba" placeholder="e.g. 919XXXXXXXXX"/>
         </div>
         <div class="pf-field">
           <div class="pf-label">Region <span class="req">*</span></div>
@@ -512,6 +516,8 @@ tr:last-child td{border-bottom:none;}
             <option>North</option><option>South</option><option>West</option><option>UAE</option>
           </select>
         </div>
+
+        <!-- ROW 3: BA + Status -->
         <div class="pf-field">
           <div class="pf-label">BA <span class="req">*</span></div>
           <select class="pf-select" id="pfBA">
@@ -525,18 +531,25 @@ tr:last-child td{border-bottom:none;}
           <div class="pf-label">Status <span class="req">*</span></div>
           <select class="pf-select" id="pfStatus" onchange="onPfStatusChange()">
             <option value="">Select status</option>
-            <option>Live</option><option>Hypercare</option><option>In Progress</option>
-            <option>Development</option><option>UAT</option><option>Yet to Start(Assigned)</option>
-            <option>Scoping</option><option>Pipeline</option><option>Hold</option><option>End of life</option>
+            <option>Pipeline</option>
+            <option>In Progress</option>
+            <option>UAT</option>
+            <option>Live</option>
+            <option>Hypercare</option>
+            <option>Hold</option>
           </select>
         </div>
+
+        <!-- ROW 4: Development team -->
         <div class="pf-field">
-          <div class="pf-label">Development type</div>
+          <div class="pf-label">Development team</div>
           <select class="pf-select" id="pfDev">
-            <option value="">Select type</option>
-            <option>Twixor</option><option>Inhouse</option><option>Inhouse Dev</option>
+            <option value="">Select team</option>
+            <option>Twixor</option><option>Inhouse</option><option>Both</option>
           </select>
         </div>
+
+        <!-- ROW 5: Dates -->
         <div class="pf-field">
           <div class="pf-label">Start date</div>
           <input class="pf-input" type="date" id="pfStart"/>
@@ -549,10 +562,49 @@ tr:last-child td{border-bottom:none;}
           <div class="pf-label">Live date <span id="pfLiveStar" class="req" style="display:none">*</span></div>
           <input class="pf-input" type="date" id="pfLivedate"/>
         </div>
+
+        <!-- ROW 6: Usecase -->
+        <div class="pf-field full">
+          <div class="pf-label">Usecase / Description</div>
+          <input class="pf-input" id="pfUsecase" placeholder="Brief description of the use case"/>
+        </div>
+
+        <!-- ROW 7: People -->
+        <div class="pf-field">
+          <div class="pf-label">Presales name</div>
+          <input class="pf-input" id="pfPresales" placeholder="Presales person"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">CSM name</div>
+          <input class="pf-input" id="pfCsm" placeholder="CSM person"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Sales name</div>
+          <input class="pf-input" id="pfSales" placeholder="Sales person"/>
+        </div>
+
+        <!-- ROW 8: Mandays section -->
+        <div class="pf-field full" style="grid-column:1/-1;">
+          <div class="pf-label" style="font-size:11px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:4px;letter-spacing:0.08em;">&#9632; MANDAYS</div>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays given to Twixor</div>
+          <input class="pf-input" id="pfMandaystwixor" placeholder="e.g. 3" type="number" min="0"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays charged from client</div>
+          <input class="pf-input" id="pfMandaysclient" placeholder="e.g. 5" type="number" min="0"/>
+        </div>
         <div class="pf-field">
           <div class="pf-label">Mandays saved</div>
           <input class="pf-input" id="pfMandays" placeholder="e.g. 5" type="number" min="0"/>
         </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays waived by sales</div>
+          <input class="pf-input" id="pfMandayswaived" placeholder="e.g. 1" type="number" min="0"/>
+        </div>
+
+        <!-- ROW 9: Remarks -->
         <div class="pf-field full">
           <div class="pf-label">Ongoing activities</div>
           <textarea class="pf-textarea" id="pfOngoing" placeholder="What is currently being worked on..."></textarea>
@@ -561,8 +613,10 @@ tr:last-child td{border-bottom:none;}
           <div class="pf-label">Comments / remarks</div>
           <textarea class="pf-textarea" id="pfComments" placeholder="Any blockers, dependencies or notes..."></textarea>
         </div>
+
+        <!-- ROW 10: Manday Screenshot -->
         <div class="pf-field full">
-          <div class="pf-label">Manday Screenshot <span id="pfScreenshotStar" class="req" style="display:none">*</span> <span id="pfScreenshotOptional" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional</span></div>
+          <div class="pf-label">Manday ERP Screenshot <span id="pfScreenshotStar" class="req" style="display:none">*</span> <span id="pfScreenshotOptional" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional</span></div>
           <div id="pfExistingFiles" style="margin-bottom:6px;"></div>
           <div class="file-drop-zone" id="pfDropZone" onclick="document.getElementById('pfFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleFileDrop(event)">
             <input type="file" id="pfFileInput" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFileSelect(event)"/>
@@ -570,6 +624,7 @@ tr:last-child td{border-bottom:none;}
           </div>
           <div id="pfFileList" class="attach-list" style="margin-top:8px;"></div>
         </div>
+
       </div>
       </div>
     <div class="proj-form-footer">
@@ -828,7 +883,7 @@ const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11,screenshot:12};
+const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11,screenshot:12,waba:13,livedate:14,mandaystwixor:15,mandaysclient:16,mandayswaived:17,presales:18,csm:19,sales:20};
 
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
@@ -951,11 +1006,13 @@ function makeRow(row,i){
   const td1=document.createElement('td');td1.style.cssText='white-space:normal;min-width:120px';const b=document.createElement('strong');b.textContent=row[CI.proj]||'\u2014';td1.appendChild(b);tr.appendChild(td1);
   const td2=document.createElement('td');td2.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[row[CI.reg]]||'#8B9AB8')+'">&nbsp;</span>'+row[CI.reg]+'</span>';tr.appendChild(td2);
   const td3=document.createElement('td');td3.style.whiteSpace='nowrap';td3.textContent=row[CI.ba]||'\u2014';tr.appendChild(td3);
+  const tdW=document.createElement('td');tdW.style.cssText='font-size:11px;white-space:nowrap;color:var(--text-muted)';tdW.textContent=row[CI.waba]||'\u2014';tr.appendChild(tdW);
   const td4=document.createElement('td');td4.style.cssText='white-space:normal;min-width:160px;font-size:12px;color:var(--text-sec)';td4.textContent=uc;tr.appendChild(td4);
   const td5=document.createElement('td');const sp=document.createElement('span');sp.className='sp '+statusClass(row[CI.status]);sp.textContent=row[CI.status]||'\u2014';td5.appendChild(sp);tr.appendChild(td5);
   const td6=document.createElement('td');td6.style.cssText='white-space:nowrap;font-size:12px';td6.textContent=row[CI.dev]||'\u2014';tr.appendChild(td6);
   const td7=document.createElement('td');td7.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td7.textContent=row[CI.start]||'\u2014';tr.appendChild(td7);
   const td8=document.createElement('td');td8.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td8.textContent=row[CI.due]||'\u2014';tr.appendChild(td8);
+  const tdL=document.createElement('td');tdL.style.cssText='white-space:nowrap;font-size:12px;color:#10B981';tdL.textContent=row[CI.livedate]||'\u2014';tr.appendChild(tdL);
   const td10=document.createElement('td');td10.style.cssText='white-space:nowrap;font-size:12px';td10.textContent=row[CI.mandays]||'\u2014';tr.appendChild(td10);
   const td11=document.createElement('td');td11.style.cssText='white-space:normal;min-width:140px;font-size:11px;color:var(--text-sec)';td11.textContent=row[CI.ongoing]||'\u2014';tr.appendChild(td11);
   return tr;
@@ -2170,6 +2227,8 @@ async function saveProjForm(){
   if(!region){msgEl.className='pf-status error';msgEl.textContent='Region is required.';return;}
   if(!ba){msgEl.className='pf-status error';msgEl.textContent='BA is required.';return;}
   if(!status){msgEl.className='pf-status error';msgEl.textContent='Status is required.';return;}
+  const waba=document.getElementById('pfWaba').value.trim();
+  if(!waba){msgEl.className='pf-status error';msgEl.textContent='WABA number is required.';return;}
 
   // 4. Due date mandatory unless status is Pipeline/Scoping
   const statusL=status.toLowerCase();
@@ -2207,16 +2266,19 @@ async function saveProjForm(){
     origProject:document.getElementById('pfOrigProject').value,
     origBA:document.getElementById('pfOrigBA').value,
     data:{
-      project,region,
+      project,region,ba,status,waba,
       usecase:document.getElementById('pfUsecase').value.trim(),
-      ba,
       startDate:document.getElementById('pfStart').value,
       dueDate:document.getElementById('pfDue').value,
       liveDate:document.getElementById('pfLivedate').value,
-      status,
-      progress:document.getElementById('pfProgress').value.trim()?document.getElementById('pfProgress').value.trim()+'%':'',
       development:document.getElementById('pfDev').value,
       mandays:document.getElementById('pfMandays').value.trim(),
+      mandaystwixor:document.getElementById('pfMandaystwixor').value.trim(),
+      mandaysclient:document.getElementById('pfMandaysclient').value.trim(),
+      mandayswaived:document.getElementById('pfMandayswaived').value.trim(),
+      presales:document.getElementById('pfPresales').value.trim(),
+      csm:document.getElementById('pfCsm').value.trim(),
+      sales:document.getElementById('pfSales').value.trim(),
       ongoing:document.getElementById('pfOngoing').value.trim(),
       comments:document.getElementById('pfComments').value.trim(),
     }
@@ -2301,16 +2363,14 @@ function openProjForm(row){
   const cl=function(v){return(v===null||v===undefined||String(v).trim()==='null'||String(v).trim()==='undefined')?'':String(v).trim();};
 
   if(isNew){
-    document.getElementById('pfProject').value='';
-    document.getElementById('pfUsecase').value='';
-    document.getElementById('pfRegion').value='';
+    ['pfProject','pfWaba','pfUsecase','pfRegion','pfStatus','pfDev',
+     'pfDue','pfLivedate','pfMandays','pfMandaystwixor','pfMandaysclient',
+     'pfMandayswaived','pfPresales','pfCsm','pfSales','pfOngoing','pfComments',
+     'pfOrigProject','pfOrigBA'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.value='';
+    });
     document.getElementById('pfBA').value=sess?normBA(sess.username):'';
-    document.getElementById('pfStatus').value='';
-    document.getElementById('pfDev').value='';
     document.getElementById('pfStart').value=new Date().toISOString().slice(0,10);
-    document.getElementById('pfDue').value='';
-    document.getElementById('pfLivedate').value='';
-    document.getElementById('pfMandays').value='';
     document.getElementById('pfOngoing').value='';
     document.getElementById('pfComments').value='';
     document.getElementById('pfOrigProject').value='';
@@ -2326,6 +2386,13 @@ function openProjForm(row){
     document.getElementById('pfDue').value=toDate(row[CI.due]);
     document.getElementById('pfLivedate').value=toDate(row[CI.livedate])||'';
     document.getElementById('pfMandays').value=cl(row[CI.mandays]);
+    document.getElementById('pfMandaystwixor').value=cl(row[CI.mandaystwixor]||'');
+    document.getElementById('pfMandaysclient').value=cl(row[CI.mandaysclient]||'');
+    document.getElementById('pfMandayswaived').value=cl(row[CI.mandayswaived]||'');
+    document.getElementById('pfPresales').value=cl(row[CI.presales]||'');
+    document.getElementById('pfCsm').value=cl(row[CI.csm]||'');
+    document.getElementById('pfSales').value=cl(row[CI.sales]||'');
+    document.getElementById('pfWaba').value=cl(row[CI.waba]||'');
     document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
     document.getElementById('pfComments').value=cl(row[CI.comments]);
     document.getElementById('pfOrigProject').value=cl(row[CI.proj]);
@@ -2535,17 +2602,23 @@ function openProjModal(row){
   const fields=[
     {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
     {label:'BA',value:row[CI.ba]||'\u2014'},
+    {label:'WABA Number',value:row[CI.waba]||'\u2014'},
     {label:'Status',value:row[CI.status]||'\u2014',pill:true},
     {label:'Development Team',value:row[CI.dev]||'\u2014'},
     {label:'Start Date',value:row[CI.start]||'\u2014'},
     {label:'Due Date',value:row[CI.due]||'\u2014'},
     {label:'Live Date',value:row[CI.livedate]||'\u2014'},
-
     {label:'Mandays Saved',value:row[CI.mandays]||'\u2014'},
+    {label:'Mandays to Twixor',value:row[CI.mandaystwixor]||'\u2014'},
+    {label:'Mandays from Client',value:row[CI.mandaysclient]||'\u2014'},
+    {label:'Mandays Waived',value:row[CI.mandayswaived]||'\u2014'},
+    {label:'Presales',value:row[CI.presales]||'\u2014'},
+    {label:'CSM',value:row[CI.csm]||'\u2014'},
+    {label:'Sales',value:row[CI.sales]||'\u2014'},
     {label:'Usecase',value:row[CI.use]||'\u2014',full:true},
     {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
     {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
-    {label:'Manday Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
+    {label:'Manday ERP Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
   ];
   const body=document.getElementById('pmBody');body.innerHTML='';
   const sec=document.createElement('div');sec.className='modal-section';
