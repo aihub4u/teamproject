@@ -749,6 +749,15 @@ tr:last-child td{border-bottom:none;}
         </select>
       </div>
       <div class="filter-group">
+        <div class="filter-label">Request Type</div>
+        <select class="filter-select" id="fReqtype" onchange="applyFilters()">
+          <option value="">All types</option>
+          <option>WhatsApp</option><option>RCS</option><option>Voice</option>
+          <option>AI</option><option>Ads to Chat</option><option>Payments</option>
+          <option>WA Flows</option><option>Chatbot</option>
+        </select>
+      </div>
+      <div class="filter-group">
         <div class="filter-label">Month</div>
         <select class="filter-select" id="fMonth" onchange="applyFilters()">
           <option value="">All months</option>
@@ -973,7 +982,7 @@ function inMonth(row,mk){
 }
 
 /* FILTER */
-function filterRaw({region='',status='',dev='',ba='',month='',search=''}={}){
+function filterRaw({region='',status='',dev='',ba='',month='',search='',reqtype=''}={}){
   const q=search.trim().toLowerCase();
   return RAW.rows.filter(row=>{
     if(region&&String(row[CI.reg]).trim()!==region)return false;
@@ -981,6 +990,7 @@ function filterRaw({region='',status='',dev='',ba='',month='',search=''}={}){
     if(dev&&normDev(row[CI.dev])!==dev)return false;
     if(ba&&normBA(row[CI.ba])!==ba)return false;
     if(month&&!inMonth(row,month))return false;
+    if(reqtype&&(row[CI.reqtype]||'').toLowerCase().indexOf(reqtype.toLowerCase())<0)return false;
     if(q){const hay=[row[CI.proj],row[CI.use],row[CI.ba],row[CI.reg],row[CI.status],row[CI.dev]].join(' ').toLowerCase();if(!hay.includes(q))return false;}
     return true;
   });
@@ -994,6 +1004,8 @@ function applyFilters(){
   activeFilters.dev=document.getElementById('fDev').value;
   activeFilters.ba=document.getElementById('fBA').value;
   activeFilters.month=document.getElementById('fMonth').value;
+  const fReq=document.getElementById('fReqtype');
+  activeFilters.reqtype=fReq?fReq.value:'';
   const rows=filterRaw(activeFilters);
   renderActiveTags();
   renderFilteredTable(rows);
@@ -1105,13 +1117,27 @@ function renderFilteredTable(rows){
 /* KPI */
 function renderKPI(data){
   const t=data['Total'];
-  const defs=[['Total projects',t.total,true,'all','all'],['Go live',t.golive,false,'all','golive'],['In progress',t.inprogress,false,'all','inprogress'],['UAT',t.uat,false,'all','uat'],['Yet to start',t.yts,false,'all','yts'],['Pipeline/scoping',t.scoping,false,'all','scoping'],['Twixor',t.twixor,false,'all','twixor'],['Inhouse',t.inhouse,false,'all','inhouse'],['Mandays saved',t.mandays,false,'all','mandays'],
-    ['Revenue saved',fmtINR(revenue(t.mandays)),false,'all','mandays']];
+  const defs=[
+    ['Total projects',t.total,true,'all','all'],
+    ['Go live',t.golive,false,'all','golive'],
+    ['In progress',t.inprogress,false,'all','inprogress'],
+    ['UAT',t.uat,false,'all','uat'],
+    ['Yet to start',t.yts,false,'all','yts'],
+    ['Pipeline/scoping',t.scoping,false,'all','scoping'],
+    ['Twixor',t.twixor,false,'all','twixor'],
+    ['Inhouse',t.inhouse,false,'all','inhouse'],
+    ['Mandays saved',t.mandays,false,'all','mandays'],
+    ['Revenue saved',fmtINR(revenue(t.mandays)),false,'all','mandays'],
+    ['Md to Twixor',(t.mandaystwixor||0),false,'all','mandaystwixor'],
+    ['Md from client',(t.mandaysclient||0),false,'all','mandaysclient'],
+    ['Md waived',(t.mandayswaived||0),false,'all','mandayswaived'],
+  ];
   const grid=document.getElementById('kpiGrid');grid.innerHTML='';
   defs.forEach(([lbl,val,acc,region,field])=>{
-    const clickable=val>0&&field!=='mandays';
+    const isRevenue=(lbl==='Revenue saved');
+    const clickable=!isRevenue&&val>0;
     const div=document.createElement('div');div.className='kpi'+(acc?' accent':'')+(clickable?' clickable':'');
-    if(clickable)div.onclick=()=>openDrawer(region,field,lbl,currentMonthKey);
+    if(clickable) div.onclick=()=>openDrawer(region,field,lbl,currentMonthKey);
     const l=document.createElement('div');l.className='kpi-label';l.textContent=lbl;
     const v=document.createElement('div');v.className='kpi-value';v.textContent=val;
     div.appendChild(l);div.appendChild(v);grid.appendChild(div);
@@ -1735,6 +1761,10 @@ function openDrawer(region,field,label,monthKey,baFilter){
   else if(field==='scoping')rows=rows.filter(r=>normStatus(r[CI.status])==='scoping');
   else if(field==='twixor')rows=rows.filter(r=>normDev(r[CI.dev])==='Twixor');
   else if(field==='inhouse')rows=rows.filter(r=>normDev(r[CI.dev])==='Inhouse');
+  else if(field==='mandays')rows=rows.filter(r=>parseFloat(r[CI.mandays])>0);
+  else if(field==='mandaystwixor')rows=rows.filter(r=>parseFloat(r[CI.mandaystwixor])>0);
+  else if(field==='mandaysclient')rows=rows.filter(r=>parseFloat(r[CI.mandaysclient])>0);
+  else if(field==='mandayswaived')rows=rows.filter(r=>parseFloat(r[CI.mandayswaived])>0);
   drawerRows=rows;
   document.getElementById('dTitle').textContent=label;
   const mStr=monthKey&&monthKey!=='all'?' \u00b7 '+mLabel(monthKey):'';
@@ -2105,6 +2135,17 @@ function saveSession(token,username,role){
   sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));
   sessionToken=token;
   startInactivityTimer();
+}
+
+function doLogout(){
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  if(sessionToken){
+    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'logout',token:sessionToken})
+    }).catch(function(){});
+  }
+  clearSession();
+  showGate('You have been signed out.');
 }
 
 function clearSession(){
