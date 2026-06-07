@@ -665,6 +665,17 @@ tr:last-child td{border-bottom:none;}
           <div id="pfFileList" class="attach-list" style="margin-top:8px;"></div>
         </div>
 
+        <!-- Other Documents -->
+        <div class="pf-field full">
+          <div class="pf-label">Other Documents <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional, any supporting files</span></div>
+          <div id="pfOtherExistingFiles" style="margin-bottom:6px;"></div>
+          <div class="file-drop-zone" id="pfOtherDropZone" onclick="document.getElementById('pfOtherFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleOtherFileDrop(event)">
+            <input type="file" id="pfOtherFileInput" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx,.txt,.csv" onchange="handleOtherFileSelect(event)"/>
+            <div class="file-drop-text"><i class="ti ti-files" style="font-size:22px;display:block;margin-bottom:6px;color:var(--text-muted)"></i><strong>Click to upload</strong> or drag and drop<br>Any file type — up to 20MB each</div>
+          </div>
+          <div id="pfOtherFileList" class="attach-list" style="margin-top:8px;"></div>
+        </div>
+
       </div>
       </div>
     <div class="proj-form-footer">
@@ -932,7 +943,7 @@ const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-const CI={proj:0,waba:1,reg:2,use:3,ba:4,start:5,due:6,livedate:7,status:8,dev:9,mandaystwixor:10,mandaysclient:11,mandayswaived:12,mandays:13,presales:14,csm:15,sales:16,ongoing:17,comments:18,screenshot:19,reqtype:20};
+const CI={proj:0,waba:1,reg:2,use:3,ba:4,start:5,due:6,livedate:7,status:8,dev:9,mandaystwixor:10,mandaysclient:11,mandayswaived:12,mandays:13,presales:14,csm:15,sales:16,ongoing:17,comments:18,screenshot:19,reqtype:20,otherdocs:21};
 
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
@@ -2384,6 +2395,38 @@ async function loadData(){
 
 
 let _pendingFiles=[];
+let _pendingOtherFiles=[];
+
+function handleOtherFileSelect(evtOrInput){
+  const files=evtOrInput&&evtOrInput.target?evtOrInput.target.files:evtOrInput?evtOrInput.files:null;
+  if(!files||!files.length)return;
+  addOtherPendingFiles(Array.from(files));
+}
+function handleOtherFileDrop(e){
+  e.preventDefault();
+  document.getElementById('pfOtherDropZone').classList.remove('drag-over');
+  addOtherPendingFiles(Array.from(e.dataTransfer.files));
+}
+function addOtherPendingFiles(files){
+  if(!files||!files.length)return;
+  _pendingOtherFiles=_pendingOtherFiles.concat(files);
+  renderOtherPendingFiles();
+}
+function renderOtherPendingFiles(){
+  const list=document.getElementById('pfOtherFileList');
+  if(!list)return;
+  list.innerHTML='';
+  _pendingOtherFiles.forEach(function(f,i){
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--off-white);border-radius:6px;margin-bottom:4px;font-size:12px;border:1px solid var(--border);';
+    const icon=document.createElement('i');icon.className='ti ti-file';icon.style.cssText='color:var(--text-muted);flex-shrink:0;';
+    const name=document.createElement('span');name.style.cssText='flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';name.textContent=f.name;
+    const size=document.createElement('span');size.style.cssText='color:var(--text-muted);white-space:nowrap;';size.textContent=(f.size/1024).toFixed(0)+'KB';
+    const btn=document.createElement('button');btn.style.cssText='background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;';btn.innerHTML='&times;';
+    btn.onclick=function(){_pendingOtherFiles.splice(i,1);renderOtherPendingFiles();};
+    d.appendChild(icon);d.appendChild(name);d.appendChild(size);d.appendChild(btn);list.appendChild(d);
+  });
+}
 
 
 function downloadRawData(){
@@ -2483,14 +2526,27 @@ async function saveProjForm(){
     if(filesToUpload.length>0){
       btn.innerHTML='<i class="ti ti-loader-2"></i> Uploading files...';
       msgEl.textContent='Uploading '+filesToUpload.length+' file(s) to Drive...';
-      const uploadResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2);
+      const uploadResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2,'screenshot');
       uploadResults.forEach(function(r){
         if(r.status==='ok'&&r.fileUrl){
-          newUrls.push(r.fileUrl);
-          console.log('Upload OK:', r.fileName, '| Sheet:', r.sheetStatus, '| URL:', r.fileUrl);
+          newUrls.push(r.fileName+'||'+r.fileUrl);
+          console.log('Upload OK:', r.fileName, '| Sheet:', r.sheetStatus);
         } else {
           console.error('Upload failed:', r.error||r.message, '| File:', r.fileName);
         }
+      });
+    }
+    // Upload other documents
+    const otherFilesToUpload=_pendingOtherFiles.slice();
+    let newOtherUrls=[];
+    if(otherFilesToUpload.length>0){
+      const savedFiles=_pendingFiles;
+      _pendingFiles=otherFilesToUpload;
+      const otherResults=await uploadPendingFiles(project,region,ba,SCRIPT_URL2,'otherdocs');
+      _pendingFiles=savedFiles;
+      _pendingOtherFiles=[];
+      otherResults.forEach(function(r){
+        if(r.status==='ok'&&r.fileUrl) newOtherUrls.push(r.fileName+'||'+r.fileUrl);
       });
     }
 
@@ -2504,10 +2560,13 @@ async function saveProjForm(){
 
     // Step 4: Update local RAW optimistically
     const allUrlStr=existingUrls?(existingUrls+(newUrls.length?'\n'+newUrls.join('\n'):'')):newUrls.join('\n');
-    const newRowData=[project,region,payload.data.usecase,ba,
-      payload.data.startDate,payload.data.dueDate,status,payload.data.progress,
-      payload.data.development,payload.data.mandays,payload.data.ongoing,
-      payload.data.comments,allUrlStr];
+    const existingOtherUrls=_editingRow?(_editingRow[CI.otherdocs]||''):'';
+    const allOtherUrlStr=existingOtherUrls?(existingOtherUrls+(newOtherUrls.length?'\n'+newOtherUrls.join('\n'):'')):newOtherUrls.join('\n');
+    const newRowData=[project,payload.data.waba,region,payload.data.usecase,ba,
+      payload.data.startDate,payload.data.dueDate,payload.data.liveDate,status,payload.data.development,
+      payload.data.mandaystwixor,payload.data.mandaysclient,payload.data.mandayswaived,payload.data.mandays,
+      payload.data.presales,payload.data.csm,payload.data.sales,payload.data.ongoing,
+      payload.data.comments,allUrlStr,payload.data.reqtype,allOtherUrlStr];
 
     if(payload.isNew){
       RAW.rows.push(newRowData);
@@ -2536,8 +2595,11 @@ function openProjForm(row){
   document.getElementById('pfSaveBtn').innerHTML='<i class="ti ti-device-floppy"></i> Save to sheet';
 
   _pendingFiles=[];
+  _pendingOtherFiles=[];
   const fileList=document.getElementById('pfFileList');
   if(fileList) fileList.innerHTML='';
+  const otherFileList=document.getElementById('pfOtherFileList');
+  if(otherFileList) otherFileList.innerHTML='';
 
   const toDate=function(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}};
   const progVal=function(v){if(!v)return'';const n=parseFloat(String(v).replace('%','').trim());return isNaN(n)?'':(n<=1?Math.round(n*100):Math.round(n));};
@@ -2586,13 +2648,36 @@ function openProjForm(row){
       existingFilesDiv.innerHTML='';
       const screenshots=cl(row[CI.screenshot]);
       if(screenshots){
-        screenshots.split('\n').filter(Boolean).forEach(function(u,i){
+        screenshots.split('\n').filter(Boolean).forEach(function(entry){
+          // entry format: "filename||url" or just "url" for old entries
+          const parts=entry.split('||');
+          const url=parts.length>1?parts[1]:parts[0];
+          const fname=parts.length>1?parts[0]:url.split('/').pop().split('?')[0]||'Attachment';
           const d=document.createElement('div');
           d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
           d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB;flex-shrink:0"></i>'
-            +'<span style="flex:1;color:#2563EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Attachment '+(i+1)+'</span>'
-            +'<a href="'+u+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
+            +'<span style="flex:1;color:#2563EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+fname+'">'+fname+'</span>'
+            +'<a href="'+url+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
           existingFilesDiv.appendChild(d);
+        });
+      }
+    }
+    // Other documents
+    const otherExistingDiv=document.getElementById('pfOtherExistingFiles');
+    if(otherExistingDiv){
+      otherExistingDiv.innerHTML='';
+      const otherDocs=cl(row[CI.otherdocs]||'');
+      if(otherDocs){
+        otherDocs.split('\n').filter(Boolean).forEach(function(entry){
+          const parts=entry.split('||');
+          const url=parts.length>1?parts[1]:parts[0];
+          const fname=parts.length>1?parts[0]:url.split('/').pop().split('?')[0]||'Document';
+          const d=document.createElement('div');
+          d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#F0FDF4;border-radius:6px;margin-bottom:4px;font-size:12px;';
+          d.innerHTML='<i class="ti ti-file" style="color:#16A34A;flex-shrink:0"></i>'
+            +'<span style="flex:1;color:#16A34A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+fname+'">'+fname+'</span>'
+            +'<a href="'+url+'" target="_blank" style="color:#16A34A;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
+          otherExistingDiv.appendChild(d);
         });
       }
     }
@@ -2656,7 +2741,7 @@ function renderPendingFiles(){
 
 function toInputDate(v){if(!v)return'';try{const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);}catch(e){return '';}}
 
-async function uploadPendingFiles(projectName, region, ba, scriptUrl){
+async function uploadPendingFiles(projectName, region, ba, scriptUrl, fileType){
   if(!_pendingFiles.length) return [];
   const url=scriptUrl||localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
   const results=[];
@@ -2679,6 +2764,7 @@ async function uploadPendingFiles(projectName, region, ba, scriptUrl){
         fileName:file.name,
         fileData:b64,
         mimeType:file.type||'application/octet-stream',
+        fileType:fileType||'screenshot',
         project:projectName,
         region:region,
         ba:ba,
@@ -2803,6 +2889,7 @@ function openProjModal(row){
     {label:'Ongoing Activities',value:row[CI.ongoing]||'\u2014',full:true},
     {label:'Comments',value:row[CI.comments]||'\u2014',full:true},
     {label:'Manday ERP Screenshot',value:row[CI.screenshot]||'\u2014',full:true,isFiles:true},
+    {label:'Other Documents',value:row[CI.otherdocs]||'\u2014',full:true,isFiles:true},
   ];
   const body=document.getElementById('pmBody');body.innerHTML='';
   const sec=document.createElement('div');sec.className='modal-section';
@@ -2817,7 +2904,20 @@ function openProjModal(row){
       const sp=document.createElement('span');sp.className='sp '+statusClass(f.value);sp.textContent=f.value;val.appendChild(sp);
     } else if(f.isFiles){
       val.className='modal-field-value';
-      val.id='pmScreenshots'; // populated by IIFE after modal opens
+      val.id='pmScreenshots';
+      if(f.value&&f.value!=='\u2014'){
+        f.value.split('\n').filter(Boolean).forEach(function(entry){
+          const parts=entry.split('||');
+          const url=parts.length>1?parts[1]:parts[0];
+          const fname=parts.length>1?parts[0]:(url.split('/').pop().split('?')[0]||'View file');
+          const a=document.createElement('a');a.href=url;a.target='_blank';
+          a.textContent=fname+' \u2197';
+          a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
+          val.appendChild(a);
+        });
+      } else {
+        val.textContent='\u2014';
+      }
     } else if(f.color){
       val.className='modal-field-value';
       const rb=document.createElement('span');rb.className='region-badge';
