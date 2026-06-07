@@ -2330,7 +2330,13 @@ document.addEventListener('click', function(e){
   }
 });
 
-/* ═══ FORM DYNAMIC VALIDATION ═══ */
+function fixDriveUrl(url){
+  // Convert old /view links to /preview which works without login
+  if(url&&url.indexOf('drive.google.com/file/d/')>-1){
+    return url.replace('/view','/preview').replace('/edit','/preview');
+  }
+  return url;
+}
 function onPfStatusChange(){
   const status=(document.getElementById('pfStatus').value||'').toLowerCase();
   const isPipeline=status.indexOf('pipeline')>-1||status.indexOf('scoping')>-1;
@@ -2657,7 +2663,7 @@ function openProjForm(row){
           d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#EFF6FF;border-radius:6px;margin-bottom:4px;font-size:12px;';
           d.innerHTML='<i class="ti ti-file-check" style="color:#2563EB;flex-shrink:0"></i>'
             +'<span style="flex:1;color:#2563EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+fname+'">'+fname+'</span>'
-            +'<a href="'+url+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
+            +'<a href="'+fixDriveUrl(url)+'" target="_blank" style="color:#2563EB;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
           existingFilesDiv.appendChild(d);
         });
       }
@@ -2676,7 +2682,7 @@ function openProjForm(row){
           d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#F0FDF4;border-radius:6px;margin-bottom:4px;font-size:12px;';
           d.innerHTML='<i class="ti ti-file" style="color:#16A34A;flex-shrink:0"></i>'
             +'<span style="flex:1;color:#16A34A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+fname+'">'+fname+'</span>'
-            +'<a href="'+url+'" target="_blank" style="color:#16A34A;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
+            +'<a href="'+fixDriveUrl(url)+'" target="_blank" style="color:#16A34A;font-size:11px;white-space:nowrap;text-decoration:none;">View ↗</a>';
           otherExistingDiv.appendChild(d);
         });
       }
@@ -2910,7 +2916,7 @@ function openProjModal(row){
           const parts=entry.split('||');
           const url=parts.length>1?parts[1]:parts[0];
           const fname=parts.length>1?parts[0]:(url.split('/').pop().split('?')[0]||'View file');
-          const a=document.createElement('a');a.href=url;a.target='_blank';
+          const a=document.createElement('a');a.href=fixDriveUrl(url);a.target='_blank';
           a.textContent=fname+' \u2197';
           a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
           val.appendChild(a);
@@ -2931,25 +2937,7 @@ function openProjModal(row){
   sec.appendChild(grid);body.appendChild(sec);
   document.getElementById('projModalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
-  // Show attachments in modal
-  (function(){
-    const screenshots=row[CI.screenshot]||'';
-    const existingDiv=document.getElementById('pmScreenshots');
-    if(!existingDiv) return;
-    existingDiv.innerHTML='';
-    if(screenshots){
-      const urls=screenshots.split('\n').filter(Boolean);
-      urls.forEach(function(u,i){
-        const a=document.createElement('a');
-        a.href=u;a.target='_blank';
-        a.textContent='View attachment '+(i+1)+' \u2197';
-        a.style.cssText='display:block;color:var(--blue);font-size:12px;margin-bottom:3px;text-decoration:none;';
-        existingDiv.appendChild(a);
-      });
-    } else {
-      existingDiv.textContent='\u2014';
-    }
-  })();
+
 }
 
 function previewTemplateHint(){
