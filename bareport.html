@@ -1118,7 +1118,7 @@ function renderFilteredTable(rows){
   sec.style.display='block';
   const table=document.createElement('table');
   const thead=document.createElement('thead');
-  thead.innerHTML='<tr><th>#</th><th>Project</th><th>Region</th><th>BA</th><th>Usecase</th><th>Status</th><th>Dev Team</th><th>Start</th><th>Due</th><th>Progress</th><th>Mandays</th><th>Ongoing</th></tr>';
+  thead.innerHTML='<tr><th>#</th><th>Project</th><th>WABA</th><th>Region</th><th>Usecase</th><th>BA</th><th>Start</th><th>Due</th><th>Live</th><th>Status</th><th>Dev Team</th><th>Req Type</th><th>Md Twixor</th><th>Md Client</th><th>Md Waived</th><th>Mandays</th><th>Presales</th><th>CSM</th><th>Sales</th><th>Ongoing</th><th>Comments</th></tr>';
   table.appendChild(thead);
   const tbody=document.createElement('tbody');
   rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
