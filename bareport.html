@@ -67,7 +67,7 @@ body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text
 .filter-tag button:hover{opacity:1;}
 .result-count{font-size:12px;color:var(--text-sec);white-space:nowrap;}
 
-/* MONTH CHIP */
+/* MONTH CHIPS */
 .month-bar{display:flex;align-items:center;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
 .filter-label-sm{font-size:12px;font-weight:500;color:var(--text-sec);margin-right:2px;}
 .chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-strong);background:var(--white);color:var(--text-sec);transition:all 0.15s;white-space:nowrap;font-family:'Inter',sans-serif;box-shadow:var(--shadow-sm);}
@@ -273,6 +273,22 @@ tr:last-child td{border-bottom:none;}
 .pf-status.error{color:#DC2626;}
 .btn-new-proj{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;transition:background 0.15s;}
 .btn-new-proj:hover{background:var(--blue-hover);}
+
+
+/* MULTI-SELECT CHECKBOX DROPDOWN */
+.ms-wrap{position:relative;}
+.ms-display{min-height:38px;padding:7px 32px 7px 11px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);background:#fff;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px;align-items:center;transition:border-color 0.15s;}
+.ms-display:focus-within,.ms-display.open{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light);}
+.ms-display .ms-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted);font-size:12px;}
+.ms-tag{background:var(--blue-light);color:var(--blue);border-radius:4px;padding:2px 6px;font-size:11px;font-weight:500;display:flex;align-items:center;gap:3px;white-space:nowrap;}
+.ms-tag-x{cursor:pointer;font-size:13px;line-height:1;color:var(--blue);font-weight:700;}
+.ms-placeholder{color:var(--text-muted);font-size:13px;}
+.ms-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--border-strong);border-radius:8px;box-shadow:0 4px 20px rgba(7,17,42,0.12);z-index:200;max-height:220px;overflow-y:auto;display:none;}
+.ms-dropdown.open{display:block;}
+.ms-option{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--text);transition:background 0.1s;}
+.ms-option:hover{background:var(--off-white);}
+.ms-option input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--blue);}
+.ms-option.checked{background:#EFF6FF;}
 
 /* PASSWORD GATE */
 .gate-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
@@ -515,6 +531,27 @@ tr:last-child td{border-bottom:none;}
             <option value="">Select region</option>
             <option>North</option><option>South</option><option>West</option><option>UAE</option>
           </select>
+        </div>
+
+        <!-- ROW 2b: Request Type -->
+        <div class="pf-field full">
+          <div class="pf-label">Request Type</div>
+          <div class="ms-wrap" id="pfReqtypeWrap">
+            <div class="ms-display" id="pfReqtypeDisplay" onclick="toggleMsDropdown('pfReqtype')">
+              <span class="ms-placeholder" id="pfReqtypePlaceholder">Select type(s)</span>
+              <span class="ms-arrow">&#9660;</span>
+            </div>
+            <div class="ms-dropdown" id="pfReqtypeDropdown">
+              <label class="ms-option"><input type="checkbox" value="WhatsApp" onchange="onMsChange('pfReqtype')"/> WhatsApp</label>
+              <label class="ms-option"><input type="checkbox" value="RCS" onchange="onMsChange('pfReqtype')"/> RCS</label>
+              <label class="ms-option"><input type="checkbox" value="Voice" onchange="onMsChange('pfReqtype')"/> Voice</label>
+              <label class="ms-option"><input type="checkbox" value="AI" onchange="onMsChange('pfReqtype')"/> AI</label>
+              <label class="ms-option"><input type="checkbox" value="Ads to Chat" onchange="onMsChange('pfReqtype')"/> Ads to Chat</label>
+              <label class="ms-option"><input type="checkbox" value="Payments" onchange="onMsChange('pfReqtype')"/> Payments</label>
+              <label class="ms-option"><input type="checkbox" value="WA Flows" onchange="onMsChange('pfReqtype')"/> WA Flows</label>
+              <label class="ms-option"><input type="checkbox" value="Chatbot" onchange="onMsChange('pfReqtype')"/> Chatbot</label>
+            </div>
+          </div>
         </div>
 
         <!-- ROW 3: BA + Status -->
@@ -883,7 +920,7 @@ const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-const CI={proj:0,waba:1,reg:2,use:3,ba:4,start:5,due:6,livedate:7,status:8,dev:9,mandaystwixor:10,mandaysclient:11,mandayswaived:12,mandays:13,presales:14,csm:15,sales:16,ongoing:17,comments:18,screenshot:19};
+const CI={proj:0,waba:1,reg:2,use:3,ba:4,start:5,due:6,livedate:7,status:8,dev:9,mandaystwixor:10,mandaysclient:11,mandayswaived:12,mandays:13,presales:14,csm:15,sales:16,ongoing:17,comments:18,screenshot:19,reqtype:20};
 
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
@@ -2139,6 +2176,74 @@ function toggleGateEye(){
   else{inp.type='password';icon.className='ti ti-eye';}
 }
 
+/* ═══ MULTI-SELECT CHECKBOX DROPDOWN ═══ */
+function toggleMsDropdown(id){
+  const dd=document.getElementById(id+'Dropdown');
+  const disp=document.getElementById(id+'Display');
+  const isOpen=dd.classList.contains('open');
+  // Close all open dropdowns first
+  document.querySelectorAll('.ms-dropdown.open').forEach(function(el){
+    el.classList.remove('open');
+    el.previousElementSibling&&el.previousElementSibling.classList.remove('open');
+  });
+  if(!isOpen){dd.classList.add('open');disp.classList.add('open');}
+}
+function onMsChange(id){
+  const dd=document.getElementById(id+'Dropdown');
+  const checks=dd.querySelectorAll('input[type=checkbox]:checked');
+  const values=Array.from(checks).map(function(c){return c.value;});
+  // Update tags display
+  const disp=document.getElementById(id+'Display');
+  const placeholder=document.getElementById(id+'Placeholder');
+  // Remove old tags
+  disp.querySelectorAll('.ms-tag').forEach(function(t){t.remove();});
+  if(values.length===0){
+    if(placeholder) placeholder.style.display='';
+  } else {
+    if(placeholder) placeholder.style.display='none';
+    values.forEach(function(v){
+      const tag=document.createElement('span');tag.className='ms-tag';
+      tag.innerHTML=v+'<span class="ms-tag-x" onclick="event.stopPropagation();removeMsValue(\''+id+'\',\''+v+'\')">×</span>';
+      disp.insertBefore(tag, disp.querySelector('.ms-arrow'));
+    });
+  }
+  // Update checked style
+  dd.querySelectorAll('.ms-option').forEach(function(opt){
+    opt.classList.toggle('checked', opt.querySelector('input').checked);
+  });
+}
+function removeMsValue(id, value){
+  const dd=document.getElementById(id+'Dropdown');
+  const cb=dd.querySelector('input[value="'+value+'"]');
+  if(cb){cb.checked=false;onMsChange(id);}
+}
+function getMsValues(id){
+  const dd=document.getElementById(id+'Dropdown');
+  if(!dd) return '';
+  const checks=dd.querySelectorAll('input[type=checkbox]:checked');
+  return Array.from(checks).map(function(c){return c.value;}).join(', ');
+}
+function setMsValues(id, valueStr){
+  const dd=document.getElementById(id+'Dropdown');
+  if(!dd) return;
+  const values=(valueStr||'').split(',').map(function(v){return v.trim();}).filter(Boolean);
+  dd.querySelectorAll('input[type=checkbox]').forEach(function(cb){
+    cb.checked=values.indexOf(cb.value)>-1;
+  });
+  onMsChange(id);
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.ms-wrap')){
+    document.querySelectorAll('.ms-dropdown.open').forEach(function(el){
+      el.classList.remove('open');
+    });
+    document.querySelectorAll('.ms-display.open').forEach(function(el){
+      el.classList.remove('open');
+    });
+  }
+});
+
 /* ═══ FORM DYNAMIC VALIDATION ═══ */
 function onPfStatusChange(){
   const status=(document.getElementById('pfStatus').value||'').toLowerCase();
@@ -2267,6 +2372,7 @@ async function saveProjForm(){
     origBA:document.getElementById('pfOrigBA').value,
     data:{
       project,region,ba,status,waba,
+      reqtype:getMsValues('pfReqtype'),
       usecase:document.getElementById('pfUsecase').value.trim(),
       startDate:document.getElementById('pfStart').value,
       dueDate:document.getElementById('pfDue').value,
@@ -2363,6 +2469,7 @@ function openProjForm(row){
   const cl=function(v){return(v===null||v===undefined||String(v).trim()==='null'||String(v).trim()==='undefined')?'':String(v).trim();};
 
   if(isNew){
+    setMsValues('pfReqtype','');
     ['pfProject','pfWaba','pfUsecase','pfRegion','pfStatus','pfDev',
      'pfDue','pfLivedate','pfMandays','pfMandaystwixor','pfMandaysclient',
      'pfMandayswaived','pfPresales','pfCsm','pfSales','pfOngoing','pfComments',
@@ -2393,6 +2500,7 @@ function openProjForm(row){
     document.getElementById('pfCsm').value=cl(row[CI.csm]||'');
     document.getElementById('pfSales').value=cl(row[CI.sales]||'');
     document.getElementById('pfWaba').value=cl(row[CI.waba]||'');
+    setMsValues('pfReqtype', cl(row[CI.reqtype]||''));
     document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
     document.getElementById('pfComments').value=cl(row[CI.comments]);
     document.getElementById('pfOrigProject').value=cl(row[CI.proj]);
@@ -2603,6 +2711,7 @@ function openProjModal(row){
     {label:'Region',value:row[CI.reg],color:RCOLORS[row[CI.reg]]},
     {label:'BA',value:row[CI.ba]||'\u2014'},
     {label:'WABA Number',value:row[CI.waba]||'\u2014'},
+    {label:'Request Type',value:row[CI.reqtype]||'\u2014'},
     {label:'Status',value:row[CI.status]||'\u2014',pill:true},
     {label:'Development Team',value:row[CI.dev]||'\u2014'},
     {label:'Start Date',value:row[CI.start]||'\u2014'},
