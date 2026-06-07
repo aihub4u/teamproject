@@ -883,7 +883,7 @@ const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
-const CI={proj:0,reg:1,use:2,ba:3,start:4,due:5,status:6,prog:7,dev:8,mandays:9,ongoing:10,comments:11,screenshot:12,waba:13,livedate:14,mandaystwixor:15,mandaysclient:16,mandayswaived:17,presales:18,csm:19,sales:20};
+const CI={proj:0,waba:1,reg:2,use:3,ba:4,start:5,due:6,livedate:7,status:8,dev:9,mandaystwixor:10,mandaysclient:11,mandayswaived:12,mandays:13,presales:14,csm:15,sales:16,ongoing:17,comments:18,screenshot:19};
 
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
