@@ -410,8 +410,11 @@ tr:last-child td{border-bottom:none;}
     <table class="dtable">
       <thead>
         <tr>
-          <th>#</th><th>Project</th><th>Region</th><th>BA</th><th>WABA</th><th>Usecase</th><th>Status</th>
-          <th>Dev Team</th><th>Start</th><th>Due</th><th>Live</th><th>Mandays</th><th>Ongoing</th>
+          <th>#</th><th>Project</th><th>WABA</th><th>Region</th><th>Usecase</th><th>BA</th>
+          <th>Start</th><th>Due</th><th>Live</th><th>Status</th><th>Dev Team</th>
+          <th>Req Type</th><th>Md Twixor</th><th>Md Client</th><th>Md Waived</th>
+          <th>Mandays</th><th>Presales</th><th>CSM</th><th>Sales</th>
+          <th>Ongoing</th><th>Comments</th>
         </tr>
       </thead>
       <tbody id="dBody"></tbody>
@@ -1037,21 +1040,52 @@ function closeProjModal(){
 function makeRow(row,i){
   const tr=document.createElement('tr');tr.style.cursor='pointer';tr.title='Click to view project details';
   tr.onclick=()=>openProjModal(row);
-  const pct=row[CI.prog]?Math.round(parseFloat(row[CI.prog]))+'%':'\u2014';
-  const uc=(row[CI.use]||'').substring(0,50)+((row[CI.use]||'').length>50?'\u2026':'');
+  const uc=(row[CI.use]||'').substring(0,45)+((row[CI.use]||'').length>45?'\u2026':'');
+  const on=(row[CI.ongoing]||'').substring(0,40)+((row[CI.ongoing]||'').length>40?'\u2026':'');
+  const co=(row[CI.comments]||'').substring(0,40)+((row[CI.comments]||'').length>40?'\u2026':'');
+  function td(txt,css){const c=document.createElement('td');if(css)c.style.cssText=css;c.textContent=txt||'\u2014';tr.appendChild(c);return c;}
+  // #
   const td0=document.createElement('td');td0.style.cssText='color:var(--text-muted);font-size:11px';td0.textContent=i+1;tr.appendChild(td0);
-  const td1=document.createElement('td');td1.style.cssText='white-space:normal;min-width:120px';const b=document.createElement('strong');b.textContent=row[CI.proj]||'\u2014';td1.appendChild(b);tr.appendChild(td1);
-  const td2=document.createElement('td');td2.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[row[CI.reg]]||'#8B9AB8')+'">&nbsp;</span>'+row[CI.reg]+'</span>';tr.appendChild(td2);
-  const td3=document.createElement('td');td3.style.whiteSpace='nowrap';td3.textContent=row[CI.ba]||'\u2014';tr.appendChild(td3);
-  const tdW=document.createElement('td');tdW.style.cssText='font-size:11px;white-space:nowrap;color:var(--text-muted)';tdW.textContent=row[CI.waba]||'\u2014';tr.appendChild(tdW);
-  const td4=document.createElement('td');td4.style.cssText='white-space:normal;min-width:160px;font-size:12px;color:var(--text-sec)';td4.textContent=uc;tr.appendChild(td4);
-  const td5=document.createElement('td');const sp=document.createElement('span');sp.className='sp '+statusClass(row[CI.status]);sp.textContent=row[CI.status]||'\u2014';td5.appendChild(sp);tr.appendChild(td5);
-  const td6=document.createElement('td');td6.style.cssText='white-space:nowrap;font-size:12px';td6.textContent=row[CI.dev]||'\u2014';tr.appendChild(td6);
-  const td7=document.createElement('td');td7.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td7.textContent=row[CI.start]||'\u2014';tr.appendChild(td7);
-  const td8=document.createElement('td');td8.style.cssText='white-space:nowrap;font-size:12px;color:var(--text-sec)';td8.textContent=row[CI.due]||'\u2014';tr.appendChild(td8);
-  const tdL=document.createElement('td');tdL.style.cssText='white-space:nowrap;font-size:12px;color:#10B981';tdL.textContent=row[CI.livedate]||'\u2014';tr.appendChild(tdL);
-  const td10=document.createElement('td');td10.style.cssText='white-space:nowrap;font-size:12px';td10.textContent=row[CI.mandays]||'\u2014';tr.appendChild(td10);
-  const td11=document.createElement('td');td11.style.cssText='white-space:normal;min-width:140px;font-size:11px;color:var(--text-sec)';td11.textContent=row[CI.ongoing]||'\u2014';tr.appendChild(td11);
+  // Project (bold)
+  const tdp=document.createElement('td');tdp.style.cssText='white-space:normal;min-width:120px';const b=document.createElement('strong');b.textContent=row[CI.proj]||'\u2014';tdp.appendChild(b);tr.appendChild(tdp);
+  // WABA
+  td(row[CI.waba],'font-size:11px;white-space:nowrap;color:var(--text-muted)');
+  // Region
+  const tdr=document.createElement('td');tdr.innerHTML='<span class="region-badge"><span class="rdot" style="background:'+(RCOLORS[row[CI.reg]]||'#8B9AB8')+'">&nbsp;</span>'+row[CI.reg]+'</span>';tr.appendChild(tdr);
+  // Usecase
+  td(uc,'white-space:normal;min-width:140px;font-size:12px;color:var(--text-sec)');
+  // BA
+  td(row[CI.ba],'white-space:nowrap');
+  // Start
+  td(row[CI.start],'white-space:nowrap;font-size:12px;color:var(--text-sec)');
+  // Due
+  td(row[CI.due],'white-space:nowrap;font-size:12px;color:var(--text-sec)');
+  // Live (green)
+  td(row[CI.livedate],'white-space:nowrap;font-size:12px;color:#10B981');
+  // Status (pill)
+  const tds=document.createElement('td');const sp=document.createElement('span');sp.className='sp '+statusClass(row[CI.status]);sp.textContent=row[CI.status]||'\u2014';tds.appendChild(sp);tr.appendChild(tds);
+  // Dev Team
+  td(row[CI.dev],'white-space:nowrap;font-size:12px');
+  // Request Type
+  td(row[CI.reqtype],'white-space:nowrap;font-size:11px;color:var(--blue)');
+  // Mandays Twixor
+  td(row[CI.mandaystwixor],'white-space:nowrap;font-size:12px;text-align:right');
+  // Mandays Client
+  td(row[CI.mandaysclient],'white-space:nowrap;font-size:12px;text-align:right');
+  // Mandays Waived
+  td(row[CI.mandayswaived],'white-space:nowrap;font-size:12px;text-align:right');
+  // Mandays Saved
+  td(row[CI.mandays],'white-space:nowrap;font-size:12px;text-align:right;font-weight:600');
+  // Presales
+  td(row[CI.presales],'white-space:nowrap;font-size:12px');
+  // CSM
+  td(row[CI.csm],'white-space:nowrap;font-size:12px');
+  // Sales
+  td(row[CI.sales],'white-space:nowrap;font-size:12px');
+  // Ongoing
+  td(on,'white-space:normal;min-width:140px;font-size:11px;color:var(--text-sec)');
+  // Comments
+  td(co,'white-space:normal;min-width:140px;font-size:11px;color:var(--text-sec)');
   return tr;
 }
 function renderFilteredTable(rows){
