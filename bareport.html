@@ -1834,7 +1834,13 @@ function openDrawer(region,field,label,monthKey,baFilter){
   const mStr=monthKey&&monthKey!=='all'?' \u00b7 '+mLabel(monthKey):'';
   const dfLabels={'start':' \u00b7 by Start date','due':' \u00b7 by Due date','live':' \u00b7 by Live date'};
   const dfStr=df!=='any'?(dfLabels[df]||''):'';
-  document.getElementById('dSub').textContent=rows.length+' project'+(rows.length!==1?'s':'')+mStr+dfStr;
+  // For mandays fields, show the sum too
+  let mdSumStr='';
+  if(field==='mandays'){const s=rows.reduce((a,r)=>a+(parseFloat(r[CI.mandays])||0),0);mdSumStr=' \u00b7 Total: '+s.toFixed(1)+' days';}
+  else if(field==='mandaystwixor'){const s=rows.reduce((a,r)=>a+(parseFloat(r[CI.mandaystwixor])||0),0);mdSumStr=' \u00b7 Total: '+s.toFixed(1)+' days';}
+  else if(field==='mandaysclient'){const s=rows.reduce((a,r)=>a+(parseFloat(r[CI.mandaysclient])||0),0);mdSumStr=' \u00b7 Total: '+s.toFixed(1)+' days';}
+  else if(field==='mandayswaived'){const s=rows.reduce((a,r)=>a+(parseFloat(r[CI.mandayswaived])||0),0);mdSumStr=' \u00b7 Total: '+s.toFixed(1)+' days';}
+  document.getElementById('dSub').textContent=rows.length+' project'+(rows.length!==1?'s':'')+mStr+dfStr+mdSumStr;
   document.getElementById('dCount').textContent='Showing '+rows.length+' project'+(rows.length!==1?'s':'');
   const tbody=document.getElementById('dBody');tbody.innerHTML='';
   rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
@@ -1858,8 +1864,20 @@ document.addEventListener('keydown',e=>{
 function downloadDrawerExcel(){
   if(!drawerRows.length)return;
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet([RAW.cols,...drawerRows]);
-  ws['!cols']=[{wch:20},{wch:10},{wch:40},{wch:12},{wch:12},{wch:14},{wch:18},{wch:10},{wch:14},{wch:12},{wch:30},{wch:40}];
+  // Use exact drawer column headers matching makeRow order
+  const drawerCols=['#','Project','WABA','Region','Usecase','BA','Start','Due','Live',
+    'Status','Dev Team','Req Type','Md Twixor','Md Client','Md Waived','Mandays Saved',
+    'Presales','CSM','Sales','Ongoing','Comments'];
+  // Build rows with correct CI mapping
+  const dataRows=drawerRows.map(function(row,i){
+    return [i+1,row[CI.proj],row[CI.waba],row[CI.reg],row[CI.use],row[CI.ba],
+      row[CI.start],row[CI.due],row[CI.livedate],row[CI.status],row[CI.dev],
+      row[CI.reqtype],row[CI.mandaystwixor],row[CI.mandaysclient],row[CI.mandayswaived],
+      row[CI.mandays],row[CI.presales],row[CI.csm],row[CI.sales],
+      row[CI.ongoing],row[CI.comments]];
+  });
+  const ws=XLSX.utils.aoa_to_sheet([drawerCols,...dataRows]);
+  ws['!cols']=drawerCols.map(function(h){return {wch:Math.max(h.length+2,14)};});
   XLSX.utils.book_append_sheet(wb,ws,'Filtered Projects');
   XLSX.writeFile(wb,'BA_Projects_'+document.getElementById('dTitle').textContent.replace(/[^a-z0-9]/gi,'_').slice(0,30)+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
