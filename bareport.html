@@ -1811,7 +1811,13 @@ function selectMonth(key){
 
 /* DRAWER */
 function openDrawer(region,field,label,monthKey,baFilter){
-  let rows=filterRaw({region:region==='all'?'':region,month:monthKey==='all'?'':monthKey,ba:baFilter||''});
+  const df=(activeFilters&&activeFilters.dateField)||'any';
+  let rows=filterRaw({
+    region:region==='all'?'':region,
+    month:monthKey==='all'?'':monthKey,
+    ba:baFilter||'',
+    dateField:df
+  });
   if(field==='golive')rows=rows.filter(r=>normStatus(r[CI.status])==='golive');
   else if(field==='inprogress')rows=rows.filter(r=>normStatus(r[CI.status])==='inprogress');
   else if(field==='uat')rows=rows.filter(r=>normStatus(r[CI.status])==='uat');
@@ -1826,7 +1832,9 @@ function openDrawer(region,field,label,monthKey,baFilter){
   drawerRows=rows;
   document.getElementById('dTitle').textContent=label;
   const mStr=monthKey&&monthKey!=='all'?' \u00b7 '+mLabel(monthKey):'';
-  document.getElementById('dSub').textContent=rows.length+' project'+(rows.length!==1?'s':'')+mStr;
+  const dfLabels={'start':' \u00b7 by Start date','due':' \u00b7 by Due date','live':' \u00b7 by Live date'};
+  const dfStr=df!=='any'?(dfLabels[df]||''):'';
+  document.getElementById('dSub').textContent=rows.length+' project'+(rows.length!==1?'s':'')+mStr+dfStr;
   document.getElementById('dCount').textContent='Showing '+rows.length+' project'+(rows.length!==1?'s':'');
   const tbody=document.getElementById('dBody');tbody.innerHTML='';
   rows.forEach((row,i)=>tbody.appendChild(makeRow(row,i)));
