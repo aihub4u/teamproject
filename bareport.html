@@ -777,6 +777,15 @@ tr:last-child td{border-bottom:none;}
           <option value="2026-06">Jun 2026</option>
         </select>
       </div>
+      <div class="filter-group">
+        <div class="filter-label">Date field</div>
+        <select class="filter-select" id="fDateField" onchange="applyFilters()">
+          <option value="any">Any date</option>
+          <option value="start">Start date</option>
+          <option value="due">Due date</option>
+          <option value="live">Live date</option>
+        </select>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div class="active-filters" id="activeTags"></div>
@@ -985,22 +994,27 @@ function statusClass(s){
   const n=normStatus(s);
   return n==='golive'?'sp-live':n==='uat'?'sp-uat':n==='inprogress'?'sp-ip':n==='scoping'?'sp-scoping':n==='yts'?'sp-yts':'sp-other';
 }
-function inMonth(row,mk){
+function inMonth(row,mk,dateField){
   if(!mk||mk==='')return true;
   const[y,m]=mk.split('-');
   const chk=d=>{if(!d)return false;const dt=new Date(d);return!isNaN(dt)&&dt.getFullYear()===+y&&(dt.getMonth()+1)===+m;};
-  return chk(row[CI.start])||chk(row[CI.due]);
+  const df=dateField||'any';
+  if(df==='start') return chk(row[CI.start]);
+  if(df==='due')   return chk(row[CI.due]);
+  if(df==='live')  return chk(row[CI.livedate]);
+  // 'any' — any of the 3 dates (default)
+  return chk(row[CI.start])||chk(row[CI.due])||chk(row[CI.livedate]);
 }
 
 /* FILTER */
-function filterRaw({region='',status='',dev='',ba='',month='',search='',reqtype=''}={}){
+function filterRaw({region='',status='',dev='',ba='',month='',search='',reqtype='',dateField='any'}={}){
   const q=search.trim().toLowerCase();
   return RAW.rows.filter(row=>{
     if(region&&String(row[CI.reg]).trim()!==region)return false;
     if(status&&normStatus(row[CI.status])!==status)return false;
     if(dev&&normDev(row[CI.dev])!==dev)return false;
     if(ba&&normBA(row[CI.ba])!==ba)return false;
-    if(month&&!inMonth(row,month))return false;
+    if(month&&!inMonth(row,month,dateField))return false;
     if(reqtype&&(row[CI.reqtype]||'').toLowerCase().indexOf(reqtype.toLowerCase())<0)return false;
     if(q){const hay=[row[CI.proj],row[CI.use],row[CI.ba],row[CI.reg],row[CI.status],row[CI.dev]].join(' ').toLowerCase();if(!hay.includes(q))return false;}
     return true;
@@ -1017,6 +1031,8 @@ function applyFilters(){
   activeFilters.month=document.getElementById('fMonth').value;
   const fReq=document.getElementById('fReqtype');
   activeFilters.reqtype=fReq?fReq.value:'';
+  const fDF=document.getElementById('fDateField');
+  activeFilters.dateField=fDF?fDF.value:'any';
   const rows=filterRaw(activeFilters);
   renderActiveTags();
   renderFilteredTable(rows);
@@ -1024,13 +1040,14 @@ function applyFilters(){
 function clearAll(){
   document.getElementById('searchInput').value='';
   ['fRegion','fStatus','fDev','fBA','fMonth','fReqtype'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const fDFclear=document.getElementById('fDateField');if(fDFclear)fDFclear.value='any';
   activeFilters={};
   renderActiveTags();
   renderFilteredTable([]);
   document.getElementById('filteredSection').style.display='none';
 }
 function renderActiveTags(){
-  const labels={region:'Region',status:'Status',dev:'Dev',ba:'BA',month:'Month',search:'Search',reqtype:'Request Type'};
+  const labels={region:'Region',status:'Status',dev:'Dev',ba:'BA',month:'Month',search:'Search',reqtype:'Request Type',dateField:'Date field'};
   const tags=document.getElementById('activeTags');tags.innerHTML='';let hasAny=false;
   Object.entries(activeFilters).forEach(([k,v])=>{
     if(!v)return;hasAny=true;
@@ -1038,7 +1055,7 @@ function renderActiveTags(){
     const strong=document.createElement('strong');strong.textContent=v;
     span.textContent=(labels[k]||k)+': ';span.appendChild(strong);
     const btn=document.createElement('button');btn.innerHTML='&times;';
-    const idMap={region:'fRegion',status:'fStatus',dev:'fDev',ba:'fBA',month:'fMonth',search:'searchInput',reqtype:'fReqtype'};
+    const idMap={region:'fRegion',status:'fStatus',dev:'fDev',ba:'fBA',month:'fMonth',search:'searchInput',reqtype:'fReqtype',dateField:'fDateField'};
     btn.onclick=()=>{
       const el=document.getElementById(idMap[k]);
       if(el)el.value='';
