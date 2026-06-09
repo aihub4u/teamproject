@@ -966,11 +966,16 @@ function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
 function mLabel(k){if(k==='all')return'All dates';const[y,m]=k.split('-');return(MON[m]||m)+' '+y;}
 function getData(key){
-  if(!key||key==='all') return DB.all;
   const df=(activeFilters&&activeFilters.dateField)||'any';
-  if(df==='any') return DB.months[key]?DB.months[key].data:DB.all;
-  if(!RAW||!RAW.rows) return DB.months[key]?DB.months[key].data:DB.all;
-  const filtered=RAW.rows.filter(r=>inMonth(r,key,df));
+  // If no date field filter, use pre-calculated DB data (fast)
+  if(df==='any'){
+    return (!key||key==='all')?DB.all:(DB.months[key]?DB.months[key].data:DB.all);
+  }
+  // Date field filter set — build from raw rows
+  if(!RAW||!RAW.rows) return DB.all;
+  const filtered=(!key||key==='all')
+    ? RAW.rows  // All months but still respects dateField via buildDataFromRows
+    : RAW.rows.filter(r=>inMonth(r,key,df));
   return buildDataFromRows(filtered);
 }
 function getCount(k){return k==='all'?DB.totalRows:DB.months[k].rowCount;}
@@ -1786,11 +1791,18 @@ function selectMonth(key){
   // Sync activeFilters.dateField from the fDateField select
   const _dfEl=document.getElementById('fDateField');
   if(_dfEl) activeFilters.dateField=_dfEl.value||'any';
+  const df=activeFilters.dateField||'any';
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
+  // Update info pill with dateField context
+  const _dfLabels={'any':'All dates','start':'by Start date','due':'by Due date','live':'by Live date'};
   const pill=document.getElementById('infoPill');
-  if(pill) pill.textContent=getCount(key)+' of '+DB.totalRows+' rows \u2014 '+mLabel(key);
   const data=getData(key);
+  const rowCount=data&&data['Total']?data['Total'].total:0;
+  if(pill) pill.textContent=(key==='all'?DB.totalRows:rowCount)+' of '+DB.totalRows+' rows \u2014 '+mLabel(key)+(df!=='any'?' ('+_dfLabels[df]+')':'');
   renderKPI(data);renderRegionTable(data);renderRegionCharts(data);
+  // Re-render month table and charts if on those tabs
+  try{renderMonthTable();}catch(e){}
+  try{renderTrendCharts();}catch(e){}
   const baTab=document.getElementById('panel-ba');
   if(baTab&&baTab.classList.contains('active'))renderBASection();
 }
@@ -2390,10 +2402,17 @@ function onPfStatusChange(){
 function onDateFieldChange(){
   const el=document.getElementById('fDateField');
   if(el) activeFilters.dateField=el.value||'any';
+  // Re-render everything based on current month key + new dateField
   selectMonth(currentMonthKey);
-  const rows=filterRaw(activeFilters);
-  renderActiveTags();
-  if(document.getElementById('filteredSection')&&document.getElementById('filteredSection').style.display!=='none') renderFilteredTable(rows);
+  // Also re-render month table and charts which aggregate across all months
+  try{renderMonthTable();}catch(e){}
+  try{renderTrendCharts();}catch(e){}
+  // Re-apply search/filter results if visible
+  const sec=document.getElementById('filteredSection');
+  if(sec&&sec.style.display!=='none'){
+    const rows=filterRaw(activeFilters);
+    renderFilteredTable(rows);
+  }
 }
 
 // Check existing session on page load
