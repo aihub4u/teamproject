@@ -777,15 +777,6 @@ tr:last-child td{border-bottom:none;}
           <option value="2026-06">Jun 2026</option>
         </select>
       </div>
-      <div class="filter-group">
-        <div class="filter-label">Date field</div>
-        <select class="filter-select" id="fDateField" onchange="applyFilters()">
-          <option value="any">Any date</option>
-          <option value="start">Start date</option>
-          <option value="due">Due date</option>
-          <option value="live">Live date</option>
-        </select>
-      </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div class="active-filters" id="activeTags"></div>
@@ -806,6 +797,15 @@ tr:last-child td{border-bottom:none;}
     <button class="chip" data-key="2026-04" onclick="selectMonth('2026-04')">Apr 2026</button>
     <button class="chip" data-key="2026-05" onclick="selectMonth('2026-05')">May 2026</button>
     <button class="chip" data-key="2026-06" onclick="selectMonth('2026-06')">Jun 2026</button>
+    <span style="display:flex;align-items:center;gap:6px;margin-left:4px;">
+      <span class="filter-label-sm" style="white-space:nowrap;">by:</span>
+      <select id="fDateField" onchange="onDateFieldChange()" style="font-size:12px;padding:3px 8px;border:1px solid var(--border-strong);border-radius:20px;background:#fff;color:var(--text);cursor:pointer;outline:none;font-family:'Inter',sans-serif;">
+        <option value="any">Any date</option>
+        <option value="start">Start date</option>
+        <option value="due">Due date</option>
+        <option value="live">Live date</option>
+      </select>
+    </span>
     <span class="info-pill" id="infoPill"></span>
   </div>
 
@@ -954,10 +954,40 @@ function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
 const CHART_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false}},y:{grid:{color:'rgba(0,0,0,0.04)'}}}};
 const CI={proj:0,waba:1,reg:2,use:3,ba:4,start:5,due:6,livedate:7,status:8,dev:9,mandaystwixor:10,mandaysclient:11,mandayswaived:12,mandays:13,presales:14,csm:15,sales:16,ongoing:17,comments:18,screenshot:19,reqtype:20,otherdocs:21};
 
+function buildDataFromRows(rows){
+  const result={};
+  const regions=['North','South','West','UAE','Total'];
+  regions.forEach(reg=>{
+    const sub=reg==='Total'?rows:rows.filter(r=>r[CI.reg]===reg);
+    result[reg]={
+      total:sub.length,
+      inprogress:sub.filter(r=>normStatus(r[CI.status])==='inprogress').length,
+      uat:sub.filter(r=>normStatus(r[CI.status])==='uat').length,
+      golive:sub.filter(r=>normStatus(r[CI.status])==='golive').length,
+      yts:sub.filter(r=>normStatus(r[CI.status])==='yts').length,
+      scoping:sub.filter(r=>normStatus(r[CI.status])==='scoping').length,
+      twixor:sub.filter(r=>normDev(r[CI.dev])==='Twixor').length,
+      inhouse:sub.filter(r=>normDev(r[CI.dev])==='Inhouse').length,
+      mandays:sub.reduce((s,r)=>s+(parseFloat(r[CI.mandays])||0),0),
+      mandaystwixor:sub.reduce((s,r)=>s+(parseFloat(r[CI.mandaystwixor])||0),0),
+      mandaysclient:sub.reduce((s,r)=>s+(parseFloat(r[CI.mandaysclient])||0),0),
+      mandayswaived:sub.reduce((s,r)=>s+(parseFloat(r[CI.mandayswaived])||0),0),
+    };
+  });
+  return result;
+}
+
 function revenue(m){return m*8000;}
 function fmtINR(v){if(v>=10000000)return "₹"+Math.round(v/10000000*10)/10+"Cr";if(v>=100000)return "₹"+Math.round(v/100000*10)/10+"L";if(v>=1000)return "₹"+(v/1000).toFixed(0)+"K";return "₹"+v;}
 function mLabel(k){if(k==='all')return'All dates';const[y,m]=k.split('-');return(MON[m]||m)+' '+y;}
-function getData(k){return k==='all'?DB.all:DB.months[k].data;}
+function getData(key){
+  if(!key||key==='all') return DB.all;
+  const df=(activeFilters&&activeFilters.dateField)||'any';
+  if(df==='any') return DB.months[key]?DB.months[key].data:DB.all;
+  if(!RAW||!RAW.rows) return DB.months[key]?DB.months[key].data:DB.all;
+  const filtered=RAW.rows.filter(r=>inMonth(r,key,df));
+  return buildDataFromRows(filtered);
+}
 function getCount(k){return k==='all'?DB.totalRows:DB.months[k].rowCount;}
 
 let C={};
@@ -1768,6 +1798,9 @@ function switchTab(tab){
 }
 function selectMonth(key){
   currentMonthKey=key;
+  // Sync activeFilters.dateField from the fDateField select
+  const _dfEl=document.getElementById('fDateField');
+  if(_dfEl) activeFilters.dateField=_dfEl.value||'any';
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.key===key));
   const pill=document.getElementById('infoPill');
   if(pill) pill.textContent=getCount(key)+' of '+DB.totalRows+' rows \u2014 '+mLabel(key);
@@ -2367,6 +2400,15 @@ function onPfStatusChange(){
   if(scrOpt) scrOpt.style.display=isInProgress?'none':'inline';
   const liveDateInput=document.getElementById('pfLivedate');
   if(liveDateInput) liveDateInput.style.borderColor=isLive?'var(--blue)':'';
+}
+
+function onDateFieldChange(){
+  const el=document.getElementById('fDateField');
+  if(el) activeFilters.dateField=el.value||'any';
+  selectMonth(currentMonthKey);
+  const rows=filterRaw(activeFilters);
+  renderActiveTags();
+  if(document.getElementById('filteredSection')&&document.getElementById('filteredSection').style.display!=='none') renderFilteredTable(rows);
 }
 
 // Check existing session on page load
