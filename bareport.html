@@ -564,7 +564,7 @@ tr:last-child td{border-bottom:none;}
             <option value="">Select BA</option>
             <option>Aniruddha</option><option>Ankit</option><option>Daimi Syed</option>
             <option>Himanshu</option><option>Kiran</option><option>Megha</option>
-            <option>Raj</option><option>Somya</option>
+            <option>Raj</option><option>Shanaz</option><option>Somya</option>
           </select>
         </div>
         <div class="pf-field">
@@ -595,7 +595,7 @@ tr:last-child td{border-bottom:none;}
           <input class="pf-input" type="date" id="pfStart"/>
         </div>
         <div class="pf-field">
-          <div class="pf-label">Due date / ETA <span id="pfDueStar" class="req">*</span></div>
+          <div class="pf-label">Due date / ETA</div>
           <input class="pf-input" type="date" id="pfDue"/>
         </div>
         <div class="pf-field">
@@ -711,7 +711,7 @@ tr:last-child td{border-bottom:none;}
 <div class="page" id="mainPage" style="display:none;">
   <div class="page-hdr">
     <h1>BA Team &mdash; Project Analytics</h1>
-    <p>146 projects &nbsp;&middot;&nbsp; Apr 2026 onwards &nbsp;&middot;&nbsp; Last updated 29 May 2026</p>
+    <p>146 projects &nbsp;&middot;&nbsp; Last updated 29 May 2026</p>
   </div>
 
   <!-- SEARCH + FILTERS -->
@@ -756,7 +756,7 @@ tr:last-child td{border-bottom:none;}
           <option value="">All BAs</option>
           <option>Aniruddha</option><option>Ankit</option><option>Daimi Syed</option>
           <option>Himanshu</option><option>Kiran</option><option>Megha</option>
-          <option>Raj</option><option>Somya</option>
+          <option>Raj</option><option>Shanaz</option><option>Somya</option>
         </select>
       </div>
       <div class="filter-group">
@@ -928,7 +928,7 @@ tr:last-child td{border-bottom:none;}
   <div class="footer">
     <span>&copy; 2026 Karix &mdash; a Tanla Platforms company</span>
     <span>&middot;</span><span>BA Team Project Analytics</span>
-    <span>&middot;</span><span>Data filtered: Apr 2026 onwards</span>
+    <span>&middot;</span><span>All projects</span>
   </div>
 </div>
 <script>
@@ -938,7 +938,7 @@ let RAW = null;
 /* CONSTANTS */
 const REGIONS=['North','South','West','UAE'];
 const RCOLORS={'North':'#0057FF','South':'#10B981','West':'#F59E0B','UAE':'#8B5CF6'};
-const BAS=['Aniruddha','Ankit','Daimi Syed','Himanshu','Kiran','Megha','Raj','Somya'];
+const BAS=['Aniruddha','Ankit','Daimi Syed','Himanshu','Kiran','Megha','Raj','Shanaz','Somya'];
 const BA_COLORS=['#0057FF','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#F97316'];
 const MON={'04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
 function getAllMonths(){return DB?Object.keys(DB.months).sort():[];}
@@ -2042,7 +2042,7 @@ function buildEmailHTML(note){
     <tr><td style="padding-top:8px;border-top:1px solid #F1F5F9;text-align:center;">
       <div style="font-size:11px;color:#9CA3AF;line-height:1.7;">
         This report was generated automatically from the Karix BA Team Analytics Dashboard.<br>
-        Data reflects projects with start or due date from Apr 2026 onwards.<br>
+        Data reflects projects across all dates.<br>
         <span style="color:#0057FF;">karix.com</span> &nbsp;&middot;&nbsp; a Tanla Platforms company
       </div>
     </td></tr>
@@ -2342,8 +2342,6 @@ function onPfStatusChange(){
   const isPipeline=status.indexOf('pipeline')>-1||status.indexOf('scoping')>-1;
   const isLive=status.indexOf('live')>-1||status.indexOf('hypercare')>-1;
   const isInProgress=status.indexOf('in progress')>-1||status==='development';
-  const dueStar=document.getElementById('pfDueStar');
-  if(dueStar) dueStar.style.display=isPipeline?'none':'inline';
   const liveStar=document.getElementById('pfLiveStar');
   if(liveStar) liveStar.style.display=isLive?'inline':'none';
   const scrStar=document.getElementById('pfScreenshotStar');
@@ -2370,7 +2368,7 @@ async function loadData(){
     if(json.status!=='ok') throw new Error(json.message||'API error');
     DB=json.db; RAW=json.raw;
     const meta=document.querySelector('.page-hdr p');
-    if(meta) meta.textContent=DB.totalRows+' projects · Apr 2026 onwards · Last updated '+DB.lastUpdated;
+    if(meta) meta.textContent=DB.totalRows+' projects · Last updated '+DB.lastUpdated;
     // Build month chips dynamically
     const monthBar=document.querySelector('.month-bar');
     if(monthBar){
@@ -2465,8 +2463,6 @@ async function saveProjForm(){
   const isLiveStatus=statusL.indexOf('live')>-1||statusL.indexOf('hypercare')>-1;
   const isInProgress=statusL.indexOf('in progress')>-1||statusL==='development';
   const dueVal=document.getElementById('pfDue').value;
-  if(!isPipeline&&!dueVal){msgEl.className='pf-status error';msgEl.textContent='Due date is required (unless status is Pipeline/Scoping).';return;}
-
   // 5. Live date mandatory if status is Live or Hypercare
   const liveDateVal=document.getElementById('pfLivedate').value;
   if(isLiveStatus&&!liveDateVal){msgEl.className='pf-status error';msgEl.textContent='Live date is required when status is Live or Hypercare.';return;}
@@ -3146,7 +3142,7 @@ ${noteBlock}
   </div>
 </td></tr>
 
-<tr><td style="text-align:center;padding-bottom:4px;"><div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Raw data attached as Excel &middot; ${T.total} rows &middot; Apr 2026 onwards</div></td></tr>
+<tr><td style="text-align:center;padding-bottom:4px;"><div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Raw data attached as Excel &middot; ${T.total} rows</div></td></tr>
 </table>
 </td></tr>
 <tr><td style="background:#F9FAFB;padding:14px 30px;border-top:0.5px solid #F1F5F9;text-align:center;"><div style="font-size:10px;color:#9CA3AF;line-height:1.7;">Auto-generated from the Karix BA Team Analytics Dashboard<br><a href="https://aihub4u.github.io/teamproject/bareport.html" style="color:#0057FF;text-decoration:none;">aihub4u.github.io/teamproject/bareport.html</a> &middot; Karix &mdash; a Tanla Platforms company</div></td></tr>
