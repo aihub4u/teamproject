@@ -792,21 +792,6 @@ tr:last-child td{border-bottom:none;}
 
   <!-- MONTH FILTER CHIPS -->
   <div class="month-bar">
-    <span class="filter-label-sm">Month:</span>
-    <button class="chip active" data-key="all" onclick="selectMonth('all')">All</button>
-    <button class="chip" data-key="2026-04" onclick="selectMonth('2026-04')">Apr 2026</button>
-    <button class="chip" data-key="2026-05" onclick="selectMonth('2026-05')">May 2026</button>
-    <button class="chip" data-key="2026-06" onclick="selectMonth('2026-06')">Jun 2026</button>
-    <span style="display:flex;align-items:center;gap:6px;margin-left:4px;">
-      <span class="filter-label-sm" style="white-space:nowrap;">by:</span>
-      <select id="fDateField" onchange="onDateFieldChange()" style="font-size:12px;padding:3px 8px;border:1px solid var(--border-strong);border-radius:20px;background:#fff;color:var(--text);cursor:pointer;outline:none;font-family:'Inter',sans-serif;">
-        <option value="any">Any date</option>
-        <option value="start">Start date</option>
-        <option value="due">Due date</option>
-        <option value="live">Live date</option>
-      </select>
-    </span>
-    <span class="info-pill" id="infoPill"></span>
   </div>
 
   <!-- TABS -->
@@ -2437,6 +2422,16 @@ async function loadData(){
         const b=document.createElement('button');b.className='chip';b.dataset.key=k;
         const[y,m]=k.split('-');b.textContent=(MON[m]||m)+' '+y;b.onclick=()=>selectMonth(k);monthBar.appendChild(b);
       });
+      // Date field selector
+      const dfWrap=document.createElement('span');dfWrap.style.cssText='display:inline-flex;align-items:center;gap:5px;margin-left:6px;';
+      const dfLabel=document.createElement('span');dfLabel.className='filter-label-sm';dfLabel.textContent='by:';dfLabel.style.whiteSpace='nowrap';
+      const dfSel=document.createElement('select');dfSel.id='fDateField';
+      dfSel.style.cssText='font-size:12px;padding:3px 22px 3px 8px;border:1px solid var(--border-strong);border-radius:20px;background:#fff;color:var(--text);cursor:pointer;outline:none;font-family:"Inter",sans-serif;appearance:auto;';
+      [['any','Any date'],['start','Start date'],['due','Due date'],['live','Live date']].forEach(([v,t])=>{
+        const o=document.createElement('option');o.value=v;o.textContent=t;dfSel.appendChild(o);
+      });
+      dfSel.onchange=()=>onDateFieldChange();
+      dfWrap.appendChild(dfLabel);dfWrap.appendChild(dfSel);monthBar.appendChild(dfWrap);
       const pill=document.createElement('span');pill.className='info-pill';pill.id='infoPill';monthBar.appendChild(pill);
     }
     // Show page and activate overview tab
