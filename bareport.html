@@ -506,88 +506,6 @@ tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
-<!-- Mandays Submit Modal -->
-<div class="modal-overlay" id="mdSubmitOverlay" onclick="closeMandaysModal()">
-  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
-    <div class="modal-hdr" style="background:var(--navy);color:#fff;padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
-      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-send" style="margin-right:8px;"></i>Submit Monthly Mandays Report</h3>
-    </div>
-    <div style="padding:20px;">
-      <p style="margin:0 0 12px;color:var(--text-sec);font-size:13px;" id="mdSubmitDesc"></p>
-      <div style="background:var(--off-white);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;" id="mdSubmitSummary"></div>
-      <p style="margin:0 0 16px;font-size:12px;color:var(--text-muted);">If you have already submitted this month, existing entries will be <strong>updated</strong> — no duplicates created.</p>
-      <div id="mdSubmitMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button class="btn-secondary" onclick="closeMandaysModal()">Cancel</button>
-        <button class="btn-primary" id="mdSubmitConfirmBtn" onclick="confirmSubmitMandays()">
-          <i class="ti ti-send"></i> Confirm & Submit
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Mandays Migrate Modal -->
-<div class="modal-overlay" id="mdMigrateOverlay" onclick="closeMigrateModal()">
-  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
-    <div class="modal-hdr" style="background:var(--navy);color:#fff;padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
-      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-database-import" style="margin-right:8px;"></i>Migrate Historical Mandays</h3>
-    </div>
-    <div style="padding:20px;">
-      <p style="color:var(--text-sec);font-size:13px;margin:0 0 16px;">This will create one historical entry per project in the Mandays Log using each project's start date month and current mandays values. Projects already in the log will be skipped.</p>
-      <p style="color:var(--blue);font-size:12px;margin:0 0 16px;"><i class="ti ti-info-circle"></i> This is a one-time operation. Run it once to backfill historical data.</p>
-      <div id="mdMigrateMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button class="btn-secondary" onclick="closeMigrateModal()">Cancel</button>
-        <button class="btn-primary" id="mdMigrateConfirmBtn" onclick="confirmMigrateMandays()">
-          <i class="ti ti-database-import"></i> Run Migration
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Mandays Submit Modal -->
-<div class="modal-overlay" id="mdSubmitOverlay" onclick="closeMandaysModal()">
-  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;border-radius:var(--radius-lg);overflow:hidden;">
-    <div style="background:var(--navy);color:#fff;padding:16px 20px;">
-      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-send" style="margin-right:8px;"></i>Submit Monthly Mandays Report</h3>
-    </div>
-    <div style="padding:20px;">
-      <p style="margin:0 0 12px;color:var(--text-sec);font-size:13px;" id="mdSubmitDesc"></p>
-      <div style="background:var(--off-white);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:13px;" id="mdSubmitSummary"></div>
-      <p style="margin:0 0 14px;font-size:12px;color:var(--text-muted);">If you have already submitted this month, existing entries will be <strong>updated</strong> — no duplicates created.</p>
-      <div id="mdSubmitMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button class="btn-modal-close" onclick="closeMandaysModal()">Cancel</button>
-        <button class="btn-send" id="mdSubmitConfirmBtn" onclick="confirmSubmitMandays()" style="display:flex;align-items:center;gap:6px;">
-          <i class="ti ti-send"></i> Confirm &amp; Submit
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Mandays Migrate Modal -->
-<div class="modal-overlay" id="mdMigrateOverlay" onclick="closeMigrateModal()">
-  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;border-radius:var(--radius-lg);overflow:hidden;">
-    <div style="background:var(--navy);color:#fff;padding:16px 20px;">
-      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-database-import" style="margin-right:8px;"></i>Migrate Historical Mandays</h3>
-    </div>
-    <div style="padding:20px;">
-      <p style="color:var(--text-sec);font-size:13px;margin:0 0 12px;">This will create one historical entry per project in the Mandays Log using each project's start date month and current mandays values. Projects already in the log will be skipped.</p>
-      <p style="color:var(--blue);font-size:12px;margin:0 0 14px;"><i class="ti ti-info-circle"></i> One-time operation. Run once to backfill historical data.</p>
-      <div id="mdMigrateMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button class="btn-modal-close" onclick="closeMigrateModal()">Cancel</button>
-        <button class="btn-send" id="mdMigrateConfirmBtn" onclick="confirmMigrateMandays()" style="display:flex;align-items:center;gap:6px;">
-          <i class="ti ti-database-import"></i> Run Migration
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Edit / Create Project Modal -->
 <div class="proj-form-overlay" id="projFormOverlay">
   <div class="proj-form" onclick="event.stopPropagation()">
@@ -748,6 +666,31 @@ tr:last-child td{border-bottom:none;}
           <div id="pfFileList" class="attach-list" style="margin-top:8px;"></div>
         </div>
 
+        <!-- MONTHLY MANDAYS ENTRY -->
+        <div class="pf-field full" style="grid-column:1/-1;">
+          <div class="pf-label" style="font-size:11px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:4px;letter-spacing:0.08em;">&#9632; MONTHLY MANDAYS ENTRY <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— recorded per month for MIS reporting</span></div>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Month</div>
+          <select class="pf-select" id="pfMdMonth"></select>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays given to Twixor</div>
+          <input class="pf-input" id="pfMdTwixor" placeholder="e.g. 3" type="number" min="0"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays charged from client</div>
+          <input class="pf-input" id="pfMdClient" placeholder="e.g. 5" type="number" min="0"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays saved</div>
+          <input class="pf-input" id="pfMdSaved" placeholder="e.g. 4" type="number" min="0"/>
+        </div>
+        <div class="pf-field">
+          <div class="pf-label">Mandays waived by sales</div>
+          <input class="pf-input" id="pfMdWaived" placeholder="e.g. 1" type="number" min="0"/>
+        </div>
+
         <!-- Other Documents -->
         <div class="pf-field full">
           <div class="pf-label">Other Documents <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;">— optional, any supporting files</span></div>
@@ -885,8 +828,8 @@ tr:last-child td{border-bottom:none;}
     <button class="tab" data-tab="insights" onclick="switchTab('insights')">Insights</button>
     <button class="tab" data-tab="ageing" onclick="switchTab('ageing')">Ageing</button>
     <button class="tab" data-tab="pipeline" onclick="switchTab('pipeline')">Pipeline</button>
-    <button class="tab" data-tab="mandays" onclick="switchTab('mandays')">Mandays</button>
-    <button class="tab" data-tab="mis" id="misTabBtn" onclick="switchTab('mis')">MIS Report</button>
+    <button class="tab" data-tab="mis" onclick="switchTab('mis')">MIS Report</button>
+
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -1004,67 +947,12 @@ tr:last-child td{border-bottom:none;}
     <div id="pipelineContent"></div>
   </div>
 
-  <!-- MANDAYS TAB -->
-  <div class="tab-panel" id="panel-mandays">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <h2 style="margin:0;font-size:18px;font-weight:700;">Monthly Mandays Tracker</h2>
-        <p style="color:var(--text-sec);font-size:13px;margin:4px 0 0;">Submit and track mandays per project month by month</p>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <select id="mdMonthSel" class="filter-select" style="width:auto;"></select>
-        <button class="btn-send" onclick="openSubmitMandaysModal()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;">
-          <i class="ti ti-send"></i> Submit Monthly Report
-        </button>
-        <button id="migrateMdBtn" onclick="openMigrateModal()" style="display:none;align-items:center;gap:6px;padding:8px 14px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;">
-          <i class="ti ti-database-import"></i> Migrate Historical
-        </button>
-        <button onclick="downloadMandaysExcel()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;">
-          <i class="ti ti-download"></i> Export MIS
-        </button>
-      </div>
-    </div>
-
-    <!-- Running totals -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;">
-      <h3 style="margin:0 0 12px;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;">
-        <i class="ti ti-activity" style="color:var(--blue);"></i>
-        Current Running Totals
-        <span style="font-size:11px;font-weight:400;color:var(--text-muted);">— live from main sheet, not yet submitted this month</span>
-      </h3>
-      <div id="mdRunningTable" style="overflow-x:auto;"></div>
-    </div>
-
-    <!-- History -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-        <h3 style="margin:0;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;">
-          <i class="ti ti-history" style="color:var(--blue);"></i> Submitted History
-        </h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="mdHistBA" class="filter-select" style="width:auto;" onchange="loadMandaysHistory()">
-            <option value="">All BAs</option>
-          </select>
-          <select id="mdHistMonth" class="filter-select" style="width:auto;" onchange="loadMandaysHistory()">
-            <option value="">All months</option>
-          </select>
-          <input id="mdHistSearch" class="search-input" placeholder="Search project..." style="width:160px;padding:6px 12px;" oninput="filterMandaysTable()"/>
-        </div>
-      </div>
-      <div id="mdHistTable" style="overflow-x:auto;"></div>
-      <div id="mdHistEmpty" style="text-align:center;padding:40px;color:var(--text-muted);display:none;">
-        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-        No submitted records yet.
-      </div>
-    </div>
-  </div>
-
   <!-- MIS REPORT TAB -->
   <div class="tab-panel" id="panel-mis">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
       <div>
         <h2 style="margin:0;font-size:18px;font-weight:700;">MIS Report</h2>
-        <p style="color:var(--text-sec);font-size:13px;margin:4px 0 0;">Project-wise mandays — month on month from submitted data</p>
+        <p style="color:var(--text-sec);font-size:13px;margin:4px 0 0;">Project-wise mandays — month on month</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <select id="misFilterBA" class="filter-select" style="width:auto;" onchange="renderMISReport()">
@@ -1080,7 +968,7 @@ tr:last-child td{border-bottom:none;}
         <select id="misFilterMonthTo" class="filter-select" style="width:auto;" onchange="renderMISReport()">
           <option value="">To month</option>
         </select>
-        <input id="misSearch" class="search-input" placeholder="Search project..." style="width:160px;padding:6px 12px;" oninput="renderMISReport()"/>
+        <input id="misSearch" class="search-input" placeholder="Search project..." style="width:150px;padding:6px 12px;" oninput="renderMISReport()"/>
         <button onclick="downloadMISExcel()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;">
           <i class="ti ti-download"></i> Export Excel
         </button>
@@ -1090,7 +978,7 @@ tr:last-child td{border-bottom:none;}
       <div id="misTableWrap" style="overflow-x:auto;"></div>
       <div id="misEmpty" style="text-align:center;padding:40px;color:var(--text-muted);display:none;">
         <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-        No submitted mandays data yet. BAs need to submit monthly reports first.
+        No mandays data yet. BAs need to fill in monthly mandays when saving projects.
       </div>
     </div>
   </div>
@@ -1961,7 +1849,6 @@ function switchTab(tab){
   if(tab==='insights') renderInsights();
   if(tab==='ageing') renderAgeing();
   if(tab==='pipeline') renderPipeline();
-  if(tab==='mandays') initMandaysTab();
   if(tab==='mis') initMISTab();
 }
 function selectMonth(key){
@@ -2619,513 +2506,243 @@ function onDateFieldChange(){
   }
 }
 
-/* ═══ MANDAYS TRACKER ═══ */
-var _mandaysHistory=[];
+/* ═══ MONTHLY MANDAYS ENTRY (in form) ═══ */
+var _misData=[];
 
-function initMandaysTab(){
-  const sess=getSession();
-  const isAdmin=sess&&sess.role&&sess.role.toLowerCase()==='admin';
-  const migBtn=document.getElementById('migrateMdBtn');
-  if(migBtn) migBtn.style.display=isAdmin?'flex':'none';
-  populateMandaysMonthSel();
-  const baFil=document.getElementById('mdHistBA');
-  if(baFil){
-    BAS.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
-    if(!isAdmin&&sess){baFil.value=normBA(sess.username)||'';baFil.disabled=true;}
-  }
-  renderMandaysRunning();
-  loadMandaysHistory();
-}
-
-function populateMandaysMonthSel(){
-  const sel=document.getElementById('mdMonthSel');
+function populatePfMdMonth(existingMonthKey){
+  const sel=document.getElementById('pfMdMonth');
   if(!sel) return;
-  sel.innerHTML='<option value="">Select month...</option>';
-  const hSel=document.getElementById('mdHistMonth');
-  if(hSel) hSel.innerHTML='<option value="">All months</option>';
+  sel.innerHTML='';
   const now=new Date();
   for(let i=11;i>=-2;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');
-    const key=y+'-'+m;const lbl=(MON[m]||m)+' '+y;
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,'0');
+    const key=y+'-'+m;
+    const lbl=(MON[m]||m)+' '+y;
     const o=document.createElement('option');o.value=key;o.textContent=lbl;
-    if(i===0){o.selected=true;}
+    if(i===0||key===existingMonthKey) o.selected=true;
     sel.appendChild(o);
-    if(hSel){const o2=document.createElement('option');o2.value=key;o2.textContent=lbl;hSel.appendChild(o2);}
   }
 }
 
-function renderMandaysRunning(){
-  const wrap=document.getElementById('mdRunningTable');
-  if(!wrap||!RAW||!RAW.rows) return;
-  const sess=getSession();
-  const isAdmin=sess&&sess.role&&sess.role.toLowerCase()==='admin';
-  const myRows=isAdmin?RAW.rows:RAW.rows.filter(function(r){return normBA(r[CI.ba])===normBA(sess?sess.username:'');});
-  if(!myRows.length){wrap.innerHTML='<p style="color:var(--text-muted);font-size:13px;padding:12px 0;">No projects found.</p>';return;}
-  const selMonth=(document.getElementById('mdMonthSel')||{}).value||'';
-  const submittedSet=new Set();
-  _mandaysHistory.filter(function(h){return h.monthKey===selMonth;}).forEach(function(h){submittedSet.add((h.project+'||'+h.waba).toLowerCase());});
-  const tbl=document.createElement('table');
-  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:13px;min-width:700px;';
-  tbl.innerHTML='<thead><tr style="background:var(--off-white);">'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">PROJECT</th>'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">BA</th>'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">REGION</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD TWIXOR</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD CLIENT</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD SAVED</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD WAIVED</th>'
-    +'<th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:600;">STATUS</th>'
-    +'</tr></thead>';
-  const tbody=document.createElement('tbody');
-  myRows.forEach(function(row,i){
-    const tr=document.createElement('tr');
-    tr.style.cssText='border-bottom:1px solid var(--border);'+(i%2===1?'background:var(--off-white);':'');
-    const key=(row[CI.proj]+'||'+row[CI.waba]).toLowerCase();
-    const submitted=submittedSet.has(key);
-    tr.innerHTML='<td style="padding:8px 12px;font-weight:500;white-space:nowrap;">'+( row[CI.proj]||'—')+'</td>'
-      +'<td style="padding:8px 12px;white-space:nowrap;">'+( row[CI.ba]||'—')+'</td>'
-      +'<td style="padding:8px 12px;white-space:nowrap;">'+( row[CI.reg]||'—')+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;">'+(row[CI.mandaystwixor]||'0')+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;">'+(row[CI.mandaysclient]||'0')+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--blue);">'+(row[CI.mandays]||'0')+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;">'+(row[CI.mandayswaived]||'0')+'</td>'
-      +'<td style="padding:8px 12px;text-align:center;">'
-        +(submitted?'<span style="background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">✅ Submitted</span>'
-          :'<span style="background:#FEF9C3;color:#92400E;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Pending</span>')
-      +'</td>';
-    tbody.appendChild(tr);
+function clearPfMdFields(){
+  ['pfMdTwixor','pfMdClient','pfMdSaved','pfMdWaived'].forEach(function(id){
+    const el=document.getElementById(id);if(el)el.value='';
   });
-  tbl.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(tbl);
+  populatePfMdMonth('');
 }
 
-function loadMandaysHistory(){
-  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  const baFil=document.getElementById('mdHistBA');
-  const mFil=document.getElementById('mdHistMonth');
-  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
-    body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:baFil?baFil.value:'',monthKey:mFil?mFil.value:''})})
-  .then(function(r){return r.json();})
-  .then(function(res){
-    if(res.status!=='ok') return;
-    _mandaysHistory=res.rows||[];
-    renderMandaysHistory(_mandaysHistory);
-    renderMandaysRunning();
-  }).catch(function(e){console.error('loadMandaysHistory:',e);});
-}
-
-function renderMandaysHistory(rows){
-  const wrap=document.getElementById('mdHistTable');
-  const empty=document.getElementById('mdHistEmpty');
-  if(!wrap) return;
-  if(!rows||!rows.length){wrap.innerHTML='';if(empty)empty.style.display='block';return;}
-  if(empty) empty.style.display='none';
-  const tbl=document.createElement('table');
-  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:13px;min-width:800px;';
-  tbl.innerHTML='<thead><tr style="background:var(--off-white);">'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">PROJECT</th>'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">BA</th>'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">REGION</th>'
-    +'<th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:600;">MONTH</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD TWIXOR</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD CLIENT</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD SAVED</th>'
-    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD WAIVED</th>'
-    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">SUBMITTED BY</th>'
-    +'</tr></thead>';
-  const tbody=document.createElement('tbody');
-  rows.forEach(function(row,i){
-    const tr=document.createElement('tr');
-    tr.style.cssText='border-bottom:1px solid var(--border);'+(i%2===1?'background:var(--off-white);':'');
-    tr.setAttribute('data-proj',(row.project||'').toLowerCase());
-    tr.innerHTML='<td style="padding:8px 12px;font-weight:500;white-space:nowrap;" title="'+row.project+'">'+row.project+'</td>'
-      +'<td style="padding:8px 12px;white-space:nowrap;">'+row.ba+'</td>'
-      +'<td style="padding:8px 12px;white-space:nowrap;">'+row.region+'</td>'
-      +'<td style="padding:8px 12px;text-align:center;"><span style="background:var(--blue-light);color:var(--blue);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">'+row.month+' '+row.year+'</span></td>'
-      +'<td style="padding:8px 12px;text-align:right;">'+row.mdTwixor+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;">'+row.mdClient+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--blue);">'+row.mdSaved+'</td>'
-      +'<td style="padding:8px 12px;text-align:right;">'+row.mdWaived+'</td>'
-      +'<td style="padding:8px 12px;font-size:11px;color:var(--text-muted);">'+row.submittedBy+'<br><span style="font-size:10px;">'+row.submittedOn+'</span></td>';
-    tbody.appendChild(tr);
-  });
-  tbl.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(tbl);
-}
-
-function filterMandaysTable(){
-  const q=((document.getElementById('mdHistSearch')||{}).value||'').toLowerCase();
-  document.querySelectorAll('#mdHistTable tbody tr').forEach(function(tr){
-    tr.style.display=(!q||(tr.getAttribute('data-proj')||'').indexOf(q)>-1)?'':'none';
-  });
-}
-
-function openSubmitMandaysModal(){
-  const sel=document.getElementById('mdMonthSel');
-  const monthKey=sel?sel.value:'';
-  if(!monthKey){alert('Please select a month first.');return;}
-  const parts=monthKey.split('-');
-  const mon=(MON[parts[1]]||parts[1])+' '+parts[0];
-  const sess=getSession();
-  const isAdmin=sess&&sess.role&&sess.role.toLowerCase()==='admin';
-  const myRows=isAdmin?RAW.rows:RAW.rows.filter(function(r){return normBA(r[CI.ba])===normBA(sess?sess.username:'');});
-  const already=_mandaysHistory.filter(function(h){return h.monthKey===monthKey&&(isAdmin||h.ba.toLowerCase()===(sess?sess.username.toLowerCase():''));}).length;
-  const desc=document.getElementById('mdSubmitDesc');
-  const summ=document.getElementById('mdSubmitSummary');
-  const msg=document.getElementById('mdSubmitMsg');
-  if(desc) desc.textContent='You are about to submit mandays report for '+mon+'.';
-  if(summ) summ.innerHTML='<strong>'+myRows.length+'</strong> project(s) will be submitted'+(already>0?'<br><span style="color:var(--blue);font-size:12px;">\u2139\ufe0f '+already+' already submitted this month — will be updated</span>':'');
-  if(msg) msg.textContent='';
-  const btn=document.getElementById('mdSubmitConfirmBtn');
-  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Confirm & Submit';}
-  document.getElementById('mdSubmitOverlay').classList.add('open');
-}
-
-function closeMandaysModal(){document.getElementById('mdSubmitOverlay').classList.remove('open');}
-
-async function confirmSubmitMandays(){
-  const monthKey=(document.getElementById('mdMonthSel')||{}).value||'';
-  const btn=document.getElementById('mdSubmitConfirmBtn');
-  const msg=document.getElementById('mdSubmitMsg');
-  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Submitting...';}
-  if(msg){msg.style.color='var(--text-muted)';msg.textContent='Submitting...';}
-  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  try{
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
-      body:JSON.stringify({action:'submitMandaysReport',token:sessionToken,monthKey:monthKey})});
-    const data=await res.json();
-    if(data.status==='ok'){
-      if(msg){msg.style.color='#16A34A';msg.textContent='\u2705 Done! Submitted: '+data.submitted+', Updated: '+data.updated+' for '+data.month+'.';}
-      if(btn){btn.disabled=true;btn.innerHTML='\u2705 Submitted';}
-      setTimeout(function(){closeMandaysModal();loadMandaysHistory();},1500);
-    } else {
-      if(msg){msg.style.color='#DC2626';msg.textContent='Error: '+(data.message||'Unknown error');}
-      if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Retry';}
-    }
-  }catch(e){
-    if(msg){msg.style.color='#DC2626';msg.textContent='Network error: '+e.message;}
-    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Retry';}
-  }
-}
-
-function openMigrateModal(){
-  const msg=document.getElementById('mdMigrateMsg');if(msg)msg.textContent='';
-  const btn=document.getElementById('mdMigrateConfirmBtn');
-  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Run Migration';}
-  document.getElementById('mdMigrateOverlay').classList.add('open');
-}
-function closeMigrateModal(){document.getElementById('mdMigrateOverlay').classList.remove('open');}
-
-async function confirmMigrateMandays(){
-  const btn=document.getElementById('mdMigrateConfirmBtn');
-  const msg=document.getElementById('mdMigrateMsg');
-  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Migrating...';}
-  if(msg){msg.style.color='var(--text-muted)';msg.textContent='Running migration...';}
-  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-  try{
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
-      body:JSON.stringify({action:'migrateMandays',token:sessionToken})});
-    const data=await res.json();
-    if(data.status==='ok'){
-      if(msg){msg.style.color='#16A34A';msg.textContent='\u2705 Done! Migrated: '+data.migrated+', Skipped: '+data.skipped+'.';}
-      if(btn){btn.disabled=true;btn.innerHTML='\u2705 Done';}
-      setTimeout(function(){closeMigrateModal();loadMandaysHistory();},2000);
-    } else {
-      if(msg){msg.style.color='#DC2626';msg.textContent='Error: '+(data.message||'Unknown');}
-      if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Retry';}
-    }
-  }catch(e){
-    if(msg){msg.style.color='#DC2626';msg.textContent='Network error: '+e.message;}
-    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Retry';}
-  }
-}
-
-function downloadMandaysExcel(){
-  if(!_mandaysHistory.length){alert('No submitted data to export yet.');return;}
-  const baVal=(document.getElementById('mdHistBA')||{}).value||'';
-  const mVal=(document.getElementById('mdHistMonth')||{}).value||'';
-  let rows=_mandaysHistory;
-  if(baVal) rows=rows.filter(function(r){return r.ba.toLowerCase()===baVal.toLowerCase();});
-  if(mVal)  rows=rows.filter(function(r){return r.monthKey===mVal;});
-  const cols=['Project','WABA','BA','Region','Month','Year','Md to Twixor','Md from Client','Md Saved','Md Waived','Submitted By','Submitted On'];
-  const data=rows.map(function(r){return[r.project,r.waba,r.ba,r.region,r.month,r.year,r.mdTwixor,r.mdClient,r.mdSaved,r.mdWaived,r.submittedBy,r.submittedOn];});
-  const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet([cols,...data]);
-  ws['!cols']=cols.map(function(c){return{wch:Math.max(c.length+2,14)};});
-  XLSX.utils.book_append_sheet(wb,ws,'Mandays MIS');
-  XLSX.writeFile(wb,'Mandays_MIS_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
+function loadExistingMdForEdit(project,waba){
+  // Try to find latest month entry for this project from _misData
+  if(!_misData||!_misData.length) return;
+  const entries=_misData.filter(function(r){
+    return r.project.toLowerCase()===project.toLowerCase()&&r.waba===waba;
+  }).sort(function(a,b){return b.monthKey>a.monthKey?1:-1;});
+  if(!entries.length) return;
+  const latest=entries[0];
+  populatePfMdMonth(latest.monthKey);
+  const set=function(id,v){const el=document.getElementById(id);if(el)el.value=v||'';};
+  set('pfMdTwixor',latest.mdTwixor);
+  set('pfMdClient',latest.mdClient);
+  set('pfMdSaved',latest.mdSaved);
+  set('pfMdWaived',latest.mdWaived);
 }
 
 /* ═══ MIS REPORT ═══ */
-var _misData = []; // cached from _mandaysHistory
-
-function normalizeMISMonthKey(mk){
+function normMK(mk){
   if(!mk) return '';
   var s=String(mk).trim().replace(/^'/,'');
-  // Already YYYY-MM
   if(/^\d{4}-\d{2}/.test(s)) return s.substring(0,7);
-  // Handle 'May 2026' format
-  var monNames={january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',
+  var monMap={january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',
     july:'07',august:'08',september:'09',october:'10',november:'11',december:'12'};
-  var monthMatch=s.toLowerCase().match(/(january|february|march|april|may|june|july|august|september|october|november|december)/);
-  var yearMatch=s.match(/(\d{4})/);
-  if(monthMatch&&yearMatch) return yearMatch[1]+'-'+monNames[monthMatch[1]];
-  // Try date parsing
+  var mMatch=s.toLowerCase().match(/(january|february|march|april|may|june|july|august|september|october|november|december)/);
+  var yMatch=s.match(/(\d{4})/);
+  if(mMatch&&yMatch) return yMatch[1]+'-'+monMap[mMatch[1]];
   try{var d=new Date(s);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}
   return '';
 }
 
+function loadMISData(){
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
+    body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:'',monthKey:''})})
+  .then(function(r){return r.json();})
+  .then(function(res){if(res.status==='ok'){_misData=res.rows||[];}return _misData;})
+  .catch(function(e){console.error('loadMISData:',e);return[];});
+}
+
+function initMISTab(){
+  const baFil=document.getElementById('misFilterBA');
+  if(baFil&&baFil.options.length===1){
+    BAS.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
+  }
+  const wrap=document.getElementById('misTableWrap');
+  if(wrap) wrap.innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;">Loading...</p>';
+  loadMISData().then(function(){
+    populateMISMonthFilters();
+    renderMISReport();
+  });
+}
+
 function populateMISMonthFilters(){
-  var monthSet=new Set();
-  _misData.forEach(function(r){var mk=normalizeMISMonthKey(r.monthKey);if(mk)monthSet.add(mk);});
-  var months=Array.from(monthSet).sort();
-  var fromSel=document.getElementById('misFilterMonthFrom');
-  var toSel=document.getElementById('misFilterMonthTo');
+  const monthSet=new Set();
+  _misData.forEach(function(r){const mk=normMK(r.monthKey);if(mk)monthSet.add(mk);});
+  const months=Array.from(monthSet).sort();
+  const fromSel=document.getElementById('misFilterMonthFrom');
+  const toSel=document.getElementById('misFilterMonthTo');
   if(!fromSel||!toSel) return;
   fromSel.innerHTML='<option value="">From month</option>';
   toSel.innerHTML='<option value="">To month</option>';
   months.forEach(function(mk){
-    var parts=mk.split('-');var lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
-    var o1=document.createElement('option');o1.value=mk;o1.textContent=lbl;fromSel.appendChild(o1);
-    var o2=document.createElement('option');o2.value=mk;o2.textContent=lbl;toSel.appendChild(o2);
+    const parts=mk.split('-');const lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
+    const o1=document.createElement('option');o1.value=mk;o1.textContent=lbl;fromSel.appendChild(o1);
+    const o2=document.createElement('option');o2.value=mk;o2.textContent=lbl;toSel.appendChild(o2);
   });
   if(months.length){fromSel.value=months[0];toSel.value=months[months.length-1];}
-}
-
-function initMISTab(){
-  var baFil=document.getElementById('misFilterBA');
-  if(baFil&&baFil.options.length===1){
-    BAS.forEach(function(b){var o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
-  }
-  if(_mandaysHistory&&_mandaysHistory.length){
-    _misData=_mandaysHistory;
-    populateMISMonthFilters();
-    renderMISReport();
-  } else {
-    var url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
-    document.getElementById('misTableWrap').innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;">Loading...</p>';
-    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
-      body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:'',monthKey:''})})
-    .then(function(r){return r.json();})
-    .then(function(res){
-      if(res.status==='ok'){_misData=res.rows||[];_mandaysHistory=_misData;populateMISMonthFilters();renderMISReport();}
-    }).catch(function(e){
-      document.getElementById('misTableWrap').innerHTML='<p style="color:#DC2626;padding:20px;font-size:13px;">Error: '+e.message+'</p>';
-    });
-  }
 }
 
 function renderMISReport(){
   const wrap=document.getElementById('misTableWrap');
   const empty=document.getElementById('misEmpty');
   if(!wrap) return;
-
   const baVal=(document.getElementById('misFilterBA')||{}).value||'';
   const regVal=(document.getElementById('misFilterRegion')||{}).value||'';
-  const srchVal=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
-
-  // Filter rows
   const fromMK=(document.getElementById('misFilterMonthFrom')||{}).value||'';
   const toMK=(document.getElementById('misFilterMonthTo')||{}).value||'';
-  let rows=_misData||[];
-  if(baVal)   rows=rows.filter(function(r){return r.ba===baVal;});
-  if(regVal)  rows=rows.filter(function(r){return r.region===regVal;});
-  if(srchVal) rows=rows.filter(function(r){return r.project.toLowerCase().indexOf(srchVal)>-1;});
+  const srch=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
 
+  let rows=_misData||[];
+  if(baVal)  rows=rows.filter(function(r){return r.ba===baVal;});
+  if(regVal) rows=rows.filter(function(r){return r.region===regVal;});
+  if(srch)   rows=rows.filter(function(r){return (r.project||'').toLowerCase().indexOf(srch)>-1;});
   if(!rows.length){wrap.innerHTML='';if(empty)empty.style.display='block';return;}
   if(empty) empty.style.display='none';
 
-  // Normalize monthKey to YYYY-MM format
-  function normalizeMonthKey(mk){
-    return normalizeMISMonthKey(mk);
-  }
-
-  // Get all unique months sorted
+  // Get months in range
   const monthSet=new Set();
-  rows.forEach(function(r){monthSet.add(normalizeMonthKey(r.monthKey));});
-  const months=Array.from(monthSet).filter(Boolean).sort().filter(function(mk){
+  rows.forEach(function(r){const mk=normMK(r.monthKey);if(mk)monthSet.add(mk);});
+  const months=Array.from(monthSet).sort().filter(function(mk){
     if(fromMK&&mk<fromMK) return false;
     if(toMK&&mk>toMK) return false;
     return true;
   });
+  if(!months.length){wrap.innerHTML='<p style="padding:20px;color:var(--text-muted);">No data in selected month range.</p>';return;}
 
-  // Get all unique projects (proj+waba as key)
+  // Build project pivot
   const projMap={};
   rows.forEach(function(r){
-    const normKey=normalizeMonthKey(r.monthKey);
+    const mk=normMK(r.monthKey);
+    if(!mk||months.indexOf(mk)<0) return;
     const key=(r.project||'')+'|||'+(r.waba||'')+'|||'+(r.ba||'')+'|||'+(r.region||'');
-    if(!projMap[key]){
-      projMap[key]={project:r.project||'',waba:r.waba||'',ba:r.ba||'',region:r.region||'',months:{}};
-    }
-    projMap[key].months[normKey]={
-      mdTwixor:r.mdTwixor||0,mdClient:r.mdClient||0,mdSaved:r.mdSaved||0,mdWaived:r.mdWaived||0
-    };
+    if(!projMap[key]) projMap[key]={project:r.project||'',waba:r.waba||'',ba:r.ba||'',region:r.region||'',months:{}};
+    projMap[key].months[mk]={mdTwixor:r.mdTwixor||0,mdClient:r.mdClient||0,mdSaved:r.mdSaved||0,mdWaived:r.mdWaived||0};
   });
   const projects=Object.values(projMap);
+  if(!projects.length){wrap.innerHTML='<p style="padding:20px;color:var(--text-muted);">No data found.</p>';return;}
 
   // Build table
   const tbl=document.createElement('table');
-  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:12px;min-width:900px;';
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:12px;min-width:800px;';
 
-  // Header row 1 — fixed cols + month groups
-  const hrow1=document.createElement('tr');
-  hrow1.style.cssText='background:var(--navy);color:#fff;';
-  const fixedHdrs=[['Project',3],['WABA',1],['BA',1],['Region',1]];
-  fixedHdrs.forEach(function(h){
-    const th=document.createElement('th');
-    th.style.cssText='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.1);';
-    th.textContent=h[0];th.rowSpan=1;th.colSpan=1;hrow1.appendChild(th);
+  // Header row 1
+  const hr1=document.createElement('tr');hr1.style.cssText='background:var(--navy);color:#fff;';
+  [['Project',1],['WABA',1],['BA',1],['Region',1]].forEach(function(h){
+    const th=document.createElement('th');th.style.cssText='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;';
+    th.textContent=h[0];hr1.appendChild(th);
   });
   months.forEach(function(mk){
-    const parts=mk.split('-');
-    const lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
-    const th=document.createElement('th');
-    th.colSpan=4;
-    th.style.cssText='padding:8px 12px;text-align:center;font-size:11px;font-weight:600;border-left:2px solid rgba(255,255,255,0.2);border-right:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);';
-    th.textContent=lbl;hrow1.appendChild(th);
+    const parts=mk.split('-');const lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
+    const th=document.createElement('th');th.colSpan=4;
+    th.style.cssText='padding:8px 12px;text-align:center;font-size:11px;font-weight:600;border-left:2px solid rgba(255,255,255,0.2);';
+    th.textContent=lbl;hr1.appendChild(th);
   });
-  // Totals group
   const thTot=document.createElement('th');thTot.colSpan=4;
   thTot.style.cssText='padding:8px 12px;text-align:center;font-size:11px;font-weight:600;border-left:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);';
-  thTot.textContent='TOTAL (ALL MONTHS)';hrow1.appendChild(thTot);
+  thTot.textContent='TOTAL';hr1.appendChild(thTot);
 
-  // Header row 2 — sub-headers
-  const hrow2=document.createElement('tr');
-  hrow2.style.cssText='background:#1a2744;color:rgba(255,255,255,0.7);';
-  // Fixed cols spacer
-  fixedHdrs.forEach(function(){
-    const th=document.createElement('th');
-    th.style.cssText='padding:6px 12px;border-right:1px solid rgba(255,255,255,0.1);';hrow2.appendChild(th);
-  });
-  const subHdrs=['Twixor','Client','Saved','Waived'];
-  months.forEach(function(){
-    subHdrs.forEach(function(s,si){
+  // Header row 2
+  const hr2=document.createElement('tr');hr2.style.cssText='background:#1a2744;color:rgba(255,255,255,0.7);';
+  for(let i=0;i<4;i++){const th=document.createElement('th');hr2.appendChild(th);}
+  const sub=['Twixor','Client','Saved','Waived'];
+  months.forEach(function(mk,mi){
+    sub.forEach(function(s,si){
       const th=document.createElement('th');
-      th.style.cssText='padding:6px 8px;text-align:right;font-size:10px;font-weight:600;white-space:nowrap;'+(si===0?'border-left:2px solid rgba(255,255,255,0.2);':'');
-      th.textContent=s;hrow2.appendChild(th);
+      th.style.cssText='padding:5px 8px;text-align:right;font-size:10px;font-weight:600;'+(si===0?'border-left:2px solid rgba(255,255,255,0.2);':'');
+      th.textContent=s;hr2.appendChild(th);
     });
   });
-  subHdrs.forEach(function(s,si){
+  sub.forEach(function(s,si){
     const th=document.createElement('th');
-    th.style.cssText='padding:6px 8px;text-align:right;font-size:10px;font-weight:700;white-space:nowrap;color:#93C5FD;'+(si===0?'border-left:2px solid rgba(255,255,255,0.3);':'');
-    th.textContent=s;hrow2.appendChild(th);
+    th.style.cssText='padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:#93C5FD;'+(si===0?'border-left:2px solid rgba(255,255,255,0.3);':'');
+    th.textContent=s;hr2.appendChild(th);
   });
 
-  const thead=document.createElement('thead');
-  thead.appendChild(hrow1);thead.appendChild(hrow2);
-  tbl.appendChild(thead);
-
-  // Body
+  const thead=document.createElement('thead');thead.appendChild(hr1);thead.appendChild(hr2);tbl.appendChild(thead);
   const tbody=document.createElement('tbody');
-  // Running totals per project across all months
+
   projects.forEach(function(proj,i){
     const tr=document.createElement('tr');
     tr.style.cssText='border-bottom:1px solid var(--border);'+(i%2===1?'background:var(--off-white);':'');
-
-    function td(txt,css){const c=document.createElement('td');c.style.cssText='padding:8px 12px;'+(css||'');c.textContent=txt||'—';tr.appendChild(c);return c;}
-
-    td(proj.project,'font-weight:500;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--border);');
-    td(proj.waba,'white-space:nowrap;font-size:11px;color:var(--text-muted);border-right:1px solid var(--border);');
-    td(proj.ba,'white-space:nowrap;border-right:1px solid var(--border);');
-    td(proj.region,'white-space:nowrap;border-right:1px solid var(--border);');
-
-    let totTw=0,totCl=0,totSv=0,totWv=0;
+    function td(txt,css){const c=document.createElement('td');c.style.cssText='padding:8px 10px;'+(css||'');c.textContent=txt||'\u2014';tr.appendChild(c);}
+    td(proj.project,'font-weight:500;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;');
+    td(proj.waba,'font-size:11px;color:var(--text-muted);white-space:nowrap;');
+    td(proj.ba,'white-space:nowrap;');
+    td(proj.region,'white-space:nowrap;');
+    let tTw=0,tCl=0,tSv=0,tWv=0;
     months.forEach(function(mk,mi){
       const md=proj.months[mk]||{mdTwixor:0,mdClient:0,mdSaved:0,mdWaived:0};
-      totTw+=md.mdTwixor;totCl+=md.mdClient;totSv+=md.mdSaved;totWv+=md.mdWaived;
-      function mdc(v,css){const c=document.createElement('td');c.style.cssText='padding:8px 8px;text-align:right;'+(css||'');c.textContent=v>0?v:'—';tr.appendChild(c);}
-      mdc(md.mdTwixor,'border-left:2px solid var(--border);');
-      mdc(md.mdClient,'');
-      mdc(md.mdSaved,'font-weight:600;color:var(--blue);');
-      mdc(md.mdWaived,'');
+      tTw+=+md.mdTwixor;tCl+=+md.mdClient;tSv+=+md.mdSaved;tWv+=+md.mdWaived;
+      function mdc(v,css){const c=document.createElement('td');c.style.cssText='padding:8px 8px;text-align:right;'+(css||'');c.textContent=+v>0?v:'\u2014';tr.appendChild(c);}
+      mdc(md.mdTwixor,'border-left:2px solid var(--border);');mdc(md.mdClient,'');mdc(md.mdSaved,'font-weight:600;color:var(--blue);');mdc(md.mdWaived,'');
     });
-    // Totals
-    function tdc(v,css){const c=document.createElement('td');c.style.cssText='padding:8px 8px;text-align:right;font-weight:700;background:#EFF6FF;'+(css||'');c.textContent=v>0?v:'—';tr.appendChild(c);}
-    tdc(totTw,'border-left:2px solid #BFDBFE;');
-    tdc(totCl,'');
-    tdc(totSv,'color:var(--blue);');
-    tdc(totWv,'');
-
+    function tdc(v,css){const c=document.createElement('td');c.style.cssText='padding:8px 8px;text-align:right;font-weight:700;background:#EFF6FF;'+(css||'');c.textContent=+v>0?v:'\u2014';tr.appendChild(c);}
+    tdc(tTw,'border-left:2px solid #BFDBFE;');tdc(tCl,'');tdc(tSv,'color:var(--blue);');tdc(tWv,'');
     tbody.appendChild(tr);
   });
-
-  // Summary row
-  const sumRow=document.createElement('tr');
-  sumRow.style.cssText='background:var(--navy);color:#fff;font-weight:700;border-top:2px solid var(--blue);';
-  function sumTd(txt,css){const c=document.createElement('td');c.style.cssText='padding:10px 12px;'+(css||'');c.textContent=txt;sumRow.appendChild(c);}
-  sumTd('TOTAL ('+projects.length+' projects)','font-size:12px;');
-  sumTd('','');sumTd('','');sumTd('','border-right:1px solid rgba(255,255,255,0.1);');
-  let gTw=0,gCl=0,gSv=0,gWv=0;
-  months.forEach(function(mk,mi){
-    let mTw=0,mCl=0,mSv=0,mWv=0;
-    projects.forEach(function(p){const md=p.months[mk]||{};mTw+=md.mdTwixor||0;mCl+=md.mdClient||0;mSv+=md.mdSaved||0;mWv+=md.mdWaived||0;});
-    gTw+=mTw;gCl+=mCl;gSv+=mSv;gWv+=mWv;
-    function sc(v,css){const c=document.createElement('td');c.style.cssText='padding:10px 8px;text-align:right;'+(css||'');c.textContent=v||'—';sumRow.appendChild(c);}
-    sc(mTw,'border-left:2px solid rgba(255,255,255,0.2);');sc(mCl,'');sc(mSv,'color:#93C5FD;');sc(mWv,'');
-  });
-  function gc(v,css){const c=document.createElement('td');c.style.cssText='padding:10px 8px;text-align:right;background:rgba(255,255,255,0.1);'+(css||'');c.textContent=v||'—';sumRow.appendChild(c);}
-  gc(gTw,'border-left:2px solid rgba(255,255,255,0.3);');gc(gCl,'');gc(gSv,'color:#93C5FD;');gc(gWv,'');
-  tbody.appendChild(sumRow);
-
   tbl.appendChild(tbody);
   wrap.innerHTML='';wrap.appendChild(tbl);
 }
 
 function downloadMISExcel(){
+  if(!_misData.length){alert('No data to export.');return;}
   const baVal=(document.getElementById('misFilterBA')||{}).value||'';
   const regVal=(document.getElementById('misFilterRegion')||{}).value||'';
-  const srchVal=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
+  const fromMK=(document.getElementById('misFilterMonthFrom')||{}).value||'';
+  const toMK=(document.getElementById('misFilterMonthTo')||{}).value||'';
+  const srch=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
   let rows=_misData||[];
-  if(baVal)   rows=rows.filter(function(r){return r.ba===baVal;});
-  if(regVal)  rows=rows.filter(function(r){return r.region===regVal;});
-  if(srchVal) rows=rows.filter(function(r){return r.project.toLowerCase().indexOf(srchVal)>-1;});
-  if(!rows.length){alert('No data to export.');return;}
-
-  function normMK(mk){if(!mk)return'';if(/^\d{4}-\d{2}$/.test(mk))return mk;try{const d=new Date(mk);if(!isNaN(d))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}return mk;}
+  if(baVal)  rows=rows.filter(function(r){return r.ba===baVal;});
+  if(regVal) rows=rows.filter(function(r){return r.region===regVal;});
+  if(srch)   rows=rows.filter(function(r){return (r.project||'').toLowerCase().indexOf(srch)>-1;});
   const monthSet=new Set();
-  rows.forEach(function(r){monthSet.add(normMK(r.monthKey));});
-  const months=Array.from(monthSet).filter(Boolean).sort();
-
+  rows.forEach(function(r){const mk=normMK(r.monthKey);if(mk)monthSet.add(mk);});
+  const months=Array.from(monthSet).sort().filter(function(mk){
+    if(fromMK&&mk<fromMK)return false;if(toMK&&mk>toMK)return false;return true;
+  });
   const projMap={};
   rows.forEach(function(r){
-    const normKey=normMK(r.monthKey);
+    const mk=normMK(r.monthKey);if(!mk||months.indexOf(mk)<0)return;
     const key=(r.project||'')+'|||'+(r.waba||'')+'|||'+(r.ba||'')+'|||'+(r.region||'');
-    if(!projMap[key]) projMap[key]={project:r.project||'',waba:r.waba||'',ba:r.ba||'',region:r.region||'',months:{}};
-    projMap[key].months[normKey]={mdTwixor:r.mdTwixor||0,mdClient:r.mdClient||0,mdSaved:r.mdSaved||0,mdWaived:r.mdWaived||0};
+    if(!projMap[key])projMap[key]={project:r.project||'',waba:r.waba||'',ba:r.ba||'',region:r.region||'',months:{}};
+    projMap[key].months[mk]={mdTwixor:r.mdTwixor||0,mdClient:r.mdClient||0,mdSaved:r.mdSaved||0,mdWaived:r.mdWaived||0};
   });
-
-  // Build header rows
-  const hrow1=['Project','WABA','BA','Region'];
-  const hrow2=['','','',''];
-  months.forEach(function(mk){
-    const parts=mk.split('-');const lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
-    hrow1.push(lbl,'','','');
-    hrow2.push('Md Twixor','Md Client','Md Saved','Md Waived');
-  });
-  hrow1.push('Total','','','');
-  hrow2.push('Md Twixor','Md Client','Md Saved','Md Waived');
-
-  const dataRows=Object.values(projMap).map(function(proj){
+  const h1=['Project','WABA','BA','Region'];const h2=['','','',''];
+  months.forEach(function(mk){const p=mk.split('-');const l=(MON[p[1]]||p[1])+' '+p[0];h1.push(l,'','','');h2.push('Md Twixor','Md Client','Md Saved','Md Waived');});
+  h1.push('Total','','','');h2.push('Md Twixor','Md Client','Md Saved','Md Waived');
+  const data=Object.values(projMap).map(function(proj){
     const row=[proj.project,proj.waba,proj.ba,proj.region];
     let tTw=0,tCl=0,tSv=0,tWv=0;
-    months.forEach(function(mk){
-      const md=proj.months[mk]||{mdTwixor:0,mdClient:0,mdSaved:0,mdWaived:0};
-      row.push(md.mdTwixor,md.mdClient,md.mdSaved,md.mdWaived);
-      tTw+=md.mdTwixor;tCl+=md.mdClient;tSv+=md.mdSaved;tWv+=md.mdWaived;
-    });
-    row.push(tTw,tCl,tSv,tWv);
-    return row;
+    months.forEach(function(mk){const md=proj.months[mk]||{};row.push(+md.mdTwixor||0,+md.mdClient||0,+md.mdSaved||0,+md.mdWaived||0);tTw+=+md.mdTwixor||0;tCl+=+md.mdClient||0;tSv+=+md.mdSaved||0;tWv+=+md.mdWaived||0;});
+    row.push(tTw,tCl,tSv,tWv);return row;
   });
-
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet([hrow1,hrow2,...dataRows]);
-  // Merge month header cells
-  if(!ws['!merges']) ws['!merges']=[];
-  months.forEach(function(mk,i){
-    ws['!merges'].push({s:{r:0,c:4+i*4},e:{r:0,c:4+i*4+3}});
-  });
+  const ws=XLSX.utils.aoa_to_sheet([h1,h2,...data]);
+  if(!ws['!merges'])ws['!merges']=[];
+  months.forEach(function(mk,i){ws['!merges'].push({s:{r:0,c:4+i*4},e:{r:0,c:4+i*4+3}});});
   ws['!merges'].push({s:{r:0,c:4+months.length*4},e:{r:0,c:4+months.length*4+3}});
   ws['!cols']=[{wch:25},{wch:14},{wch:14},{wch:10}];
-  for(let i=0;i<months.length*4+4;i++) ws['!cols'].push({wch:12});
+  for(let i=0;i<months.length*4+4;i++)ws['!cols'].push({wch:12});
   XLSX.utils.book_append_sheet(wb,ws,'MIS Report');
   XLSX.writeFile(wb,'MIS_Mandays_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
@@ -3295,6 +2912,12 @@ async function saveProjForm(){
       sales:document.getElementById('pfSales').value.trim(),
       ongoing:document.getElementById('pfOngoing').value.trim(),
       comments:document.getElementById('pfComments').value.trim(),
+      // Monthly mandays entry
+      mdMonthKey:(document.getElementById('pfMdMonth')||{}).value||'',
+      mdTwixor:(document.getElementById('pfMdTwixor')||{}).value||'',
+      mdClient:(document.getElementById('pfMdClient')||{}).value||'',
+      mdSaved:(document.getElementById('pfMdSaved')||{}).value||'',
+      mdWaived:(document.getElementById('pfMdWaived')||{}).value||'',
     }
   };
 
@@ -3397,6 +3020,7 @@ function openProjForm(row){
 
   if(isNew){
     setMsValues('pfReqtype','');
+    clearPfMdFields();
     ['pfProject','pfWaba','pfUsecase','pfRegion','pfStatus','pfDev',
      'pfDue','pfLivedate','pfMandays','pfMandaystwixor','pfMandaysclient',
      'pfMandayswaived','pfPresales','pfCsm','pfSales','pfOngoing','pfComments',
@@ -3428,6 +3052,9 @@ function openProjForm(row){
     document.getElementById('pfSales').value=cl(row[CI.sales]||'');
     document.getElementById('pfWaba').value=cl(row[CI.waba]||'');
     setMsValues('pfReqtype', cl(row[CI.reqtype]||''));
+    // Load monthly mandays for this project
+    populatePfMdMonth('');
+    loadExistingMdForEdit(cl(row[CI.proj]||''),cl(row[CI.waba]||''));
     document.getElementById('pfOngoing').value=cl(row[CI.ongoing]);
     document.getElementById('pfComments').value=cl(row[CI.comments]);
     document.getElementById('pfOrigProject').value=cl(row[CI.proj]);
@@ -4129,7 +3756,6 @@ function drillCellEx(region,field,lbl,val){
     const sr=document.getElementById('sendReportBtn');
     if(sr) sr.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
     const misBtn=document.getElementById('misTabBtn');
-    // MIS tab always visible - no role restriction needed
     const np=document.getElementById('newProjBtn');
     if(np) np.style.display='flex';
     startInactivityTimer();
