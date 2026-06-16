@@ -2553,12 +2553,24 @@ function loadExistingMdForEdit(project,waba){
 function normMK(mk){
   if(!mk) return '';
   var s=String(mk).trim().replace(/^'/,'');
+  // Already YYYY-MM
   if(/^\d{4}-\d{2}/.test(s)) return s.substring(0,7);
-  var monMap={january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',
+  var monMap={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',
+    jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12',
+    january:'01',february:'02',march:'03',april:'04',june:'06',
     july:'07',august:'08',september:'09',october:'10',november:'11',december:'12'};
-  var mMatch=s.toLowerCase().match(/(january|february|march|april|may|june|july|august|september|october|november|december)/);
+  var sl=s.toLowerCase();
+  // Match month name (short or long)
+  var mMatch=sl.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|june|july|august|september|october|november|december)\b/);
+  // Match 4-digit year
   var yMatch=s.match(/(\d{4})/);
   if(mMatch&&yMatch) return yMatch[1]+'-'+monMap[mMatch[1]];
+  // If only month found (no year), use current year
+  if(mMatch&&!yMatch){
+    var yr=new Date().getFullYear();
+    return yr+'-'+monMap[mMatch[1]];
+  }
+  // Try date parsing
   try{var d=new Date(s);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}
   return '';
 }
