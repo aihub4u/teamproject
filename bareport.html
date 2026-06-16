@@ -2860,9 +2860,17 @@ var _misData = []; // cached from _mandaysHistory
 
 function normalizeMISMonthKey(mk){
   if(!mk) return '';
-  var s=String(mk).trim();
-  if(s.length>=7&&s[4]==='-') return s.substring(0,7);
-  try{var d=new Date(s);if(!isNaN(d))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}
+  var s=String(mk).trim().replace(/^'/,'');
+  // Already YYYY-MM
+  if(/^\d{4}-\d{2}/.test(s)) return s.substring(0,7);
+  // Handle 'May 2026' format
+  var monNames={january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',
+    july:'07',august:'08',september:'09',october:'10',november:'11',december:'12'};
+  var monthMatch=s.toLowerCase().match(/(january|february|march|april|may|june|july|august|september|october|november|december)/);
+  var yearMatch=s.match(/(\d{4})/);
+  if(monthMatch&&yearMatch) return yearMatch[1]+'-'+monNames[monthMatch[1]];
+  // Try date parsing
+  try{var d=new Date(s);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}
   return '';
 }
 
@@ -2928,19 +2936,7 @@ function renderMISReport(){
 
   // Normalize monthKey to YYYY-MM format
   function normalizeMonthKey(mk){
-    if(!mk) return '';
-    // Already YYYY-MM format
-    if(/^\d{4}-\d{2}$/.test(mk)) return mk;
-    // Try parsing as date
-    try{
-      const d=new Date(mk);
-      if(!isNaN(d)){
-        const y=d.getFullYear();
-        const m=String(d.getMonth()+1).padStart(2,'0');
-        return y+'-'+m;
-      }
-    }catch(e){}
-    return mk;
+    return normalizeMISMonthKey(mk);
   }
 
   // Get all unique months sorted
