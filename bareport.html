@@ -547,7 +547,7 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <!-- Mandays Submit Modal -->
-<div class="modal-overlay" id="mdSubmitOverlay" style="display:none;" onclick="closeMandaysModal()">
+<div class="modal-overlay" id="mdSubmitOverlay" onclick="closeMandaysModal()">
   <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;border-radius:var(--radius-lg);overflow:hidden;">
     <div style="background:var(--navy);color:#fff;padding:16px 20px;">
       <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-send" style="margin-right:8px;"></i>Submit Monthly Mandays Report</h3>
@@ -568,7 +568,7 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <!-- Mandays Migrate Modal -->
-<div class="modal-overlay" id="mdMigrateOverlay" style="display:none;" onclick="closeMigrateModal()">
+<div class="modal-overlay" id="mdMigrateOverlay" onclick="closeMigrateModal()">
   <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;border-radius:var(--radius-lg);overflow:hidden;">
     <div style="background:var(--navy);color:#fff;padding:16px 20px;">
       <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-database-import" style="margin-right:8px;"></i>Migrate Historical Mandays</h3>
@@ -2770,10 +2770,10 @@ function openSubmitMandaysModal(){
   if(msg) msg.textContent='';
   const btn=document.getElementById('mdSubmitConfirmBtn');
   if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Confirm & Submit';}
-  document.getElementById('mdSubmitOverlay').style.display='flex';
+  document.getElementById('mdSubmitOverlay').classList.add('open');
 }
 
-function closeMandaysModal(){document.getElementById('mdSubmitOverlay').style.display='none';}
+function closeMandaysModal(){document.getElementById('mdSubmitOverlay').classList.remove('open');}
 
 async function confirmSubmitMandays(){
   const monthKey=(document.getElementById('mdMonthSel')||{}).value||'';
@@ -2804,9 +2804,9 @@ function openMigrateModal(){
   const msg=document.getElementById('mdMigrateMsg');if(msg)msg.textContent='';
   const btn=document.getElementById('mdMigrateConfirmBtn');
   if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Run Migration';}
-  document.getElementById('mdMigrateOverlay').style.display='flex';
+  document.getElementById('mdMigrateOverlay').classList.add('open');
 }
-function closeMigrateModal(){document.getElementById('mdMigrateOverlay').style.display='none';}
+function closeMigrateModal(){document.getElementById('mdMigrateOverlay').classList.remove('open');}
 
 async function confirmMigrateMandays(){
   const btn=document.getElementById('mdMigrateConfirmBtn');
