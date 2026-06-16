@@ -1074,6 +1074,12 @@ tr:last-child td{border-bottom:none;}
           <option value="">All regions</option>
           <option>North</option><option>South</option><option>West</option><option>UAE</option>
         </select>
+        <select id="misFilterMonthFrom" class="filter-select" style="width:auto;" onchange="renderMISReport()">
+          <option value="">From month</option>
+        </select>
+        <select id="misFilterMonthTo" class="filter-select" style="width:auto;" onchange="renderMISReport()">
+          <option value="">To month</option>
+        </select>
         <input id="misSearch" class="search-input" placeholder="Search project..." style="width:160px;padding:6px 12px;" oninput="renderMISReport()"/>
         <button onclick="downloadMISExcel()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;">
           <i class="ti ti-download"></i> Export Excel
@@ -2852,27 +2858,50 @@ function downloadMandaysExcel(){
 /* ═══ MIS REPORT ═══ */
 var _misData = []; // cached from _mandaysHistory
 
+function normalizeMISMonthKey(mk){
+  if(!mk) return '';
+  var s=String(mk).trim();
+  if(s.length>=7&&s[4]==='-') return s.substring(0,7);
+  try{var d=new Date(s);if(!isNaN(d))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}
+  return '';
+}
+
+function populateMISMonthFilters(){
+  var monthSet=new Set();
+  _misData.forEach(function(r){var mk=normalizeMISMonthKey(r.monthKey);if(mk)monthSet.add(mk);});
+  var months=Array.from(monthSet).sort();
+  var fromSel=document.getElementById('misFilterMonthFrom');
+  var toSel=document.getElementById('misFilterMonthTo');
+  if(!fromSel||!toSel) return;
+  fromSel.innerHTML='<option value="">From month</option>';
+  toSel.innerHTML='<option value="">To month</option>';
+  months.forEach(function(mk){
+    var parts=mk.split('-');var lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
+    var o1=document.createElement('option');o1.value=mk;o1.textContent=lbl;fromSel.appendChild(o1);
+    var o2=document.createElement('option');o2.value=mk;o2.textContent=lbl;toSel.appendChild(o2);
+  });
+  if(months.length){fromSel.value=months[0];toSel.value=months[months.length-1];}
+}
+
 function initMISTab(){
-  // Populate BA filter
-  const baFil=document.getElementById('misFilterBA');
+  var baFil=document.getElementById('misFilterBA');
   if(baFil&&baFil.options.length===1){
-    BAS.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
+    BAS.forEach(function(b){var o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
   }
-  // Use already loaded mandays history or fetch
   if(_mandaysHistory&&_mandaysHistory.length){
     _misData=_mandaysHistory;
+    populateMISMonthFilters();
     renderMISReport();
   } else {
-    // Fetch all history
-    const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+    var url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
     document.getElementById('misTableWrap').innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;">Loading...</p>';
     fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
       body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:'',monthKey:''})})
     .then(function(r){return r.json();})
     .then(function(res){
-      if(res.status==='ok'){_misData=res.rows||[];_mandaysHistory=_misData;renderMISReport();}
+      if(res.status==='ok'){_misData=res.rows||[];_mandaysHistory=_misData;populateMISMonthFilters();renderMISReport();}
     }).catch(function(e){
-      document.getElementById('misTableWrap').innerHTML='<p style="color:#DC2626;padding:20px;font-size:13px;">Error loading data: '+e.message+'</p>';
+      document.getElementById('misTableWrap').innerHTML='<p style="color:#DC2626;padding:20px;font-size:13px;">Error: '+e.message+'</p>';
     });
   }
 }
@@ -2887,6 +2916,8 @@ function renderMISReport(){
   const srchVal=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
 
   // Filter rows
+  const fromMK=(document.getElementById('misFilterMonthFrom')||{}).value||'';
+  const toMK=(document.getElementById('misFilterMonthTo')||{}).value||'';
   let rows=_misData||[];
   if(baVal)   rows=rows.filter(function(r){return r.ba===baVal;});
   if(regVal)  rows=rows.filter(function(r){return r.region===regVal;});
@@ -2895,20 +2926,42 @@ function renderMISReport(){
   if(!rows.length){wrap.innerHTML='';if(empty)empty.style.display='block';return;}
   if(empty) empty.style.display='none';
 
+  // Normalize monthKey to YYYY-MM format
+  function normalizeMonthKey(mk){
+    if(!mk) return '';
+    // Already YYYY-MM format
+    if(/^\d{4}-\d{2}$/.test(mk)) return mk;
+    // Try parsing as date
+    try{
+      const d=new Date(mk);
+      if(!isNaN(d)){
+        const y=d.getFullYear();
+        const m=String(d.getMonth()+1).padStart(2,'0');
+        return y+'-'+m;
+      }
+    }catch(e){}
+    return mk;
+  }
+
   // Get all unique months sorted
   const monthSet=new Set();
-  rows.forEach(function(r){monthSet.add(r.monthKey);});
-  const months=Array.from(monthSet).sort();
+  rows.forEach(function(r){monthSet.add(normalizeMonthKey(r.monthKey));});
+  const months=Array.from(monthSet).filter(Boolean).sort().filter(function(mk){
+    if(fromMK&&mk<fromMK) return false;
+    if(toMK&&mk>toMK) return false;
+    return true;
+  });
 
   // Get all unique projects (proj+waba as key)
   const projMap={};
   rows.forEach(function(r){
-    const key=r.project+'|||'+r.waba+'|||'+r.ba+'|||'+r.region;
+    const normKey=normalizeMonthKey(r.monthKey);
+    const key=(r.project||'')+'|||'+(r.waba||'')+'|||'+(r.ba||'')+'|||'+(r.region||'');
     if(!projMap[key]){
-      projMap[key]={project:r.project,waba:r.waba,ba:r.ba,region:r.region,months:{}};
+      projMap[key]={project:r.project||'',waba:r.waba||'',ba:r.ba||'',region:r.region||'',months:{}};
     }
-    projMap[key].months[r.monthKey]={
-      mdTwixor:r.mdTwixor,mdClient:r.mdClient,mdSaved:r.mdSaved,mdWaived:r.mdWaived
+    projMap[key].months[normKey]={
+      mdTwixor:r.mdTwixor||0,mdClient:r.mdClient||0,mdSaved:r.mdSaved||0,mdWaived:r.mdWaived||0
     };
   });
   const projects=Object.values(projMap);
@@ -3031,15 +3084,17 @@ function downloadMISExcel(){
   if(srchVal) rows=rows.filter(function(r){return r.project.toLowerCase().indexOf(srchVal)>-1;});
   if(!rows.length){alert('No data to export.');return;}
 
+  function normMK(mk){if(!mk)return'';if(/^\d{4}-\d{2}$/.test(mk))return mk;try{const d=new Date(mk);if(!isNaN(d))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}catch(e){}return mk;}
   const monthSet=new Set();
-  rows.forEach(function(r){monthSet.add(r.monthKey);});
-  const months=Array.from(monthSet).sort();
+  rows.forEach(function(r){monthSet.add(normMK(r.monthKey));});
+  const months=Array.from(monthSet).filter(Boolean).sort();
 
   const projMap={};
   rows.forEach(function(r){
-    const key=r.project+'|||'+r.waba+'|||'+r.ba+'|||'+r.region;
-    if(!projMap[key]) projMap[key]={project:r.project,waba:r.waba,ba:r.ba,region:r.region,months:{}};
-    projMap[key].months[r.monthKey]={mdTwixor:r.mdTwixor,mdClient:r.mdClient,mdSaved:r.mdSaved,mdWaived:r.mdWaived};
+    const normKey=normMK(r.monthKey);
+    const key=(r.project||'')+'|||'+(r.waba||'')+'|||'+(r.ba||'')+'|||'+(r.region||'');
+    if(!projMap[key]) projMap[key]={project:r.project||'',waba:r.waba||'',ba:r.ba||'',region:r.region||'',months:{}};
+    projMap[key].months[normKey]={mdTwixor:r.mdTwixor||0,mdClient:r.mdClient||0,mdSaved:r.mdSaved||0,mdWaived:r.mdWaived||0};
   });
 
   // Build header rows
