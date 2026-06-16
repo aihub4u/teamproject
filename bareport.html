@@ -24,7 +24,7 @@
 }
 body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text);font-size:14px;line-height:1.55;min-height:100vh;}
 
-/* TOPBAR1 */
+/* TOPBAR */
 .topbar{background:var(--navy);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.25);}
 .topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .logo-mark{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;}
@@ -885,7 +885,7 @@ tr:last-child td{border-bottom:none;}
     <button class="tab" data-tab="ageing" onclick="switchTab('ageing')">Ageing</button>
     <button class="tab" data-tab="pipeline" onclick="switchTab('pipeline')">Pipeline</button>
     <button class="tab" data-tab="mandays" onclick="switchTab('mandays')">Mandays</button>
-    <button class="tab" data-tab="mis" id="misTabBtn" onclick="switchTab('mis')" style="display:none;">MIS Report</button>
+    <button class="tab" data-tab="mis" id="misTabBtn" onclick="switchTab('mis')">MIS Report</button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -4077,7 +4077,7 @@ function drillCellEx(region,field,lbl,val){
     const sr=document.getElementById('sendReportBtn');
     if(sr) sr.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
     const misBtn=document.getElementById('misTabBtn');
-    if(misBtn) misBtn.style.display=(s.role&&s.role.toLowerCase()==='admin')?'':'none';
+    // MIS tab always visible - no role restriction needed
     const np=document.getElementById('newProjBtn');
     if(np) np.style.display='flex';
     startInactivityTimer();
