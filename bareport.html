@@ -505,6 +505,88 @@ tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- Mandays Submit Modal -->
+<div class="modal-overlay" id="mdSubmitOverlay" onclick="closeMandaysModal()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
+    <div class="modal-hdr" style="background:var(--navy);color:#fff;padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
+      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-send" style="margin-right:8px;"></i>Submit Monthly Mandays Report</h3>
+    </div>
+    <div style="padding:20px;">
+      <p style="margin:0 0 12px;color:var(--text-sec);font-size:13px;" id="mdSubmitDesc"></p>
+      <div style="background:var(--off-white);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;" id="mdSubmitSummary"></div>
+      <p style="margin:0 0 16px;font-size:12px;color:var(--text-muted);">If you have already submitted this month, existing entries will be <strong>updated</strong> — no duplicates created.</p>
+      <div id="mdSubmitMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn-secondary" onclick="closeMandaysModal()">Cancel</button>
+        <button class="btn-primary" id="mdSubmitConfirmBtn" onclick="confirmSubmitMandays()">
+          <i class="ti ti-send"></i> Confirm & Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mandays Migrate Modal -->
+<div class="modal-overlay" id="mdMigrateOverlay" onclick="closeMigrateModal()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
+    <div class="modal-hdr" style="background:var(--navy);color:#fff;padding:16px 20px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
+      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-database-import" style="margin-right:8px;"></i>Migrate Historical Mandays</h3>
+    </div>
+    <div style="padding:20px;">
+      <p style="color:var(--text-sec);font-size:13px;margin:0 0 16px;">This will create one historical entry per project in the Mandays Log using each project's start date month and current mandays values. Projects already in the log will be skipped.</p>
+      <p style="color:var(--blue);font-size:12px;margin:0 0 16px;"><i class="ti ti-info-circle"></i> This is a one-time operation. Run it once to backfill historical data.</p>
+      <div id="mdMigrateMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn-secondary" onclick="closeMigrateModal()">Cancel</button>
+        <button class="btn-primary" id="mdMigrateConfirmBtn" onclick="confirmMigrateMandays()">
+          <i class="ti ti-database-import"></i> Run Migration
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mandays Submit Modal -->
+<div class="modal-overlay" id="mdSubmitOverlay" style="display:none;" onclick="closeMandaysModal()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;border-radius:var(--radius-lg);overflow:hidden;">
+    <div style="background:var(--navy);color:#fff;padding:16px 20px;">
+      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-send" style="margin-right:8px;"></i>Submit Monthly Mandays Report</h3>
+    </div>
+    <div style="padding:20px;">
+      <p style="margin:0 0 12px;color:var(--text-sec);font-size:13px;" id="mdSubmitDesc"></p>
+      <div style="background:var(--off-white);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:13px;" id="mdSubmitSummary"></div>
+      <p style="margin:0 0 14px;font-size:12px;color:var(--text-muted);">If you have already submitted this month, existing entries will be <strong>updated</strong> — no duplicates created.</p>
+      <div id="mdSubmitMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn-modal-close" onclick="closeMandaysModal()">Cancel</button>
+        <button class="btn-send" id="mdSubmitConfirmBtn" onclick="confirmSubmitMandays()" style="display:flex;align-items:center;gap:6px;">
+          <i class="ti ti-send"></i> Confirm &amp; Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mandays Migrate Modal -->
+<div class="modal-overlay" id="mdMigrateOverlay" style="display:none;" onclick="closeMigrateModal()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;border-radius:var(--radius-lg);overflow:hidden;">
+    <div style="background:var(--navy);color:#fff;padding:16px 20px;">
+      <h3 style="margin:0;font-size:15px;font-weight:600;"><i class="ti ti-database-import" style="margin-right:8px;"></i>Migrate Historical Mandays</h3>
+    </div>
+    <div style="padding:20px;">
+      <p style="color:var(--text-sec);font-size:13px;margin:0 0 12px;">This will create one historical entry per project in the Mandays Log using each project's start date month and current mandays values. Projects already in the log will be skipped.</p>
+      <p style="color:var(--blue);font-size:12px;margin:0 0 14px;"><i class="ti ti-info-circle"></i> One-time operation. Run once to backfill historical data.</p>
+      <div id="mdMigrateMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn-modal-close" onclick="closeMigrateModal()">Cancel</button>
+        <button class="btn-send" id="mdMigrateConfirmBtn" onclick="confirmMigrateMandays()" style="display:flex;align-items:center;gap:6px;">
+          <i class="ti ti-database-import"></i> Run Migration
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Edit / Create Project Modal -->
 <div class="proj-form-overlay" id="projFormOverlay">
   <div class="proj-form" onclick="event.stopPropagation()">
@@ -802,6 +884,7 @@ tr:last-child td{border-bottom:none;}
     <button class="tab" data-tab="insights" onclick="switchTab('insights')">Insights</button>
     <button class="tab" data-tab="ageing" onclick="switchTab('ageing')">Ageing</button>
     <button class="tab" data-tab="pipeline" onclick="switchTab('pipeline')">Pipeline</button>
+    <button class="tab" data-tab="mandays" onclick="switchTab('mandays')">Mandays</button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -917,6 +1000,61 @@ tr:last-child td{border-bottom:none;}
   <!-- PIPELINE TAB -->
   <div class="tab-panel" id="panel-pipeline">
     <div id="pipelineContent"></div>
+  </div>
+
+  <!-- MANDAYS TAB -->
+  <div class="tab-panel" id="panel-mandays">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="margin:0;font-size:18px;font-weight:700;">Monthly Mandays Tracker</h2>
+        <p style="color:var(--text-sec);font-size:13px;margin:4px 0 0;">Submit and track mandays per project month by month</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="mdMonthSel" class="filter-select" style="width:auto;"></select>
+        <button class="btn-send" onclick="openSubmitMandaysModal()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;">
+          <i class="ti ti-send"></i> Submit Monthly Report
+        </button>
+        <button id="migrateMdBtn" onclick="openMigrateModal()" style="display:none;align-items:center;gap:6px;padding:8px 14px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;">
+          <i class="ti ti-database-import"></i> Migrate Historical
+        </button>
+        <button onclick="downloadMandaysExcel()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;">
+          <i class="ti ti-download"></i> Export MIS
+        </button>
+      </div>
+    </div>
+
+    <!-- Running totals -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;">
+      <h3 style="margin:0 0 12px;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;">
+        <i class="ti ti-activity" style="color:var(--blue);"></i>
+        Current Running Totals
+        <span style="font-size:11px;font-weight:400;color:var(--text-muted);">— live from main sheet, not yet submitted this month</span>
+      </h3>
+      <div id="mdRunningTable" style="overflow-x:auto;"></div>
+    </div>
+
+    <!-- History -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <h3 style="margin:0;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;">
+          <i class="ti ti-history" style="color:var(--blue);"></i> Submitted History
+        </h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="mdHistBA" class="filter-select" style="width:auto;" onchange="loadMandaysHistory()">
+            <option value="">All BAs</option>
+          </select>
+          <select id="mdHistMonth" class="filter-select" style="width:auto;" onchange="loadMandaysHistory()">
+            <option value="">All months</option>
+          </select>
+          <input id="mdHistSearch" class="search-input" placeholder="Search project..." style="width:160px;padding:6px 12px;" oninput="filterMandaysTable()"/>
+        </div>
+      </div>
+      <div id="mdHistTable" style="overflow-x:auto;"></div>
+      <div id="mdHistEmpty" style="text-align:center;padding:40px;color:var(--text-muted);display:none;">
+        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+        No submitted records yet.
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -1785,6 +1923,7 @@ function switchTab(tab){
   if(tab==='insights') renderInsights();
   if(tab==='ageing') renderAgeing();
   if(tab==='pipeline') renderPipeline();
+  if(tab==='mandays') initMandaysTab();
 }
 function selectMonth(key){
   currentMonthKey=key;
@@ -2439,6 +2578,242 @@ function onDateFieldChange(){
     const rows=filterRaw(activeFilters);
     renderFilteredTable(rows);
   }
+}
+
+/* ═══ MANDAYS TRACKER ═══ */
+var _mandaysHistory=[];
+
+function initMandaysTab(){
+  const sess=getSession();
+  const isAdmin=sess&&sess.role&&sess.role.toLowerCase()==='admin';
+  const migBtn=document.getElementById('migrateMdBtn');
+  if(migBtn) migBtn.style.display=isAdmin?'flex':'none';
+  populateMandaysMonthSel();
+  const baFil=document.getElementById('mdHistBA');
+  if(baFil){
+    BAS.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
+    if(!isAdmin&&sess){baFil.value=normBA(sess.username)||'';baFil.disabled=true;}
+  }
+  renderMandaysRunning();
+  loadMandaysHistory();
+}
+
+function populateMandaysMonthSel(){
+  const sel=document.getElementById('mdMonthSel');
+  if(!sel) return;
+  sel.innerHTML='<option value="">Select month...</option>';
+  const hSel=document.getElementById('mdHistMonth');
+  if(hSel) hSel.innerHTML='<option value="">All months</option>';
+  const now=new Date();
+  for(let i=11;i>=-2;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');
+    const key=y+'-'+m;const lbl=(MON[m]||m)+' '+y;
+    const o=document.createElement('option');o.value=key;o.textContent=lbl;
+    if(i===0){o.selected=true;}
+    sel.appendChild(o);
+    if(hSel){const o2=document.createElement('option');o2.value=key;o2.textContent=lbl;hSel.appendChild(o2);}
+  }
+}
+
+function renderMandaysRunning(){
+  const wrap=document.getElementById('mdRunningTable');
+  if(!wrap||!RAW||!RAW.rows) return;
+  const sess=getSession();
+  const isAdmin=sess&&sess.role&&sess.role.toLowerCase()==='admin';
+  const myRows=isAdmin?RAW.rows:RAW.rows.filter(function(r){return normBA(r[CI.ba])===normBA(sess?sess.username:'');});
+  if(!myRows.length){wrap.innerHTML='<p style="color:var(--text-muted);font-size:13px;padding:12px 0;">No projects found.</p>';return;}
+  const selMonth=(document.getElementById('mdMonthSel')||{}).value||'';
+  const submittedSet=new Set();
+  _mandaysHistory.filter(function(h){return h.monthKey===selMonth;}).forEach(function(h){submittedSet.add((h.project+'||'+h.waba).toLowerCase());});
+  const tbl=document.createElement('table');
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:13px;min-width:700px;';
+  tbl.innerHTML='<thead><tr style="background:var(--off-white);">'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">PROJECT</th>'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">BA</th>'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">REGION</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD TWIXOR</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD CLIENT</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD SAVED</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD WAIVED</th>'
+    +'<th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:600;">STATUS</th>'
+    +'</tr></thead>';
+  const tbody=document.createElement('tbody');
+  myRows.forEach(function(row,i){
+    const tr=document.createElement('tr');
+    tr.style.cssText='border-bottom:1px solid var(--border);'+(i%2===1?'background:var(--off-white);':'');
+    const key=(row[CI.proj]+'||'+row[CI.waba]).toLowerCase();
+    const submitted=submittedSet.has(key);
+    tr.innerHTML='<td style="padding:8px 12px;font-weight:500;white-space:nowrap;">'+( row[CI.proj]||'—')+'</td>'
+      +'<td style="padding:8px 12px;white-space:nowrap;">'+( row[CI.ba]||'—')+'</td>'
+      +'<td style="padding:8px 12px;white-space:nowrap;">'+( row[CI.reg]||'—')+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;">'+(row[CI.mandaystwixor]||'0')+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;">'+(row[CI.mandaysclient]||'0')+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--blue);">'+(row[CI.mandays]||'0')+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;">'+(row[CI.mandayswaived]||'0')+'</td>'
+      +'<td style="padding:8px 12px;text-align:center;">'
+        +(submitted?'<span style="background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">✅ Submitted</span>'
+          :'<span style="background:#FEF9C3;color:#92400E;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Pending</span>')
+      +'</td>';
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(tbl);
+}
+
+function loadMandaysHistory(){
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  const baFil=document.getElementById('mdHistBA');
+  const mFil=document.getElementById('mdHistMonth');
+  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
+    body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:baFil?baFil.value:'',monthKey:mFil?mFil.value:''})})
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.status!=='ok') return;
+    _mandaysHistory=res.rows||[];
+    renderMandaysHistory(_mandaysHistory);
+    renderMandaysRunning();
+  }).catch(function(e){console.error('loadMandaysHistory:',e);});
+}
+
+function renderMandaysHistory(rows){
+  const wrap=document.getElementById('mdHistTable');
+  const empty=document.getElementById('mdHistEmpty');
+  if(!wrap) return;
+  if(!rows||!rows.length){wrap.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty) empty.style.display='none';
+  const tbl=document.createElement('table');
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:13px;min-width:800px;';
+  tbl.innerHTML='<thead><tr style="background:var(--off-white);">'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">PROJECT</th>'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">BA</th>'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">REGION</th>'
+    +'<th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:600;">MONTH</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD TWIXOR</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD CLIENT</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD SAVED</th>'
+    +'<th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:600;">MD WAIVED</th>'
+    +'<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;">SUBMITTED BY</th>'
+    +'</tr></thead>';
+  const tbody=document.createElement('tbody');
+  rows.forEach(function(row,i){
+    const tr=document.createElement('tr');
+    tr.style.cssText='border-bottom:1px solid var(--border);'+(i%2===1?'background:var(--off-white);':'');
+    tr.setAttribute('data-proj',(row.project||'').toLowerCase());
+    tr.innerHTML='<td style="padding:8px 12px;font-weight:500;white-space:nowrap;" title="'+row.project+'">'+row.project+'</td>'
+      +'<td style="padding:8px 12px;white-space:nowrap;">'+row.ba+'</td>'
+      +'<td style="padding:8px 12px;white-space:nowrap;">'+row.region+'</td>'
+      +'<td style="padding:8px 12px;text-align:center;"><span style="background:var(--blue-light);color:var(--blue);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">'+row.month+' '+row.year+'</span></td>'
+      +'<td style="padding:8px 12px;text-align:right;">'+row.mdTwixor+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;">'+row.mdClient+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--blue);">'+row.mdSaved+'</td>'
+      +'<td style="padding:8px 12px;text-align:right;">'+row.mdWaived+'</td>'
+      +'<td style="padding:8px 12px;font-size:11px;color:var(--text-muted);">'+row.submittedBy+'<br><span style="font-size:10px;">'+row.submittedOn+'</span></td>';
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);wrap.innerHTML='';wrap.appendChild(tbl);
+}
+
+function filterMandaysTable(){
+  const q=((document.getElementById('mdHistSearch')||{}).value||'').toLowerCase();
+  document.querySelectorAll('#mdHistTable tbody tr').forEach(function(tr){
+    tr.style.display=(!q||(tr.getAttribute('data-proj')||'').indexOf(q)>-1)?'':'none';
+  });
+}
+
+function openSubmitMandaysModal(){
+  const sel=document.getElementById('mdMonthSel');
+  const monthKey=sel?sel.value:'';
+  if(!monthKey){alert('Please select a month first.');return;}
+  const parts=monthKey.split('-');
+  const mon=(MON[parts[1]]||parts[1])+' '+parts[0];
+  const sess=getSession();
+  const isAdmin=sess&&sess.role&&sess.role.toLowerCase()==='admin';
+  const myRows=isAdmin?RAW.rows:RAW.rows.filter(function(r){return normBA(r[CI.ba])===normBA(sess?sess.username:'');});
+  const already=_mandaysHistory.filter(function(h){return h.monthKey===monthKey&&(isAdmin||h.ba.toLowerCase()===(sess?sess.username.toLowerCase():''));}).length;
+  const desc=document.getElementById('mdSubmitDesc');
+  const summ=document.getElementById('mdSubmitSummary');
+  const msg=document.getElementById('mdSubmitMsg');
+  if(desc) desc.textContent='You are about to submit mandays report for '+mon+'.';
+  if(summ) summ.innerHTML='<strong>'+myRows.length+'</strong> project(s) will be submitted'+(already>0?'<br><span style="color:var(--blue);font-size:12px;">\u2139\ufe0f '+already+' already submitted this month — will be updated</span>':'');
+  if(msg) msg.textContent='';
+  const btn=document.getElementById('mdSubmitConfirmBtn');
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Confirm & Submit';}
+  document.getElementById('mdSubmitOverlay').style.display='flex';
+}
+
+function closeMandaysModal(){document.getElementById('mdSubmitOverlay').style.display='none';}
+
+async function confirmSubmitMandays(){
+  const monthKey=(document.getElementById('mdMonthSel')||{}).value||'';
+  const btn=document.getElementById('mdSubmitConfirmBtn');
+  const msg=document.getElementById('mdSubmitMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Submitting...';}
+  if(msg){msg.style.color='var(--text-muted)';msg.textContent='Submitting...';}
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
+      body:JSON.stringify({action:'submitMandaysReport',token:sessionToken,monthKey:monthKey})});
+    const data=await res.json();
+    if(data.status==='ok'){
+      if(msg){msg.style.color='#16A34A';msg.textContent='\u2705 Done! Submitted: '+data.submitted+', Updated: '+data.updated+' for '+data.month+'.';}
+      if(btn){btn.disabled=true;btn.innerHTML='\u2705 Submitted';}
+      setTimeout(function(){closeMandaysModal();loadMandaysHistory();},1500);
+    } else {
+      if(msg){msg.style.color='#DC2626';msg.textContent='Error: '+(data.message||'Unknown error');}
+      if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Retry';}
+    }
+  }catch(e){
+    if(msg){msg.style.color='#DC2626';msg.textContent='Network error: '+e.message;}
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Retry';}
+  }
+}
+
+function openMigrateModal(){
+  const msg=document.getElementById('mdMigrateMsg');if(msg)msg.textContent='';
+  const btn=document.getElementById('mdMigrateConfirmBtn');
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Run Migration';}
+  document.getElementById('mdMigrateOverlay').style.display='flex';
+}
+function closeMigrateModal(){document.getElementById('mdMigrateOverlay').style.display='none';}
+
+async function confirmMigrateMandays(){
+  const btn=document.getElementById('mdMigrateConfirmBtn');
+  const msg=document.getElementById('mdMigrateMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Migrating...';}
+  if(msg){msg.style.color='var(--text-muted)';msg.textContent='Running migration...';}
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
+      body:JSON.stringify({action:'migrateMandays',token:sessionToken})});
+    const data=await res.json();
+    if(data.status==='ok'){
+      if(msg){msg.style.color='#16A34A';msg.textContent='\u2705 Done! Migrated: '+data.migrated+', Skipped: '+data.skipped+'.';}
+      if(btn){btn.disabled=true;btn.innerHTML='\u2705 Done';}
+      setTimeout(function(){closeMigrateModal();loadMandaysHistory();},2000);
+    } else {
+      if(msg){msg.style.color='#DC2626';msg.textContent='Error: '+(data.message||'Unknown');}
+      if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Retry';}
+    }
+  }catch(e){
+    if(msg){msg.style.color='#DC2626';msg.textContent='Network error: '+e.message;}
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-database-import"></i> Retry';}
+  }
+}
+
+function downloadMandaysExcel(){
+  if(!_mandaysHistory.length){alert('No submitted data to export yet.');return;}
+  const baVal=(document.getElementById('mdHistBA')||{}).value||'';
+  const mVal=(document.getElementById('mdHistMonth')||{}).value||'';
+  let rows=_mandaysHistory;
+  if(baVal) rows=rows.filter(function(r){return r.ba.toLowerCase()===baVal.toLowerCase();});
+  if(mVal)  rows=rows.filter(function(r){return r.monthKey===mVal;});
+  const cols=['Project','WABA','BA','Region','Month','Year','Md to Twixor','Md from Client','Md Saved','Md Waived','Submitted By','Submitted On'];
+  const data=rows.map(function(r){return[r.project,r.waba,r.ba,r.region,r.month,r.year,r.mdTwixor,r.mdClient,r.mdSaved,r.mdWaived,r.submittedBy,r.submittedOn];});
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([cols,...data]);
+  ws['!cols']=cols.map(function(c){return{wch:Math.max(c.length+2,14)};});
+  XLSX.utils.book_append_sheet(wb,ws,'Mandays MIS');
+  XLSX.writeFile(wb,'Mandays_MIS_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 // Check existing session on page load
