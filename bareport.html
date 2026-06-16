@@ -885,6 +885,7 @@ tr:last-child td{border-bottom:none;}
     <button class="tab" data-tab="ageing" onclick="switchTab('ageing')">Ageing</button>
     <button class="tab" data-tab="pipeline" onclick="switchTab('pipeline')">Pipeline</button>
     <button class="tab" data-tab="mandays" onclick="switchTab('mandays')">Mandays</button>
+    <button class="tab" data-tab="mis" id="misTabBtn" onclick="switchTab('mis')" style="display:none;">MIS Report</button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -1053,6 +1054,36 @@ tr:last-child td{border-bottom:none;}
       <div id="mdHistEmpty" style="text-align:center;padding:40px;color:var(--text-muted);display:none;">
         <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
         No submitted records yet.
+      </div>
+    </div>
+  </div>
+
+  <!-- MIS REPORT TAB -->
+  <div class="tab-panel" id="panel-mis">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="margin:0;font-size:18px;font-weight:700;">MIS Report</h2>
+        <p style="color:var(--text-sec);font-size:13px;margin:4px 0 0;">Project-wise mandays — month on month from submitted data</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="misFilterBA" class="filter-select" style="width:auto;" onchange="renderMISReport()">
+          <option value="">All BAs</option>
+        </select>
+        <select id="misFilterRegion" class="filter-select" style="width:auto;" onchange="renderMISReport()">
+          <option value="">All regions</option>
+          <option>North</option><option>South</option><option>West</option><option>UAE</option>
+        </select>
+        <input id="misSearch" class="search-input" placeholder="Search project..." style="width:160px;padding:6px 12px;" oninput="renderMISReport()"/>
+        <button onclick="downloadMISExcel()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;">
+          <i class="ti ti-download"></i> Export Excel
+        </button>
+      </div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+      <div id="misTableWrap" style="overflow-x:auto;"></div>
+      <div id="misEmpty" style="text-align:center;padding:40px;color:var(--text-muted);display:none;">
+        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+        No submitted mandays data yet. BAs need to submit monthly reports first.
       </div>
     </div>
   </div>
@@ -1924,6 +1955,7 @@ function switchTab(tab){
   if(tab==='ageing') renderAgeing();
   if(tab==='pipeline') renderPipeline();
   if(tab==='mandays') initMandaysTab();
+  if(tab==='mis') initMISTab();
 }
 function selectMonth(key){
   currentMonthKey=key;
@@ -2814,6 +2846,236 @@ function downloadMandaysExcel(){
   ws['!cols']=cols.map(function(c){return{wch:Math.max(c.length+2,14)};});
   XLSX.utils.book_append_sheet(wb,ws,'Mandays MIS');
   XLSX.writeFile(wb,'Mandays_MIS_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+/* ═══ MIS REPORT ═══ */
+var _misData = []; // cached from _mandaysHistory
+
+function initMISTab(){
+  // Populate BA filter
+  const baFil=document.getElementById('misFilterBA');
+  if(baFil&&baFil.options.length===1){
+    BAS.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
+  }
+  // Use already loaded mandays history or fetch
+  if(_mandaysHistory&&_mandaysHistory.length){
+    _misData=_mandaysHistory;
+    renderMISReport();
+  } else {
+    // Fetch all history
+    const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+    document.getElementById('misTableWrap').innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;">Loading...</p>';
+    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
+      body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:'',monthKey:''})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res.status==='ok'){_misData=res.rows||[];_mandaysHistory=_misData;renderMISReport();}
+    }).catch(function(e){
+      document.getElementById('misTableWrap').innerHTML='<p style="color:#DC2626;padding:20px;font-size:13px;">Error loading data: '+e.message+'</p>';
+    });
+  }
+}
+
+function renderMISReport(){
+  const wrap=document.getElementById('misTableWrap');
+  const empty=document.getElementById('misEmpty');
+  if(!wrap) return;
+
+  const baVal=(document.getElementById('misFilterBA')||{}).value||'';
+  const regVal=(document.getElementById('misFilterRegion')||{}).value||'';
+  const srchVal=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
+
+  // Filter rows
+  let rows=_misData||[];
+  if(baVal)   rows=rows.filter(function(r){return r.ba===baVal;});
+  if(regVal)  rows=rows.filter(function(r){return r.region===regVal;});
+  if(srchVal) rows=rows.filter(function(r){return r.project.toLowerCase().indexOf(srchVal)>-1;});
+
+  if(!rows.length){wrap.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty) empty.style.display='none';
+
+  // Get all unique months sorted
+  const monthSet=new Set();
+  rows.forEach(function(r){monthSet.add(r.monthKey);});
+  const months=Array.from(monthSet).sort();
+
+  // Get all unique projects (proj+waba as key)
+  const projMap={};
+  rows.forEach(function(r){
+    const key=r.project+'|||'+r.waba+'|||'+r.ba+'|||'+r.region;
+    if(!projMap[key]){
+      projMap[key]={project:r.project,waba:r.waba,ba:r.ba,region:r.region,months:{}};
+    }
+    projMap[key].months[r.monthKey]={
+      mdTwixor:r.mdTwixor,mdClient:r.mdClient,mdSaved:r.mdSaved,mdWaived:r.mdWaived
+    };
+  });
+  const projects=Object.values(projMap);
+
+  // Build table
+  const tbl=document.createElement('table');
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:12px;min-width:900px;';
+
+  // Header row 1 — fixed cols + month groups
+  const hrow1=document.createElement('tr');
+  hrow1.style.cssText='background:var(--navy);color:#fff;';
+  const fixedHdrs=[['Project',3],['WABA',1],['BA',1],['Region',1]];
+  fixedHdrs.forEach(function(h){
+    const th=document.createElement('th');
+    th.style.cssText='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.1);';
+    th.textContent=h[0];th.rowSpan=1;th.colSpan=1;hrow1.appendChild(th);
+  });
+  months.forEach(function(mk){
+    const parts=mk.split('-');
+    const lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
+    const th=document.createElement('th');
+    th.colSpan=4;
+    th.style.cssText='padding:8px 12px;text-align:center;font-size:11px;font-weight:600;border-left:2px solid rgba(255,255,255,0.2);border-right:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);';
+    th.textContent=lbl;hrow1.appendChild(th);
+  });
+  // Totals group
+  const thTot=document.createElement('th');thTot.colSpan=4;
+  thTot.style.cssText='padding:8px 12px;text-align:center;font-size:11px;font-weight:600;border-left:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);';
+  thTot.textContent='TOTAL (ALL MONTHS)';hrow1.appendChild(thTot);
+
+  // Header row 2 — sub-headers
+  const hrow2=document.createElement('tr');
+  hrow2.style.cssText='background:#1a2744;color:rgba(255,255,255,0.7);';
+  // Fixed cols spacer
+  fixedHdrs.forEach(function(){
+    const th=document.createElement('th');
+    th.style.cssText='padding:6px 12px;border-right:1px solid rgba(255,255,255,0.1);';hrow2.appendChild(th);
+  });
+  const subHdrs=['Twixor','Client','Saved','Waived'];
+  months.forEach(function(){
+    subHdrs.forEach(function(s,si){
+      const th=document.createElement('th');
+      th.style.cssText='padding:6px 8px;text-align:right;font-size:10px;font-weight:600;white-space:nowrap;'+(si===0?'border-left:2px solid rgba(255,255,255,0.2);':'');
+      th.textContent=s;hrow2.appendChild(th);
+    });
+  });
+  subHdrs.forEach(function(s,si){
+    const th=document.createElement('th');
+    th.style.cssText='padding:6px 8px;text-align:right;font-size:10px;font-weight:700;white-space:nowrap;color:#93C5FD;'+(si===0?'border-left:2px solid rgba(255,255,255,0.3);':'');
+    th.textContent=s;hrow2.appendChild(th);
+  });
+
+  const thead=document.createElement('thead');
+  thead.appendChild(hrow1);thead.appendChild(hrow2);
+  tbl.appendChild(thead);
+
+  // Body
+  const tbody=document.createElement('tbody');
+  // Running totals per project across all months
+  projects.forEach(function(proj,i){
+    const tr=document.createElement('tr');
+    tr.style.cssText='border-bottom:1px solid var(--border);'+(i%2===1?'background:var(--off-white);':'');
+
+    function td(txt,css){const c=document.createElement('td');c.style.cssText='padding:8px 12px;'+(css||'');c.textContent=txt||'—';tr.appendChild(c);return c;}
+
+    td(proj.project,'font-weight:500;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--border);');
+    td(proj.waba,'white-space:nowrap;font-size:11px;color:var(--text-muted);border-right:1px solid var(--border);');
+    td(proj.ba,'white-space:nowrap;border-right:1px solid var(--border);');
+    td(proj.region,'white-space:nowrap;border-right:1px solid var(--border);');
+
+    let totTw=0,totCl=0,totSv=0,totWv=0;
+    months.forEach(function(mk,mi){
+      const md=proj.months[mk]||{mdTwixor:0,mdClient:0,mdSaved:0,mdWaived:0};
+      totTw+=md.mdTwixor;totCl+=md.mdClient;totSv+=md.mdSaved;totWv+=md.mdWaived;
+      function mdc(v,css){const c=document.createElement('td');c.style.cssText='padding:8px 8px;text-align:right;'+(css||'');c.textContent=v>0?v:'—';tr.appendChild(c);}
+      mdc(md.mdTwixor,'border-left:2px solid var(--border);');
+      mdc(md.mdClient,'');
+      mdc(md.mdSaved,'font-weight:600;color:var(--blue);');
+      mdc(md.mdWaived,'');
+    });
+    // Totals
+    function tdc(v,css){const c=document.createElement('td');c.style.cssText='padding:8px 8px;text-align:right;font-weight:700;background:#EFF6FF;'+(css||'');c.textContent=v>0?v:'—';tr.appendChild(c);}
+    tdc(totTw,'border-left:2px solid #BFDBFE;');
+    tdc(totCl,'');
+    tdc(totSv,'color:var(--blue);');
+    tdc(totWv,'');
+
+    tbody.appendChild(tr);
+  });
+
+  // Summary row
+  const sumRow=document.createElement('tr');
+  sumRow.style.cssText='background:var(--navy);color:#fff;font-weight:700;border-top:2px solid var(--blue);';
+  function sumTd(txt,css){const c=document.createElement('td');c.style.cssText='padding:10px 12px;'+(css||'');c.textContent=txt;sumRow.appendChild(c);}
+  sumTd('TOTAL ('+projects.length+' projects)','font-size:12px;');
+  sumTd('','');sumTd('','');sumTd('','border-right:1px solid rgba(255,255,255,0.1);');
+  let gTw=0,gCl=0,gSv=0,gWv=0;
+  months.forEach(function(mk,mi){
+    let mTw=0,mCl=0,mSv=0,mWv=0;
+    projects.forEach(function(p){const md=p.months[mk]||{};mTw+=md.mdTwixor||0;mCl+=md.mdClient||0;mSv+=md.mdSaved||0;mWv+=md.mdWaived||0;});
+    gTw+=mTw;gCl+=mCl;gSv+=mSv;gWv+=mWv;
+    function sc(v,css){const c=document.createElement('td');c.style.cssText='padding:10px 8px;text-align:right;'+(css||'');c.textContent=v||'—';sumRow.appendChild(c);}
+    sc(mTw,'border-left:2px solid rgba(255,255,255,0.2);');sc(mCl,'');sc(mSv,'color:#93C5FD;');sc(mWv,'');
+  });
+  function gc(v,css){const c=document.createElement('td');c.style.cssText='padding:10px 8px;text-align:right;background:rgba(255,255,255,0.1);'+(css||'');c.textContent=v||'—';sumRow.appendChild(c);}
+  gc(gTw,'border-left:2px solid rgba(255,255,255,0.3);');gc(gCl,'');gc(gSv,'color:#93C5FD;');gc(gWv,'');
+  tbody.appendChild(sumRow);
+
+  tbl.appendChild(tbody);
+  wrap.innerHTML='';wrap.appendChild(tbl);
+}
+
+function downloadMISExcel(){
+  const baVal=(document.getElementById('misFilterBA')||{}).value||'';
+  const regVal=(document.getElementById('misFilterRegion')||{}).value||'';
+  const srchVal=((document.getElementById('misSearch')||{}).value||'').toLowerCase();
+  let rows=_misData||[];
+  if(baVal)   rows=rows.filter(function(r){return r.ba===baVal;});
+  if(regVal)  rows=rows.filter(function(r){return r.region===regVal;});
+  if(srchVal) rows=rows.filter(function(r){return r.project.toLowerCase().indexOf(srchVal)>-1;});
+  if(!rows.length){alert('No data to export.');return;}
+
+  const monthSet=new Set();
+  rows.forEach(function(r){monthSet.add(r.monthKey);});
+  const months=Array.from(monthSet).sort();
+
+  const projMap={};
+  rows.forEach(function(r){
+    const key=r.project+'|||'+r.waba+'|||'+r.ba+'|||'+r.region;
+    if(!projMap[key]) projMap[key]={project:r.project,waba:r.waba,ba:r.ba,region:r.region,months:{}};
+    projMap[key].months[r.monthKey]={mdTwixor:r.mdTwixor,mdClient:r.mdClient,mdSaved:r.mdSaved,mdWaived:r.mdWaived};
+  });
+
+  // Build header rows
+  const hrow1=['Project','WABA','BA','Region'];
+  const hrow2=['','','',''];
+  months.forEach(function(mk){
+    const parts=mk.split('-');const lbl=(MON[parts[1]]||parts[1])+' '+parts[0];
+    hrow1.push(lbl,'','','');
+    hrow2.push('Md Twixor','Md Client','Md Saved','Md Waived');
+  });
+  hrow1.push('Total','','','');
+  hrow2.push('Md Twixor','Md Client','Md Saved','Md Waived');
+
+  const dataRows=Object.values(projMap).map(function(proj){
+    const row=[proj.project,proj.waba,proj.ba,proj.region];
+    let tTw=0,tCl=0,tSv=0,tWv=0;
+    months.forEach(function(mk){
+      const md=proj.months[mk]||{mdTwixor:0,mdClient:0,mdSaved:0,mdWaived:0};
+      row.push(md.mdTwixor,md.mdClient,md.mdSaved,md.mdWaived);
+      tTw+=md.mdTwixor;tCl+=md.mdClient;tSv+=md.mdSaved;tWv+=md.mdWaived;
+    });
+    row.push(tTw,tCl,tSv,tWv);
+    return row;
+  });
+
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([hrow1,hrow2,...dataRows]);
+  // Merge month header cells
+  if(!ws['!merges']) ws['!merges']=[];
+  months.forEach(function(mk,i){
+    ws['!merges'].push({s:{r:0,c:4+i*4},e:{r:0,c:4+i*4+3}});
+  });
+  ws['!merges'].push({s:{r:0,c:4+months.length*4},e:{r:0,c:4+months.length*4+3}});
+  ws['!cols']=[{wch:25},{wch:14},{wch:14},{wch:10}];
+  for(let i=0;i<months.length*4+4;i++) ws['!cols'].push({wch:12});
+  XLSX.utils.book_append_sheet(wb,ws,'MIS Report');
+  XLSX.writeFile(wb,'MIS_Mandays_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 // Check existing session on page load
@@ -3814,6 +4076,8 @@ function drillCellEx(region,field,lbl,val){
     if(up) up.innerHTML='<i class="ti ti-user"></i> '+s.username+(s.role?' &middot; '+s.role:'');
     const sr=document.getElementById('sendReportBtn');
     if(sr) sr.style.display=s.username.toLowerCase()==='rajaryan'?'flex':'none';
+    const misBtn=document.getElementById('misTabBtn');
+    if(misBtn) misBtn.style.display=(s.role&&s.role.toLowerCase()==='admin')?'':'none';
     const np=document.getElementById('newProjBtn');
     if(np) np.style.display='flex';
     startInactivityTimer();
