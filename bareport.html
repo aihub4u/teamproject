@@ -314,6 +314,7 @@ tr:last-child td{border-bottom:none;}
 
 /* PROJECT DETAIL MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(7,17,42,0.5);z-index:400;opacity:0;pointer-events:none;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:#fff;border-radius:var(--radius-lg);box-shadow:0 8px 40px rgba(7,17,42,0.25);width:100%;overflow:hidden;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
 .modal{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 48px rgba(7,17,42,0.22);transform:translateY(12px);transition:transform 0.25s;}
 .modal-overlay.open .modal{transform:translateY(0);}
