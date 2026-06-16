@@ -2578,10 +2578,27 @@ function initMISTab(){
     BAS.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;baFil.appendChild(o);});
   }
   const wrap=document.getElementById('misTableWrap');
-  if(wrap) wrap.innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;">Loading...</p>';
-  loadMISData().then(function(){
+  if(wrap) wrap.innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;"><i class="ti ti-loader-2"></i> Loading MIS data...</p>';
+  // Always fetch fresh from server
+  const url=localStorage.getItem('karix_script_url')||'https://script.google.com/macros/s/AKfycbz4zb8loXL3HivEiAPIFQBjb8bHm2URH4NMWIz4Q9iwiCkcB_qHDluFoF0vIf_laVPL/exec';
+  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},redirect:'follow',
+    body:JSON.stringify({action:'getMandaysHistory',token:sessionToken,ba:'',monthKey:''})})
+  .then(function(r){return r.text();})
+  .then(function(txt){
+    let res;
+    try{res=JSON.parse(txt);}catch(e){throw new Error('Parse error: '+e.message);}
+    if(res.status!=='ok') throw new Error(res.message||'API error');
+    _misData=res.rows||[];
+    if(!_misData.length){
+      if(wrap) wrap.innerHTML='<p style="color:var(--text-muted);padding:20px;font-size:13px;">No mandays data yet. Edit a project and fill in the Monthly Mandays section to start tracking.</p>';
+      return;
+    }
     populateMISMonthFilters();
     renderMISReport();
+  })
+  .catch(function(e){
+    if(wrap) wrap.innerHTML='<p style="color:#DC2626;padding:20px;font-size:13px;">Error loading MIS data: '+e.message+'</p>';
+    console.error('initMISTab error:',e);
   });
 }
 
